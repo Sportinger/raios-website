@@ -53,12 +53,27 @@ objects/
 └── mechanisms/    Türen, Klappen, Schalter und Verriegelungen
 ```
 
-Unter `mechanisms/` liegt mit `create-push-button.js` der erste allgemeine Mechanismus. Das Power-Button-Feature konfiguriert ihn, ohne dass der Mechanismus etwas über die Story oder den Einschaltvorgang wissen muss. `connections/create-cable.js` zeichnet eine beliebige räumliche Punktfolge als progressiv sichtbares Kabel und wird im Power-on-Kapitel für die Verbindung zum Bare-Metal-Layer eingesetzt.
+Unter `mechanisms/` liegt mit `create-push-button.js` der erste allgemeine Mechanismus. Das Power-Button-Feature konfiguriert ihn, ohne dass der Mechanismus etwas über die Story oder den Einschaltvorgang wissen muss. Das allgemeine Kabel liegt gekapselt unter `objects/connections/cable/`; sein öffentlicher Import läuft nur über die dortige `index.js`.
+
+Der Einschalt-Link ist bewusst aus mehreren Ebenen zusammengesetzt:
+
+```text
+features/power-link/                 Fachlicher Verbund
+├── config.js                        Preset und Kompositionswerte
+├── create-power-link.js             Einheitliche Zustands-API
+└── index.js                         Öffentliche Exporte
+
+objects/connections/cable/           Neutrale/progressiv aktivierte Leitung
+objects/effects/energy-flow/         Bewegte Energieringe auf einer Kurve
+objects/effects/plasma-pulse/        Plasma-Sprites und lokales Impulslicht
+```
+
+Alle drei allgemeinen Objekte nehmen ihre Form- und Materialwerte über `config` entgegen. Sie kennen weder den Power-Button noch das Kapitel. `features/power-link/` verbindet sie über dieselbe Kurve und stellt dem Kapitel nur `group`, `curve`, `setState()` und `dispose()` bereit. So kann ein anderes Feature ausschließlich das Kabel verwenden, Kabel plus Datenfluss anders kombinieren oder das komplette Power-Link-Preset übernehmen.
 
 Ein wiederverwendbares Objekt:
 
 - gibt eine `THREE.Group` heraus,
-- besitzt semantische Methoden wie `setOpenProgress()` oder `setFlowProgress()`,
+- besitzt eine semantische Zustands-API wie `setState({ openProgress })`,
 - kennt keine Scrollposition und kein Kapitel,
 - erzeugt bei `update()` keine neuen Geometrien oder Materialien und
 - bietet `dispose()` an, sobald es eigene GPU-Ressourcen besitzt.
@@ -72,6 +87,18 @@ runtime + story → chapters → features → objects → animation/shared
 ```
 
 Imports in die Gegenrichtung sind nicht erlaubt. Dadurch können Kabel, Türen oder Animationsschemata in mehreren Features verwendet werden, ohne diese Features miteinander zu koppeln.
+
+### Power-on intern anpassen
+
+Das Power-on-Kapitel enthält nur noch die Dramaturgie und setzt folgende Bausteine zusammen:
+
+- `create-cable-route.js` definiert ausschließlich den räumlichen Verlauf dieses Kabels.
+- `create-camera-choreography.js` besitzt Orbit, Flugpfad und Fokusübergang.
+- `timeline.js` besitzt ausschließlich Zeitfenster und gemeinsame Zeitanker.
+- `layout.js` besitzt ausschließlich feste Szenenpositionen und Abstände.
+- `create-power-on-chapter.js` übersetzt den lokalen Kapitel-Fortschritt in Zustände der Features.
+
+Für eine andere Route wird daher kein Kabel- oder Shader-Code geändert. Für ein anderes Kabelmaterial wird keine Kameralogik geändert. Ein neues Kapitel importiert Features immer aus deren `index.js`, niemals aus internen Erzeuger- oder Konfigurationsdateien.
 
 ## Kapitel ergänzen
 

@@ -1,12 +1,19 @@
+const LIGHT_REVEAL_START = 0.085;
+const BUTTON_PRESS_START = 0.22;
+const BUTTON_PRESS_END = 0.29;
+const CAMERA_FLIGHT_START = 0.36;
+
+const segment = (start, end) => Object.freeze([start, end]);
+
 export const POWER_ON_TIMELINE = Object.freeze({
-  buttonReveal: Object.freeze([0.01, 0.16]),
-  symbolGlow: Object.freeze([0.085, 0.16]),
-  cameraOrbit: Object.freeze([0.17, 0.36]),
-  buttonPress: Object.freeze([0.22, 0.29]),
-  buttonRelease: Object.freeze([0.3, 0.42]),
-  power: Object.freeze([0.22, 0.29]),
-  signalTravel: Object.freeze([0.22, 0.78]),
-  environmentLight: Object.freeze([0.085, 0.42]),
-  cameraFollow: Object.freeze([0.22, 0.4]),
-  cameraFlight: Object.freeze([0.36, 0.96]),
+  buttonReveal: segment(0.01, 0.16),
+  symbolGlow: segment(LIGHT_REVEAL_START, 0.16),
+  cameraOrbit: segment(0.17, CAMERA_FLIGHT_START),
+  buttonPress: segment(BUTTON_PRESS_START, BUTTON_PRESS_END),
+  buttonRelease: segment(0.3, 0.42),
+  power: segment(BUTTON_PRESS_START, BUTTON_PRESS_END),
+  signalTravel: segment(BUTTON_PRESS_START, 0.78),
+  environmentLight: segment(LIGHT_REVEAL_START, 0.42),
+  cameraFollow: segment(BUTTON_PRESS_START, 0.4),
+  cameraFlight: segment(CAMERA_FLIGHT_START, 0.96),
 });
