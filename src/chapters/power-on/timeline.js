@@ -18,6 +18,6 @@ export const POWER_ON_TIMELINE = Object.freeze({
   cameraFlight: segment(CAMERA_FLIGHT_START, 0.78),
   cameraRelease: segment(0.55, 0.74),
   bareMetalCurrent: segment(0.72, 0.92),
-  bareMetalActivation: segment(0.78, 0.94),
+  bareMetalActivation: segment(0.72, 0.94),
   cameraTopDown: segment(0.78, 1),
 });
