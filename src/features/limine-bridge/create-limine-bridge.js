@@ -15,17 +15,21 @@ function createBridgeGeometry() {
     metalness: 0.55,
     roughness: 0.26,
   });
-  const pillarGeometry = new THREE.BoxGeometry(0.14, 0.7, 0.18);
-  [-0.48, 0.48].forEach((x) => {
-    const pillar = new THREE.Mesh(pillarGeometry, material);
-    pillar.position.set(x, 0.35, 0);
-    group.add(pillar);
+  const deck = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.12, 0.82), material);
+  group.add(deck);
+  const railGeometry = new THREE.BoxGeometry(1.65, 0.14, 0.08);
+  [-0.37, 0.37].forEach((z) => {
+    const rail = new THREE.Mesh(railGeometry, material);
+    rail.position.set(0, 0.12, z);
+    group.add(rail);
   });
-  const lintel = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.14, 0.18), material);
-  lintel.position.y = 0.7;
-  group.add(lintel);
-  const label = createHorizontalLabel("LIMINE · BOOT BRIDGE", "", 1.6, 0.58);
-  label.plane.position.set(0, 0.79, 0);
+  const label = createHorizontalLabel(
+    "LIMINE · BOOT BRIDGE",
+    "TEMPORARY",
+    1.65,
+    0.72,
+  );
+  label.plane.position.set(0, 0.2, 0);
   group.add(label.plane);
   return { group, label, material };
 }
@@ -39,10 +43,10 @@ export function createLimineBridge() {
 
   const loadStream = createDataStream({
     points: [
-      new THREE.Vector3(4.85, -0.2, 1.4),
+      new THREE.Vector3(4.85, -0.2, 1.55),
       new THREE.Vector3(3.0, 0.15, 0.8),
       new THREE.Vector3(1.7, 0.65, -0.55),
-      new THREE.Vector3(0.45, 0.45, -1.55),
+      new THREE.Vector3(0.45, 0.45, -1.3),
     ],
     count: 18,
     blockSize: [0.16, 0.07, 0.28],
@@ -50,10 +54,10 @@ export function createLimineBridge() {
   });
   const searchStream = createDataStream({
     points: [
-      new THREE.Vector3(0.45, 0.6, -1.55),
+      new THREE.Vector3(0.45, 0.5, -1.3),
       new THREE.Vector3(1.8, 0.8, -0.45),
       new THREE.Vector3(3.2, 0.35, 0.75),
-      new THREE.Vector3(4.85, -0.05, 1.4),
+      new THREE.Vector3(4.85, -0.05, 1.55),
     ],
     count: 10,
     blockSize: [0.1, 0.05, 0.22],
@@ -64,7 +68,7 @@ export function createLimineBridge() {
   const configurationCards = LIMINE_BRIDGE_CONFIG.cards.map((definition) => {
     const card = createInfoCard({
       title: definition.title,
-      width: definition.title.startsWith("KERNEL") ? 2.2 : 1.7,
+      width: definition.title.includes("kernel") ? 2.2 : 1.7,
       depth: 0.66,
       height: 0.07,
     });
@@ -74,7 +78,7 @@ export function createLimineBridge() {
   });
 
   const packageGroup = new THREE.Group();
-  packageGroup.position.set(4.35, 0.35, 1.4);
+  packageGroup.position.set(4.35, 0.35, 1.55);
   const packageGeometry = new THREE.BoxGeometry(1.7, 0.38, 1.0);
   const packageMaterial = new THREE.MeshStandardMaterial({
     color: 0x08121d,

@@ -9,8 +9,8 @@ export const BARE_METAL_IMPACT_POSE = Object.freeze({
   up: Object.freeze([0, 1, 0]),
 });
 
-export const BARE_METAL_TOP_DOWN_POSE = Object.freeze({
-  position: Object.freeze([0, 10.5, 0]),
+export const BARE_METAL_BOOT_POSE = Object.freeze({
+  position: Object.freeze([8.6, 5.3, 9.6]),
   target: Object.freeze([0, -0.55, 0]),
-  up: Object.freeze([0, 0, -1]),
+  up: Object.freeze([0, 1, 0]),
 });

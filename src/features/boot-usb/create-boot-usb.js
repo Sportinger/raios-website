@@ -56,10 +56,10 @@ export function createBootUsb() {
 
   const searchPulse = createDataStream({
     points: [
-      new THREE.Vector3(2.45, -0.61, 1.55),
-      new THREE.Vector3(3.45, -0.48, 1.55),
-      new THREE.Vector3(4.2, -0.3, 1.55),
       new THREE.Vector3(4.85, -0.25, 1.55),
+      new THREE.Vector3(3.72, -0.79, 1.55),
+      new THREE.Vector3(3.0, -0.25, 1.42),
+      new THREE.Vector3(1.7, 0.28, 1.05),
     ],
     count: 7,
     blockSize: [0.13, 0.08, 0.22],

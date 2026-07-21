@@ -1,14 +1,23 @@
 export const UEFI_FIRMWARE_CONFIG = Object.freeze({
-  source: Object.freeze([-2.35, -0.62, 1.55]),
+  source: Object.freeze([0, -0.44, 0]),
   layerY: 0.12,
   width: 7.05,
   height: 0.07,
   depth: 4.85,
-  endpoints: Object.freeze([
-    Object.freeze([-1.35, -0.62, -0.3]),
-    Object.freeze([0.25, -0.61, -1.72]),
-    Object.freeze([0.55, -0.59, 0.25]),
-    Object.freeze([2.45, -0.62, 1.55]),
-    Object.freeze([2.65, -0.64, -0.55]),
+  services: Object.freeze([
+    Object.freeze({
+      id: "boot-manager",
+      title: "BOOT MANAGER",
+      description: "UEFI SERVICE",
+      position: [-1.35, 0.28, 0.45],
+      size: [1.55, 0.1, 0.72],
+    }),
+    Object.freeze({
+      id: "usb-boot-service",
+      title: "USB BOOT SERVICE",
+      description: "TEMPORARY DRIVER",
+      position: [1.7, 0.28, 1.05],
+      size: [1.8, 0.1, 0.68],
+    }),
   ]),
 });

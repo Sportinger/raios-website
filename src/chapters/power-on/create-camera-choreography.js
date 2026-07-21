@@ -7,7 +7,7 @@ import {
 import {
   BARE_METAL_DRIFT_POSE,
   BARE_METAL_IMPACT_POSE,
-  BARE_METAL_TOP_DOWN_POSE,
+  BARE_METAL_BOOT_POSE,
 } from "../shared/camera-poses.js";
 import { POWER_ON_TIMELINE } from "./timeline.js";
 
@@ -35,14 +35,14 @@ export function createPowerOnCameraChoreography({
     startPosition: cameraStart,
     angle: Math.PI / 2,
   });
-  const topDownPosition = new THREE.Vector3().fromArray(
-    BARE_METAL_TOP_DOWN_POSE.position,
+  const bootPosition = new THREE.Vector3().fromArray(
+    BARE_METAL_BOOT_POSE.position,
   );
-  const topDownTarget = new THREE.Vector3().fromArray(
-    BARE_METAL_TOP_DOWN_POSE.target,
+  const bootTarget = new THREE.Vector3().fromArray(
+    BARE_METAL_BOOT_POSE.target,
   );
-  const topDownUp = new THREE.Vector3().fromArray(
-    BARE_METAL_TOP_DOWN_POSE.up,
+  const bootUp = new THREE.Vector3().fromArray(
+    BARE_METAL_BOOT_POSE.up,
   );
   const impactPosition = new THREE.Vector3().fromArray(
     BARE_METAL_IMPACT_POSE.position,
@@ -78,13 +78,13 @@ export function createPowerOnCameraChoreography({
     endUp: impactUp,
     easing: (progress) => progress,
   });
-  const topDownTransition = cameraRig.createPoseTransition({
+  const bootOverviewTransition = cameraRig.createPoseTransition({
     startPosition: impactPosition,
     startTarget: impactTarget,
     startUp: impactUp,
-    endPosition: topDownPosition,
-    endTarget: topDownTarget,
-    endUp: topDownUp,
+    endPosition: bootPosition,
+    endTarget: bootTarget,
+    endUp: bootUp,
     easing: (progress) => departWithMomentum(progress, 0.02),
   });
   const impulseTarget = new THREE.Vector3();
@@ -108,10 +108,10 @@ export function createPowerOnCameraChoreography({
         ), cameraTarget);
         return;
       }
-      if (progress >= POWER_ON_TIMELINE.cameraTopDown[0]) {
-        topDownTransition.update(intervalProgress(
+      if (progress >= POWER_ON_TIMELINE.cameraBootOverview[0]) {
+        bootOverviewTransition.update(intervalProgress(
           progress,
-          ...POWER_ON_TIMELINE.cameraTopDown,
+          ...POWER_ON_TIMELINE.cameraBootOverview,
         ));
         return;
       }

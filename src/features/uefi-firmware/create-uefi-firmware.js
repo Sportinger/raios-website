@@ -1,58 +1,35 @@
 import * as THREE from "three";
 import { intervalProgress, smootherstep } from "../../animation/progress.js";
+import { createInfoCard } from "../../objects/cards/index.js";
+import { createCircuitTrace } from "../../objects/connections/circuit-trace/index.js";
 import { createHorizontalLabel } from "../../objects/labels/create-horizontal-label.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 import { UEFI_FIRMWARE_CONFIG } from "./config.js";
-
-function createCircuitTrace(source, target) {
-  const positions = new Float32Array(6);
-  source.toArray(positions, 0);
-  source.toArray(positions, 3);
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-  const material = new THREE.LineBasicMaterial({
-    blending: THREE.AdditiveBlending,
-    color: 0x55d6ff,
-    opacity: 0,
-    transparent: true,
-  });
-  const cursor = new THREE.Vector3();
-  return {
-    geometry,
-    line: new THREE.Line(geometry, material),
-    material,
-    render(progress, opacity) {
-      cursor.copy(source).lerp(target, progress).toArray(positions, 3);
-      geometry.attributes.position.needsUpdate = true;
-      material.opacity = opacity;
-    },
-  };
-}
 
 export function createUefiFirmware() {
   const group = new THREE.Group();
   group.name = "uefi-firmware";
   const source = new THREE.Vector3().fromArray(UEFI_FIRMWARE_CONFIG.source);
-  const traces = UEFI_FIRMWARE_CONFIG.endpoints.map((endpoint) => (
-    createCircuitTrace(source, new THREE.Vector3().fromArray(endpoint))
-  ));
-  traces.forEach((trace) => group.add(trace.line));
+  const sourceLight = new THREE.PointLight(0x55d6ff, 0, 3.2, 2);
+  sourceLight.position.copy(source).setY(source.y + 0.24);
+  group.add(sourceLight);
 
   const layerGroup = new THREE.Group();
-  layerGroup.name = "uefi-layer";
+  layerGroup.name = "uefi-boot-environment";
   const geometry = new THREE.BoxGeometry(
     UEFI_FIRMWARE_CONFIG.width,
     UEFI_FIRMWARE_CONFIG.height,
     UEFI_FIRMWARE_CONFIG.depth,
   );
   const material = new THREE.MeshStandardMaterial({
-    color: 0x0b8fc0,
+    color: 0x087ca8,
     emissive: 0x28cfff,
     emissiveIntensity: 0.22,
-    metalness: 0.18,
+    metalness: 0.12,
     opacity: 0,
-    roughness: 0.24,
+    roughness: 0.22,
     transparent: true,
+    depthWrite: false,
   });
   layerGroup.add(new THREE.Mesh(geometry, material));
   const edgeMaterial = new THREE.LineBasicMaterial({
@@ -62,8 +39,8 @@ export function createUefiFirmware() {
   });
   layerGroup.add(new THREE.LineSegments(new THREE.EdgesGeometry(geometry), edgeMaterial));
   const label = createHorizontalLabel(
-    "UEFI FIRMWARE",
-    "MACHINE FIRMWARE",
+    "UEFI BOOT ENVIRONMENT",
+    "RUNNING FIRMWARE",
     UEFI_FIRMWARE_CONFIG.width * 0.58,
     UEFI_FIRMWARE_CONFIG.depth * 0.38,
   );
@@ -71,34 +48,79 @@ export function createUefiFirmware() {
   layerGroup.add(label.plane);
   group.add(layerGroup);
 
+  const services = UEFI_FIRMWARE_CONFIG.services.map((definition) => {
+    const service = createInfoCard({
+      title: definition.title,
+      description: definition.description,
+      width: definition.size[0],
+      height: definition.size[1],
+      depth: definition.size[2],
+      color: 0x092033,
+      edgeColor: 0x76ddff,
+    });
+    service.group.position.fromArray(definition.position);
+    group.add(service.group);
+    return { definition, service };
+  });
+  const usbService = UEFI_FIRMWARE_CONFIG.services.find(
+    ({ id }) => id === "usb-boot-service",
+  );
+  const usbServicePath = createCircuitTrace({
+    points: [
+      new THREE.Vector3(...usbService.position),
+      new THREE.Vector3(2.5, 0.16, 1.18),
+      new THREE.Vector3(3.1, -0.28, 1.42),
+      new THREE.Vector3(3.55, -0.79, 1.55),
+    ],
+    color: 0x79e3ff,
+  });
+  group.add(usbServicePath.group);
+
   const setState = ({
     patternProgress = 0,
     layerProgress = 0,
+    serviceProgress = 0,
+    usbActivityProgress = 0,
     retreatProgress = 0,
     opacity = 1,
   } = {}) => {
     const pattern = smootherstep(patternProgress);
     const layer = smootherstep(layerProgress);
+    const servicesIn = smootherstep(serviceProgress);
     const retreat = smootherstep(retreatProgress);
-    traces.forEach((trace, index) => {
-      const traceProgress = smootherstep(intervalProgress(
-        pattern,
-        index * 0.07,
-        0.58 + index * 0.07,
-      ));
-      trace.render(traceProgress, traceProgress * (1 - retreat) * opacity * 0.9);
-    });
+    const activeOpacity = (1 - retreat) * opacity;
+    sourceLight.intensity = Math.sin(pattern * Math.PI) * activeOpacity * 2.2;
     layerGroup.visible = layer > 0.001 && retreat < 0.999;
-    layerGroup.position.y = THREE.MathUtils.lerp(
-      -0.68,
-      UEFI_FIRMWARE_CONFIG.layerY,
-      layer * (1 - retreat),
+    const deployedLayer = layer * (1 - retreat);
+    layerGroup.position.set(
+      THREE.MathUtils.lerp(UEFI_FIRMWARE_CONFIG.source[0], 0, deployedLayer),
+      THREE.MathUtils.lerp(
+        UEFI_FIRMWARE_CONFIG.source[1],
+        UEFI_FIRMWARE_CONFIG.layerY,
+        deployedLayer,
+      ),
+      THREE.MathUtils.lerp(UEFI_FIRMWARE_CONFIG.source[2], 0, deployedLayer),
     );
-    material.opacity = layer * (1 - retreat) * opacity * 0.28;
-    edgeMaterial.opacity = layer * (1 - retreat) * opacity * 0.9;
+    layerGroup.scale.set(
+      THREE.MathUtils.lerp(0.04, 1, deployedLayer),
+      THREE.MathUtils.lerp(0.2, 1, deployedLayer),
+      THREE.MathUtils.lerp(0.04, 1, deployedLayer),
+    );
+    material.opacity = layer * activeOpacity * 0.28;
+    edgeMaterial.opacity = layer * activeOpacity * 0.9;
     label.material.opacity = smootherstep(intervalProgress(layer, 0.62, 1))
-      * (1 - retreat)
-      * opacity;
+      * activeOpacity;
+    services.forEach(({ service }, index) => service.setState({
+      progress: intervalProgress(servicesIn, index * 0.16, 0.68 + index * 0.16),
+      activationProgress: 1,
+      opacity: activeOpacity,
+    }));
+    const usbActivity = smootherstep(usbActivityProgress);
+    usbServicePath.setState({
+      progress: servicesIn,
+      opacity: activeOpacity * 0.78,
+      pulse: Math.sin(usbActivity * Math.PI),
+    });
   };
   setState();
 
@@ -106,7 +128,9 @@ export function createUefiFirmware() {
     group,
     setState,
     dispose() {
-      disposeObject3D(group);
+      services.forEach(({ service }) => service.dispose());
+      usbServicePath.dispose();
+      disposeObject3D(layerGroup);
       group.removeFromParent();
     },
   };

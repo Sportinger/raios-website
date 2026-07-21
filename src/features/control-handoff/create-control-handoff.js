@@ -25,14 +25,14 @@ export function createControlHandoff() {
   const top = new THREE.Mesh(new THREE.BoxGeometry(1.66, 0.16, 0.2), material);
   top.position.y = 0.62;
   doorGroup.add(top);
-  const label = createHorizontalLabel("UEFI → RAIOS", "ONE-WAY HANDOFF", 2.25, 0.8);
+  const label = createHorizontalLabel("HANDOFF", "ONE-WAY · TO RAIOS", 2.25, 0.8);
   label.plane.position.set(0, 0.76, 0);
   doorGroup.add(label.plane);
   group.add(doorGroup);
 
   const impulse = createDataStream({
     points: [
-      new THREE.Vector3(0.45, 0.7, -1.55),
+      new THREE.Vector3(0.45, 0.7, -1.3),
       new THREE.Vector3(0.2, 1.3, -0.65),
       new THREE.Vector3(0, 2.35, 0),
     ],

@@ -1,11 +1,11 @@
 import * as THREE from "three";
-import { BARE_METAL_TOP_DOWN_POSE } from "../shared/camera-poses.js";
+import { BARE_METAL_BOOT_POSE } from "../shared/camera-poses.js";
 
 const BOOT_CAMERA_POSES = Object.freeze([
   Object.freeze({
-    position: Object.freeze([0.25, 9.2, 0.3]),
-    target: Object.freeze([0, -0.55, 0]),
-    up: Object.freeze([0, 0, -1]),
+    position: Object.freeze([7.8, 4.8, 8.6]),
+    target: Object.freeze([-0.35, -0.58, 0.25]),
+    up: Object.freeze([0, 1, 0]),
   }),
   Object.freeze({
     position: Object.freeze([6.15, 3.75, 7.25]),
@@ -41,13 +41,13 @@ const BOOT_CAMERA_POSES = Object.freeze([
 
 export function createBootCameraChoreography(cameraRig) {
   const startPosition = new THREE.Vector3().fromArray(
-    BARE_METAL_TOP_DOWN_POSE.position,
+    BARE_METAL_BOOT_POSE.position,
   );
   const startTarget = new THREE.Vector3().fromArray(
-    BARE_METAL_TOP_DOWN_POSE.target,
+    BARE_METAL_BOOT_POSE.target,
   );
   const startUp = new THREE.Vector3().fromArray(
-    BARE_METAL_TOP_DOWN_POSE.up,
+    BARE_METAL_BOOT_POSE.up,
   );
   const track = cameraRig.createHomeboundPoseTrack({
     startPosition,

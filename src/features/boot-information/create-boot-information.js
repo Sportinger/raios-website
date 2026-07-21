@@ -18,7 +18,7 @@ export function createBootInformation() {
     const start = new THREE.Vector3(
       0.45 + (index % 3 - 1) * 0.42,
       0.85 + Math.floor(index / 3) * 0.25,
-      -1.55,
+      -1.3,
     );
     const destination = new THREE.Vector3(
       (index % 3 - 1) * 1.85,

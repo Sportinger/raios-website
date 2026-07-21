@@ -45,12 +45,15 @@ export function createBootSequence() {
       hardwareProgress: bareMetal,
       initializationProgress: firmware,
       usbProgress: bootUsb,
+      firmwareRetiredProgress: intervalProgress(controlHandoff, 0.72, 1),
       opacity: 1,
     });
     uefi.setState({
       patternProgress: intervalProgress(firmware, 0, 0.62),
       layerProgress: intervalProgress(firmware, 0.28, 1),
-      retreatProgress: intervalProgress(controlHandoff, 0.56, 1),
+      serviceProgress: intervalProgress(firmware, 0.62, 1),
+      usbActivityProgress: intervalProgress(bootUsb, 0.18, 0.76),
+      retreatProgress: intervalProgress(controlHandoff, 0.72, 1),
       opacity: 1,
     });
     usb.setState({
@@ -67,14 +70,19 @@ export function createBootSequence() {
       searchProgress: limineSearch,
       configurationProgress: intervalProgress(kernelLoad, 0, 0.42),
       packageProgress: intervalProgress(kernelLoad, 0.24, 0.52),
-      retreatProgress: intervalProgress(controlHandoff, 0.56, 1),
+      retreatProgress: intervalProgress(controlHandoff, 0.72, 1),
       opacity: 1,
     });
     kernel.setState({
       transferProgress: intervalProgress(kernelLoad, 0.38, 0.88),
       assemblyProgress: intervalProgress(kernelLoad, 0.46, 1),
+      readyProgress: intervalProgress(startInformation, 0.7, 1),
+      handoffProgress: intervalProgress(controlHandoff, 0.28, 0.72),
       landingProgress: intervalProgress(kernelLanding, 0.12, 0.82),
-      runningProgress: intervalProgress(kernelLanding, 0.72, 1),
+      runningProgress: Math.max(
+        intervalProgress(controlHandoff, 0.28, 0.72),
+        intervalProgress(kernelLanding, 0.72, 1),
+      ),
       opacity: 1,
     });
     bootInformation.setState({

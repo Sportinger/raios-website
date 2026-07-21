@@ -19,7 +19,12 @@ export function createKernelChapter({ cameraRig, lightRig }) {
     update(progress) {
       cameraRig.reset();
       lightRig.setIntensity(1);
-      hardware.setState({ hardwareProgress: 1, initializationProgress: 1, opacity: 1 });
+      hardware.setState({
+        hardwareProgress: 1,
+        initializationProgress: 1,
+        firmwareRetiredProgress: 1,
+        opacity: 1,
+      });
       usb.setState({
         insertProgress: 1,
         searchProgress: 1,

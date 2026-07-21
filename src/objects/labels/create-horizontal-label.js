@@ -18,20 +18,22 @@ function wrapLines(context, copy, maximumWidth) {
   return lines;
 }
 
-function createLabelTexture(title, description = "") {
+function createLabelTexture(title, description = "", { panel = true } = {}) {
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
   canvas.height = 512;
   const context = canvas.getContext("2d");
 
   context.clearRect(0, 0, canvas.width, canvas.height);
-  context.fillStyle = "rgba(4, 9, 16, 0.82)";
-  context.strokeStyle = "rgba(113, 183, 255, 0.72)";
-  context.lineWidth = 5;
-  context.beginPath();
-  context.roundRect(18, 18, 988, 476, 32);
-  context.fill();
-  context.stroke();
+  if (panel) {
+    context.fillStyle = "rgba(4, 9, 16, 0.82)";
+    context.strokeStyle = "rgba(113, 183, 255, 0.72)";
+    context.lineWidth = 5;
+    context.beginPath();
+    context.roundRect(18, 18, 988, 476, 32);
+    context.fill();
+    context.stroke();
+  }
 
   context.fillStyle = "#eef1f5";
   context.font = "700 62px ui-monospace, SFMono-Regular, Consolas, monospace";
@@ -53,9 +55,9 @@ function createLabelTexture(title, description = "") {
   return texture;
 }
 
-export function createHorizontalLabel(title, description, width, depth) {
+export function createHorizontalLabel(title, description, width, depth, options) {
   const material = new THREE.MeshBasicMaterial({
-    map: createLabelTexture(title, description),
+    map: createLabelTexture(title, description, options),
     transparent: true,
     opacity: 0,
     depthWrite: false,

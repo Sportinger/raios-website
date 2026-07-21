@@ -46,23 +46,25 @@ export function createKernelPlatform() {
     platformGroup.add(mesh);
     return { joinedPosition, mesh };
   });
-  const label = createHorizontalLabel(
-    "RUST KERNEL · SURVIVAL CORE",
-    "",
-    KERNEL_PLATFORM_CONFIG.width * 0.65,
-    KERNEL_PLATFORM_CONFIG.depth * 0.42,
-  );
-  label.plane.position.y = KERNEL_PLATFORM_CONFIG.height / 2 + 0.018;
-  platformGroup.add(label.plane);
+  const statusLabels = [
+    createHorizontalLabel("RUST KERNEL · LOADING", "", 4.9, 1.65),
+    createHorizontalLabel("RUST KERNEL · READY", "", 4.9, 1.65),
+    createHorizontalLabel("RUST KERNEL · RUNNING", "", 4.9, 1.65),
+    createHorizontalLabel("RUST KERNEL · SURVIVAL CORE", "", 4.9, 1.65),
+  ];
+  statusLabels.forEach((statusLabel) => {
+    statusLabel.plane.position.y = KERNEL_PLATFORM_CONFIG.height / 2 + 0.018;
+    platformGroup.add(statusLabel.plane);
+  });
   const landingLight = new THREE.PointLight(0x4ecbff, 0, 7, 2);
   landingLight.position.y = 0.8;
   platformGroup.add(landingLight);
 
   const transferStream = createDataStream({
     points: [
-      new THREE.Vector3(4.35, 0.55, 1.4),
+      new THREE.Vector3(4.35, 0.55, 1.55),
       new THREE.Vector3(2.1, -0.15, 0.1),
-      new THREE.Vector3(0.45, -0.48, -1.55),
+      new THREE.Vector3(0.45, -0.48, -1.3),
       new THREE.Vector3(0.4, 1.05, -1.1),
       new THREE.Vector3(0, KERNEL_PLATFORM_CONFIG.hoverY, 0),
     ],
@@ -75,6 +77,8 @@ export function createKernelPlatform() {
   const setState = ({
     transferProgress = 0,
     assemblyProgress = 0,
+    readyProgress = 0,
+    handoffProgress = 0,
     landingProgress = 0,
     runningProgress = 0,
     opacity = 1,
@@ -101,7 +105,14 @@ export function createKernelPlatform() {
       mesh.scale.setScalar(THREE.MathUtils.lerp(0.35, 1, blockProgress));
     });
     const running = smootherstep(runningProgress);
-    label.material.opacity = smootherstep(intervalProgress(landing, 0.72, 1)) * opacity;
+    const ready = smootherstep(readyProgress);
+    const handoff = smootherstep(handoffProgress);
+    statusLabels[0].material.opacity = assembly * (1 - ready) * opacity;
+    statusLabels[1].material.opacity = ready * (1 - handoff) * opacity;
+    statusLabels[2].material.opacity = handoff * (1 - landing) * opacity;
+    statusLabels[3].material.opacity = smootherstep(
+      intervalProgress(landing, 0.72, 1),
+    ) * opacity;
     blockMaterial.emissiveIntensity = THREE.MathUtils.lerp(0.12, 0.42, running);
     edgeMaterial.opacity = opacity * THREE.MathUtils.lerp(0.7, 1, running);
     landingLight.intensity = Math.sin(landing * Math.PI) * 4
