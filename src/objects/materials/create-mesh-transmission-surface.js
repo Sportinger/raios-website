@@ -52,6 +52,7 @@ export function createMeshTransmissionSurface({
   material.transparent = true;
 
   const surface = new THREE.Mesh(geometry, material);
+  const foregroundObjects = [];
   let currentBacksideThickness = backsideThickness;
   let renderingBuffer = false;
   const prepareRender = (renderer, scene, camera) => {
@@ -66,7 +67,11 @@ export function createMeshTransmissionSurface({
     const previousSide = material.side;
     const previousThickness = material.thickness;
     const previousBuffer = material.buffer;
+    const foregroundVisibility = foregroundObjects.map((object) => object.visible);
     surface.visible = false;
+    foregroundObjects.forEach((object) => {
+      object.visible = false;
+    });
     try {
       renderer.xr.enabled = false;
       renderer.toneMapping = THREE.NoToneMapping;
@@ -91,11 +96,17 @@ export function createMeshTransmissionSurface({
       renderer.toneMapping = previousToneMapping;
       renderer.xr.enabled = previousXrEnabled;
       surface.visible = true;
+      foregroundObjects.forEach((object, index) => {
+        object.visible = foregroundVisibility[index];
+      });
       renderingBuffer = false;
     }
   };
 
   return {
+    addForegroundObject(object) {
+      foregroundObjects.push(object);
+    },
     material,
     prepareRender,
     setOptics({ ior, frontThickness, backThickness }) {

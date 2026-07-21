@@ -147,10 +147,11 @@ export function createExpandingStageLayer({
   );
   label.plane.position.z = size[2] / 2 + 0.03;
   label.plane.rotation.x = 0;
-  label.plane.renderOrder = usesTransmission
-    ? surfaceRenderOrder - 1
-    : surfaceRenderOrder + 2;
+  label.plane.renderOrder = surfaceRenderOrder + 2;
   contentGroup.add(label.plane);
+  if (usesTransmission) {
+    transmissionSurface.addForegroundObject(label.plane);
+  }
   const scalingLabels = [label];
 
   const setState = ({
@@ -216,6 +217,9 @@ export function createExpandingStageLayer({
     },
     registerScalingLabel(scalingLabel) {
       scalingLabels.push(scalingLabel);
+    },
+    registerTransmissionForeground(object) {
+      transmissionSurface?.addForegroundObject(object);
     },
     setState,
     dispose() {

@@ -34,6 +34,7 @@ export function createInfoCard({
   edgeColor = 0x68c9ff,
   labelPlacement = "front",
   labelOptions,
+  renderOrder = 5,
 }) {
   const group = new THREE.Group();
   group.name = `info-card:${title.toLowerCase().replaceAll(" ", "-")}`;
@@ -55,7 +56,7 @@ export function createInfoCard({
     transparent: true,
   });
   const body = new THREE.Mesh(geometry, material);
-  body.renderOrder = 5;
+  body.renderOrder = renderOrder;
   contentGroup.add(body);
   const edgeMaterial = new THREE.LineBasicMaterial({
     color: edgeColor,
@@ -67,7 +68,7 @@ export function createInfoCard({
     new THREE.EdgesGeometry(geometry),
     edgeMaterial,
   );
-  edges.renderOrder = 6;
+  edges.renderOrder = renderOrder + 1;
   contentGroup.add(edges);
   const footprintPoints = createFootprintPoints(width, height, depth);
   const outlineGeometry = new THREE.BufferGeometry().setFromPoints(footprintPoints);
@@ -80,7 +81,7 @@ export function createInfoCard({
     transparent: true,
   });
   const outline = new THREE.Line(outlineGeometry, outlineMaterial);
-  outline.renderOrder = 6;
+  outline.renderOrder = renderOrder + 1;
   group.add(outline);
   const labelDepth = labelPlacement === "front" ? height / 0.7 : depth;
   const label = createHorizontalLabel(
@@ -101,7 +102,7 @@ export function createInfoCard({
   } else {
     label.plane.position.y = height / 2 + 0.008;
   }
-  label.plane.renderOrder = 7;
+  label.plane.renderOrder = renderOrder + 2;
   group.add(label.plane);
 
   const setState = ({

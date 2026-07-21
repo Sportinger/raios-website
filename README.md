@@ -134,9 +134,10 @@ planparallele Gleichförmigkeit auf. Helle Absorption und reduzierte
 Umgebungsreflexion halten das vollständige Glasvolumen zugleich durchsichtig.
 Ein einklappbares Live-Panel steuert IOR, Vorder- und Rückseitendicke sowie die
 Rotation der HDR-Umgebung, ohne die Szene neu aufzubauen.
-Transparente Beschriftungen und interne Bauteile rendern mit den Ordnungen
-`5–7` vor dem finalen Glaspass auf Ordnung `20`, damit keine ungebrochene zweite
-Darstellung den Transmission-Pass überdeckt.
+Der physische SPI-Flash bleibt unter dem Glas und damit Bestandteil der
+gebrochenen Szene. UEFI-Seitentitel, Boot Manager und USB Boot stehen dagegen
+auf dem Glas: Sie werden aus beiden Transmission-Buffern ausgeschlossen und
+anschließend mit den Ordnungen `22` beziehungsweise `25–27` scharf gerendert.
 Das Material schreibt bewusst keine Tiefe. Eine segmentierte Fase
 ersetzt die harte Boxkante, damit Reflexion und Brechung an den Rändern
 räumlich lesbar sind.

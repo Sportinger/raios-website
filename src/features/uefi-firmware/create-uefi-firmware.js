@@ -76,9 +76,11 @@ export function createUefiFirmware({ sourceAnchor }) {
       color: UEFI_FIRMWARE_CONFIG.color,
       edgeColor: 0x76ddff,
       labelPlacement: "front",
+      renderOrder: 25,
     });
     service.group.position.fromArray(definition.position);
     group.add(service.group);
+    stageLayer.registerTransmissionForeground(service.group);
     return { definition, service };
   });
   const usbService = UEFI_FIRMWARE_CONFIG.services.find(
