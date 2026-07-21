@@ -9,8 +9,17 @@ export function createWorld() {
   const environment = new THREE.Group();
   environment.name = "environment";
   const lightRig = createLightRig();
-  environment.add(lightRig.group, createStarField(170));
+  const starField = createStarField(170);
+  starField.setOpacity(0);
+  environment.add(lightRig.group, starField.group);
   scene.add(environment);
 
-  return { environment, lightRig, scene };
+  return {
+    environment,
+    lightRig,
+    scene,
+    setBackgroundProgress(progress) {
+      starField.setOpacity(progress);
+    },
+  };
 }

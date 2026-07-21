@@ -9,8 +9,11 @@ import { createViewport } from "../runtime/create-viewport.js";
 import { createWorld } from "../runtime/create-world.js";
 import { createChapterNavigation } from "../ui/chapter-navigation/create-chapter-navigation.js";
 import { createScrollDebug } from "../ui/scroll-debug/index.js";
+import { intervalProgress, smootherstep } from "../animation/progress.js";
 
 const SCROLL_VIEWPORTS_PER_WEIGHT = 620;
+const BACKGROUND_REVEAL_START = 0.0281;
+const BACKGROUND_REVEAL_END = 0.045;
 
 export function createApp({
   canvas,
@@ -23,6 +26,7 @@ export function createApp({
   }
 
   const renderer = createRenderer(canvas);
+  const viewportElement = canvas.closest(".viewport");
   const camera = createCamera();
   const cameraRig = createCameraRig(camera);
   const world = createWorld();
@@ -45,6 +49,16 @@ export function createApp({
   const renderAt = (progress) => {
     currentProgress = progress;
     const storyProgress = motionPreference.matches ? reducedMotionProgress : progress;
+    const backgroundProgress = smootherstep(intervalProgress(
+      storyProgress,
+      BACKGROUND_REVEAL_START,
+      BACKGROUND_REVEAL_END,
+    ));
+    world.setBackgroundProgress(backgroundProgress);
+    viewportElement?.style.setProperty(
+      "--background-reveal",
+      backgroundProgress.toFixed(4),
+    );
     story.update(storyProgress, motionPreference.matches ? 0 : animationTime);
     chapterNavigation?.setProgress(storyProgress);
     scrollDebug.setProgress(storyProgress);

@@ -93,13 +93,18 @@ immer dasselbe Seitenverhältnis; Text wird durch Font-Fitting statt durch
 nicht-uniforme Elternskalierung für alle registrierten Labels, sodass Glyphen
 weder während des Aufbaus noch im Endzustand gestaucht werden.
 
-Die Limine-Schicht besitzt exakt zwei Funktionsobjekte: `CONFIG · SELECT BOOT
-ENTRY` und `KERNEL LOADER · LOAD ELF IMAGE`. Es steigen keine Signalströme und
-keine Datenpakete aus UEFI oder Bare Metal zu diesen Chips auf. Nur der interne
+Die Limine-Schicht besitzt exakt zwei einzeilig beschriftete Funktionsobjekte:
+`CONFIG` und `KERNEL LOADER`. Untertitel werden weder gerendert noch in den
+Labeltexturen vorgehalten. Es steigen keine Signalströme und keine Datenpakete
+aus UEFI oder Bare Metal zu diesen Chips auf. Nur der interne
 Pfad von CONFIG zum Loader wird während seiner aktiven Phase sichtbar. Die sechs
 Boot-Info-Karten bleiben ein separates späteres Übergabeereignis. Beim Handoff
 dimmen beide Chips, während nur die einmalige Tür und der letzte Kontrollimpuls
 aktiv bleiben.
+
+Der Seitentitel `LIMINE BOOT ENVIRONMENT` bleibt nach seinem Reveal während der
+gesamten Limine-Sequenz sichtbar. Er dimmt nicht beim Erscheinen von CONFIG oder
+KERNEL LOADER, sondern verschwindet erst mit dem gemeinsamen Layer-Rückzug.
 
 Alle Chipobjekte verwenden `objects/cards/create-info-card.js`. Das gemeinsame
 Reveal zeichnet zuerst ausschließlich den flachen Footprint als fortlaufenden

@@ -12,13 +12,11 @@ export const LIMINE_STAGE_CONFIG = Object.freeze({
     Object.freeze({
       id: "config",
       title: "CONFIG",
-      description: "SELECT BOOT ENTRY",
       x: 1.45,
     }),
     Object.freeze({
       id: "kernel-loader",
       title: "KERNEL LOADER",
-      description: "LOAD ELF IMAGE",
       x: -1.45,
     }),
   ]),

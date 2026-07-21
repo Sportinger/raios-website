@@ -25,5 +25,11 @@ export function createStarField(count) {
   });
   const points = new THREE.Points(geometry, material);
   points.name = "star-field";
-  return points;
+  return {
+    group: points,
+    setOpacity(opacity) {
+      material.opacity = THREE.MathUtils.clamp(opacity, 0, 1) * 0.35;
+      points.visible = material.opacity > 0.001;
+    },
+  };
 }

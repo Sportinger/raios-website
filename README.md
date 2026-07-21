@@ -32,6 +32,12 @@ weiterhin ausschließlich den dramaturgischen Zustand bestimmt. So können
 laufende Energieeffekte auch ohne Scrollereignis weiterfließen. Bei
 `prefers-reduced-motion` wird die Animationszeit auf null gesetzt.
 
+Der Hintergrund besitzt einen eigenen globalen Reveal und ist nicht an ein
+Kapitel-Keyframe gekoppelt. Bis `SCROLL 0.0281` bleiben CSS-Hintergrund und
+Sternfeld vollständig schwarz beziehungsweise unsichtbar. Zwischen `0.0281`
+und `0.0450` blenden beide gemeinsam per Smootherstep auf den normalen
+dunkelblauen Radialhintergrund ein. Szenenlichter bleiben davon unabhängig.
+
 ### Story und Kapitel
 
 `story/story-map.js` definiert Reihenfolge und relative Scrolllänge der Kapitel. Der Story-Controller übersetzt den globalen Scrollfortschritt in einen lokalen Wert zwischen `0` und `1` für jedes Kapitel.

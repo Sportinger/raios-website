@@ -34,7 +34,7 @@ export function createLimineStage() {
   group.name = "limine-stage";
   const stageLayer = createExpandingStageLayer({
     name: "limine-boot-stage",
-    title: "LIMINE BOOT STAGE",
+    title: "LIMINE BOOT ENVIRONMENT",
     sourcePosition: config.source,
     targetPosition: config.layer.position,
     sourceSize: config.sourceSize,
@@ -137,7 +137,7 @@ export function createLimineStage() {
       liftProgress: lift,
       expansionProgress,
       labelProgress: intervalProgress(expansionProgress, 0.18, 0.72),
-      labelOpacity: 1 - configIn,
+      labelOpacity: 1,
       retreatProgress,
       opacity,
     });
