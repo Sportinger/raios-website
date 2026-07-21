@@ -32,7 +32,7 @@ Nur Module unter `runtime/` greifen direkt auf Browserzustände wie Fenstergrö�
 
 Ein Kapitel entscheidet, wann etwas passiert. Es erstellt komplexe Features, fügt deren Gruppen in die Welt ein und steuert ausschließlich deren öffentliche API. Es greift nicht auf interne Meshes eines Features zu.
 
-Die rechte Kapitel-Navigation wird automatisch aus den Einträgen der `story-map.js` erzeugt. Ihre halb sichtbaren nummerierten Pills markieren das aktive Kapitel, fahren bei Hover beziehungsweise Tastaturfokus aus dem Rand und springen beim Aktivieren zum Kapitelanfang. Neue Story-Einträge erhalten ohne zusätzliches HTML automatisch die nächste Nummer. Bei reduzierter Bewegung wird das Kapitel ohne Scrollanimation direkt umgeschaltet.
+Die rechte Kapitel-Navigation beginnt oben mit Kapitel `1` und wird automatisch aus den Einträgen der `story-map.js` erzeugt. Ihre halb sichtbaren nummerierten Pills markieren das aktive Kapitel, fahren bei Hover beziehungsweise Tastaturfokus aus dem Rand und springen beim Aktivieren zum Kapitelanfang. Neue Story-Einträge erhalten ohne zusätzliches HTML automatisch die nächste Nummer. Bei reduzierter Bewegung wird das Kapitel ohne Scrollanimation direkt umgeschaltet.
 
 ### Features
 

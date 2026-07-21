@@ -43,12 +43,11 @@ body {
 .chapter-navigation {
   position: absolute;
   z-index: 10;
-  top: 50%;
+  top: 1rem;
   right: 0;
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  transform: translateY(-50%);
 }
 
 .chapter-navigation__pill {
@@ -120,6 +119,7 @@ body {
 
 @media (max-width: 520px) {
   .chapter-navigation {
+    top: 0.75rem;
     gap: 0.5rem;
   }
 
