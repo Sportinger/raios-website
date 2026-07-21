@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { intervalProgress, smootherstep } from "../../animation/progress.js";
-import { createDataStream } from "../../objects/effects/data-stream/index.js";
 import { createHorizontalLabel } from "../../objects/labels/create-horizontal-label.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 import { BOOT_USB_CONFIG } from "./config.js";
@@ -48,19 +47,6 @@ export function createBootUsb() {
   bodyGroup.add(label.plane);
   group.add(bodyGroup);
 
-  const searchPulse = createDataStream({
-    points: [
-      new THREE.Vector3(4.85, -0.25, 1.55),
-      new THREE.Vector3(3.72, -0.79, 1.55),
-      new THREE.Vector3(3.42, -0.18, 1.42),
-      new THREE.Vector3(2.92, 0.36, 1.16),
-      new THREE.Vector3(2.35, 0.6, 0.9),
-    ],
-    count: 7,
-    blockSize: [0.13, 0.08, 0.22],
-    trailLength: 0.28,
-  });
-  group.add(searchPulse.group);
   const startPosition = new THREE.Vector3().fromArray(BOOT_USB_CONFIG.startPosition);
   const dockedPosition = new THREE.Vector3().fromArray(BOOT_USB_CONFIG.dockedPosition);
 
@@ -85,7 +71,6 @@ export function createBootUsb() {
     bodyEdges.material.opacity = opacity * THREE.MathUtils.lerp(1, 0.3, dim);
     label.material.opacity = smootherstep(intervalProgress(insert, 0.45, 0.85))
       * opacity;
-    searchPulse.setState({ progress: searchProgress, opacity });
   };
   setState();
 
@@ -93,7 +78,6 @@ export function createBootUsb() {
     group,
     setState,
     dispose() {
-      searchPulse.dispose();
       disposeObject3D(bodyGroup);
       group.removeFromParent();
     },

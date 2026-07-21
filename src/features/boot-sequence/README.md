@@ -39,8 +39,13 @@ USB-Stick → USB Boot Service → Boot Manager → Limine → Rust-Kernel
 USB Boot Service sitzt rechts direkt über dem physischen Port und Boot Manager
 in der Mitte. Aus `BOOTX64.EFI` wächst darüber die vollständige Limine-Schicht;
 auf ihr läuft der Pfad von rechts nach links durch `CONFIG`, `KERNEL LOADER` und
-`HANDOFF`. Jeder Übergang besitzt einen eigenen Zustand: Der physische USB-Pfad
-dimmt vor dem einzelnen `BOOTX64.EFI`-Paket, dessen Pfad dimmt vor der
+`HANDOFF`. Der physische USB-Pfad verwendet dasselbe wiederverwendbare
+`connections/cable` wie der Power-on-Link. Seine feature-spezifische Route steigt
+zunächst gerade aus dem Port und läuft danach in einer weichen Kurve unter den
+USB-Service; die fortschreitende Materialaktivierung und schmale Energieringe
+zeigen die Leserichtung ohne eine separate Blockkette. Jeder Übergang besitzt
+einen eigenen Zustand: Der physische USB-Pfad dimmt vor dem einzelnen
+`BOOTX64.EFI`-Paket, dessen Pfad dimmt vor der
 Limine-Entfaltung, und anschließend bleibt nur der aktuelle Kernel-Datenpfad
 aktiv. Einen rückwärts laufenden Suchstrom oder kreuzende Leitungen gibt es nicht.
 

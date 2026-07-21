@@ -43,6 +43,7 @@ export function createBootSequence() {
       layerProgress: intervalProgress(firmware, 0, 0.78),
       usbServiceProgress: intervalProgress(firmware, 0.72, 1),
       bootManagerProgress: intervalProgress(bootUsb, 0.55, 0.78),
+      usbPathProgress: intervalProgress(bootUsb, 0.08, 0.3),
       usbActivityProgress: intervalProgress(bootUsb, 0.32, 0.66),
       bootEntryProgress: intervalProgress(bootUsb, 0.7, 0.98),
       retreatProgress: intervalProgress(controlHandoff, 0.58, 1),
