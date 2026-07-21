@@ -125,6 +125,26 @@ export function createCameraRig(camera) {
       };
     },
 
+    createPoseTransition({
+      startPosition,
+      startTarget,
+      endPosition,
+      endTarget,
+      startUp = homeUp,
+      endUp = homeUp,
+      easing = smootherstep,
+    }) {
+      return {
+        update(progress) {
+          const easedProgress = easing(progress);
+          position.lerpVectors(startPosition, endPosition, easedProgress);
+          target.lerpVectors(startTarget, endTarget, easedProgress);
+          up.lerpVectors(startUp, endUp, easedProgress).normalize();
+          setPose(position, target, up);
+        },
+      };
+    },
+
     reset() {
       setPose(homePosition, homeTarget, homeUp);
     },

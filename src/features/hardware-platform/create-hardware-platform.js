@@ -37,7 +37,13 @@ export function createHardwarePlatform() {
     initializationProgress = 0,
     opacity = 1,
   } = {}) => {
-    bareMetal.setState({ revealProgress: 1, labelProgress: 1, opacity });
+    bareMetal.setState({
+      revealProgress: 1,
+      labelProgress: 1,
+      opacity,
+      elevationProgress: 1,
+      currentProgress: 1,
+    });
     components.forEach((component, index) => {
       const reveal = intervalProgress(
         hardwareProgress,

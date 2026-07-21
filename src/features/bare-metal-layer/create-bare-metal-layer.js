@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { smootherstep } from "../../animation/progress.js";
 import { createHorizontalLabel } from "../../objects/labels/create-horizontal-label.js";
+import { createSurfaceCurrent } from "../../objects/effects/surface-current/index.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 import { BARE_METAL_CONFIG } from "./config.js";
 
@@ -14,6 +15,8 @@ export function createBareMetalLayer() {
   );
   const material = new THREE.MeshStandardMaterial({
     color: BARE_METAL_CONFIG.color,
+    emissive: BARE_METAL_CONFIG.edgeColor,
+    emissiveIntensity: 0,
     metalness: 0.72,
     roughness: 0.36,
     transparent: true,
@@ -35,22 +38,40 @@ export function createBareMetalLayer() {
   label.plane.position.y = BARE_METAL_CONFIG.height / 2 + 0.012;
   group.add(label.plane);
 
+  const surfaceCurrent = createSurfaceCurrent({
+    width: BARE_METAL_CONFIG.width,
+    depth: BARE_METAL_CONFIG.depth,
+    height: BARE_METAL_CONFIG.height,
+  });
+  group.add(surfaceCurrent.group);
+
   return {
     group,
 
-    setState({ revealProgress, labelProgress, opacity }) {
+    setState({
+      revealProgress = 1,
+      labelProgress = 1,
+      opacity = 1,
+      elevationProgress = 1,
+      currentProgress = 0,
+    }) {
       const reveal = smootherstep(revealProgress);
-      const verticalScale = THREE.MathUtils.lerp(0.001, 1, reveal);
+      const elevation = smootherstep(elevationProgress);
+      const verticalScale = reveal * THREE.MathUtils.lerp(0.18, 1, elevation);
+      const surge = Math.sin(elevation * Math.PI);
       group.visible = opacity > 0.001 && reveal > 0.001;
       group.scale.set(1, verticalScale, 1);
       group.position.y = BARE_METAL_CONFIG.bottomY
-        + (BARE_METAL_CONFIG.height * verticalScale) / 2;
+        + (BARE_METAL_CONFIG.height * reveal) / 2;
       material.opacity = reveal * opacity;
+      material.emissiveIntensity = surge * 0.34;
       edgeMaterial.opacity = reveal * opacity * 0.82;
       label.material.opacity = smootherstep(labelProgress) * opacity;
+      surfaceCurrent.setState(currentProgress, opacity);
     },
 
     dispose() {
+      surfaceCurrent.dispose();
       disposeObject3D(group);
       group.removeFromParent();
     },

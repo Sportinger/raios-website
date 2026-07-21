@@ -1,6 +1,9 @@
 import * as THREE from "three";
 import { intervalProgress, smootherstep } from "../../animation/progress.js";
-import { BARE_METAL_TOP_DOWN_POSE } from "../shared/camera-poses.js";
+import {
+  BARE_METAL_IMPACT_POSE,
+  BARE_METAL_TOP_DOWN_POSE,
+} from "../shared/camera-poses.js";
 import { POWER_ON_TIMELINE } from "./timeline.js";
 
 export function orientObjectToCamera(group, objectPosition, cameraPosition) {
@@ -43,8 +46,8 @@ function createFlightPath({
     pathStart,
     aboveCable(0.12, 3.2, 1, 0.18),
     aboveCable(0.32, 4.6, 2.2, 0.42),
-    aboveCable(0.52, 7, 4.2, 0.7),
-    aboveCable(0.72, 9.5, 6.2, 0.92),
+    aboveCable(0.52, 6.1, 4.2, 0.7),
+    aboveCable(0.7, 7.4, 6.3, 0.92),
   ];
   return cameraRig.createHomeboundPath({
     easing: smootherstep,
@@ -63,8 +66,8 @@ function createFlightPath({
       new THREE.Vector3(0, 1, 0),
       new THREE.Vector3(0, 1, 0),
       new THREE.Vector3(0, 1, 0),
-      new THREE.Vector3(0, 0.92, -0.38).normalize(),
-      new THREE.Vector3(0, 0.55, -0.84).normalize(),
+      new THREE.Vector3(0, 1, 0),
+      new THREE.Vector3(0, 1, 0),
     ],
   });
 }
@@ -89,12 +92,27 @@ export function createPowerOnCameraChoreography({
   const topDownUp = new THREE.Vector3().fromArray(
     BARE_METAL_TOP_DOWN_POSE.up,
   );
+  const impactPosition = new THREE.Vector3().fromArray(
+    BARE_METAL_IMPACT_POSE.position,
+  );
+  const impactTarget = new THREE.Vector3().fromArray(
+    BARE_METAL_IMPACT_POSE.target,
+  );
+  const impactUp = new THREE.Vector3().fromArray(BARE_METAL_IMPACT_POSE.up);
   const flightPath = createFlightPath({
     cameraRig,
     curve,
     pathStart: orbit.endPosition,
     originalCameraStart: cameraStart,
     buttonPosition,
+    endPosition: impactPosition,
+    endTarget: impactTarget,
+    endUp: impactUp,
+  });
+  const topDownTransition = cameraRig.createPoseTransition({
+    startPosition: impactPosition,
+    startTarget: impactTarget,
+    startUp: impactUp,
     endPosition: topDownPosition,
     endTarget: topDownTarget,
     endUp: topDownUp,
@@ -118,6 +136,13 @@ export function createPowerOnCameraChoreography({
           progress,
           ...POWER_ON_TIMELINE.cameraOrbit,
         ), cameraTarget);
+        return;
+      }
+      if (progress >= POWER_ON_TIMELINE.cameraTopDown[0]) {
+        topDownTransition.update(intervalProgress(
+          progress,
+          ...POWER_ON_TIMELINE.cameraTopDown,
+        ));
         return;
       }
       const targetFollowWeight = 1 - smootherstep(intervalProgress(
