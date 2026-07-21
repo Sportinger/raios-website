@@ -57,6 +57,12 @@ export function createStory({ scene, context }) {
       });
     },
 
+    setUefiGlassOptics(settings) {
+      chapters.forEach(({ chapter }) => {
+        chapter.setUefiGlassOptics?.(settings);
+      });
+    },
+
     update(progress, animationTime = 0) {
       chapters.forEach(({ chapter, start, end, isLast, root }) => {
         const isActive = progress >= start && (progress < end || isLast);

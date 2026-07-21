@@ -7,6 +7,7 @@ import { createScrollDriver } from "../runtime/create-scroll-driver.js";
 import { createViewport } from "../runtime/create-viewport.js";
 import { createWorld } from "../runtime/create-world.js";
 import { createChapterNavigation } from "../ui/chapter-navigation/create-chapter-navigation.js";
+import { createGlassControls } from "../ui/glass-controls/index.js";
 import { createScrollDebug } from "../ui/scroll-debug/index.js";
 import { intervalProgress, smootherstep } from "../animation/progress.js";
 
@@ -19,11 +20,18 @@ const ENVIRONMENT_REVEAL_END = 0.0454;
 export function createApp({
   canvas,
   chapterNavigation: navigationContainer,
+  glassControls: glassControlsContainer,
   scrollDebug: scrollDebugContainer,
   stage,
 }) {
-  if (!canvas || !navigationContainer || !scrollDebugContainer || !stage) {
-    throw new Error("The scroll canvas, stage, navigation, and debug output are required");
+  if (
+    !canvas
+    || !navigationContainer
+    || !glassControlsContainer
+    || !scrollDebugContainer
+    || !stage
+  ) {
+    throw new Error("The scroll canvas, stage, controls, navigation, and debug output are required");
   }
 
   const renderer = createRenderer(canvas);
@@ -45,6 +53,18 @@ export function createApp({
   const scrollDebug = createScrollDebug({
     container: scrollDebugContainer,
     items: story.navigationItems,
+  });
+  const glassControls = createGlassControls({
+    container: glassControlsContainer,
+    onChange: ({
+      backThickness,
+      environmentRotation,
+      frontThickness,
+      ior,
+    }) => {
+      story.setUefiGlassOptics({ backThickness, frontThickness, ior });
+      world.setEnvironmentRotation(environmentRotation);
+    },
   });
   const renderScene = () => {
     story.prepareRender(renderer, world.scene, camera);
@@ -130,6 +150,7 @@ export function createApp({
       window.cancelAnimationFrame(animationFrame);
       unsubscribeMotion();
       chapterNavigation.dispose();
+      glassControls.dispose();
       scrollDebug.dispose();
       viewport.dispose();
       scrollDriver.dispose();

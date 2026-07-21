@@ -110,6 +110,9 @@ export function createBootSequence() {
     prepareRender(renderer, scene, camera) {
       uefi.prepareRender(renderer, scene, camera);
     },
+    setUefiGlassOptics(settings) {
+      uefi.setGlassOptics(settings);
+    },
     setSceneProgress,
     dispose() {
       hardware.dispose();

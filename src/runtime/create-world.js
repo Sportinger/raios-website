@@ -69,6 +69,9 @@ export function createWorld(renderer) {
       scene.environmentIntensity = STUDIO_ENVIRONMENT_INTENSITY
         * THREE.MathUtils.clamp(progress, 0, 1);
     },
+    setEnvironmentRotation(degrees) {
+      scene.environmentRotation.y = THREE.MathUtils.degToRad(degrees);
+    },
     dispose() {
       disposed = true;
       pmremGenerator.dispose();

@@ -52,6 +52,7 @@ export function createMeshTransmissionSurface({
   material.transparent = true;
 
   const surface = new THREE.Mesh(geometry, material);
+  let currentBacksideThickness = backsideThickness;
   let renderingBuffer = false;
   const prepareRender = (renderer, scene, camera) => {
     if (renderingBuffer || !surface.visible) {
@@ -76,7 +77,7 @@ export function createMeshTransmissionSurface({
       if (backsideTarget) {
         surface.visible = true;
         material.buffer = backsideTarget.texture;
-        material.thickness = backsideThickness;
+        material.thickness = currentBacksideThickness;
         material.side = THREE.BackSide;
         renderer.setRenderTarget(renderTarget);
         renderer.clear();
@@ -97,6 +98,11 @@ export function createMeshTransmissionSurface({
   return {
     material,
     prepareRender,
+    setOptics({ ior, frontThickness, backThickness }) {
+      material.ior = THREE.MathUtils.clamp(ior, 1, 2.33);
+      material.thickness = Math.max(0, frontThickness);
+      currentBacksideThickness = Math.max(0, backThickness);
+    },
     surface,
     dispose() {
       backsideTarget?.dispose();

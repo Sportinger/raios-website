@@ -190,6 +190,9 @@ export function createUefiFirmware({ sourceAnchor }) {
     prepareRender(renderer, scene, camera) {
       stageLayer.prepareRender(renderer, scene, camera);
     },
+    setGlassOptics(settings) {
+      stageLayer.setTransmissionOptics(settings);
+    },
     setState,
     dispose() {
       services.forEach(({ service }) => service.dispose());

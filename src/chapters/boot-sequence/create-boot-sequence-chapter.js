@@ -25,6 +25,10 @@ export function createBootSequenceChapter({ cameraRig, lightRig }) {
       sequence.prepareRender(renderer, scene, camera);
     },
 
+    setUefiGlassOptics(settings) {
+      sequence.setUefiGlassOptics(settings);
+    },
+
     update(progress, animationTime = 0) {
       lightRig.setIntensity(1);
       const scaledProgress = Math.min(

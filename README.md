@@ -132,6 +132,8 @@ Transmission-Material-Vorlage.
 Eine schwache niedrigfrequente Variation der optischen Flächennormale bricht die
 planparallele Gleichförmigkeit auf. Helle Absorption und reduzierte
 Umgebungsreflexion halten das vollständige Glasvolumen zugleich durchsichtig.
+Ein einklappbares Live-Panel steuert IOR, Vorder- und Rückseitendicke sowie die
+Rotation der HDR-Umgebung, ohne die Szene neu aufzubauen.
 Transparente Beschriftungen und interne Bauteile rendern mit den Ordnungen
 `5–7` vor dem finalen Glaspass auf Ordnung `20`, damit keine ungebrochene zweite
 Darstellung den Transmission-Pass überdeckt.
