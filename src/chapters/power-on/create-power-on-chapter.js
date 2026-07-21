@@ -59,21 +59,33 @@ function orientButtonToCamera(group, buttonPosition, cameraPosition) {
   group.quaternion.setFromRotationMatrix(basis);
 }
 
-function createCameraPath(cameraRig, cable, cameraStart, buttonPosition) {
-  const outward = cameraStart.clone().sub(buttonPosition).setY(0).normalize();
-  const aboveCable = (progress, height, distance) => (
-    cable.curve.getPoint(progress)
+function createCameraPath(
+  cameraRig,
+  cable,
+  pathStart,
+  originalCameraStart,
+  buttonPosition,
+) {
+  const profileSide = pathStart.clone().sub(buttonPosition).setY(0).normalize();
+  const originalSide = originalCameraStart.clone()
+    .sub(buttonPosition)
+    .setY(0)
+    .normalize();
+  const sideDirection = new THREE.Vector3();
+  const aboveCable = (progress, height, distance, orbitReturn) => {
+    sideDirection.lerpVectors(profileSide, originalSide, orbitReturn).normalize();
+    return cable.curve.getPoint(progress)
       .add(new THREE.Vector3(0, height, 0))
-      .addScaledVector(outward, distance)
-  );
+      .addScaledVector(sideDirection, distance);
+  };
 
   return cameraRig.createHomeboundPath({
     positions: [
-      cameraStart,
-      aboveCable(0.08, 3.7, 1.4),
-      aboveCable(0.3, 3.45, 1.15),
-      aboveCable(0.54, 3.2, 0.95),
-      aboveCable(0.78, 3.05, 0.72),
+      pathStart,
+      aboveCable(0.08, 3.7, 1.4, 0.16),
+      aboveCable(0.3, 3.45, 1.15, 0.4),
+      aboveCable(0.54, 3.2, 0.95, 0.68),
+      aboveCable(0.78, 3.05, 0.72, 0.9),
     ],
     targets: [
       buttonPosition,
@@ -100,9 +112,15 @@ export function createPowerOnChapter({ cameraRig }) {
     points: createCablePoints(buttonPosition, layerContact, cameraStart),
   });
   const bareMetal = createBareMetalLayer();
+  const cameraOrbit = cameraRig.createOrbit({
+    center: buttonPosition,
+    startPosition: cameraStart,
+    angle: Math.PI / 2,
+  });
   const cameraPath = createCameraPath(
     cameraRig,
     cable,
+    cameraOrbit.endPosition,
     cameraStart,
     buttonPosition,
   );
@@ -124,7 +142,7 @@ export function createPowerOnChapter({ cameraRig }) {
         revealProgress: intervalProgress(progress, ...POWER_ON_TIMELINE.buttonReveal),
         pressProgress: pressIn * (1 - settle * 0.18),
         powerProgress: intervalProgress(progress, ...POWER_ON_TIMELINE.power),
-        exitProgress: intervalProgress(progress, ...POWER_ON_TIMELINE.buttonExit),
+        exitProgress: 0,
       });
       cable.setRevealProgress(intervalProgress(
         progress, ...POWER_ON_TIMELINE.cableReveal,
@@ -134,9 +152,15 @@ export function createPowerOnChapter({ cameraRig }) {
       ));
       cable.setOpacity(1);
       bareMetal.setState({ revealProgress: 1, labelProgress: 1, opacity: 1 });
-      cameraPath.update(intervalProgress(
-        progress, ...POWER_ON_TIMELINE.cameraFlight,
-      ));
+      if (progress < POWER_ON_TIMELINE.cameraFlight[0]) {
+        cameraOrbit.update(intervalProgress(
+          progress, ...POWER_ON_TIMELINE.cameraOrbit,
+        ));
+      } else {
+        cameraPath.update(intervalProgress(
+          progress, ...POWER_ON_TIMELINE.cameraFlight,
+        ));
+      }
     },
 
     resize() {},

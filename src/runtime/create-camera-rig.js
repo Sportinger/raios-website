@@ -14,6 +14,22 @@ export function createCameraRig(camera) {
   };
 
   return {
+    createOrbit({ center, startPosition, angle, axis = new THREE.Vector3(0, 1, 0) }) {
+      const offset = startPosition.clone().sub(center);
+      const endPosition = offset.clone().applyAxisAngle(axis, angle).add(center);
+
+      return {
+        endPosition,
+
+        update(progress) {
+          position.copy(offset)
+            .applyAxisAngle(axis, angle * smootherstep(progress))
+            .add(center);
+          setPose(position, center);
+        },
+      };
+    },
+
     createHomeboundPath({ positions, targets }) {
       const positionCurve = new THREE.CatmullRomCurve3(
         [...positions, homePosition.clone()],

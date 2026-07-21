@@ -80,7 +80,7 @@ Für Reduced Motion setzt die Runtime den Storyfortschritt auf den fertigen Zust
 
 1. `chapters/power-on/` richtet den Power-Button frontal zur Startkamera aus, drückt ihn automatisch und blendet ihn nach dem Einschalten aus.
 2. Ein elektrisch blau leuchtendes Kabel beginnt mittig an der Rückseite des Buttons, läuft zunächst gerade aus dem Gehäuse, sinkt auf eine unsichtbare Bodenhöhe ab und schlängelt sich erst dort bis an die Seitenkante des weit entfernten `BARE METAL`-Layers. Ein heller ON-Impuls mit additivem Halo läuft sichtbar durch das Kabel. Button und Layer liegen auf derselben Welt-Höhe; der Layer ist von Anfang an räumlich vorhanden und wird nicht eingeblendet.
-3. Der Camera-Rig folgt einer eigenen Spline oberhalb des Kabelverlaufs und richtet den Blick schrittweise auf dessen weitere Punkte, bis der Layer erreicht ist.
+3. Statt den eingeschalteten Button auszublenden, umkreist ihn der Camera-Rig zunächst um 90 Grad nach rechts. Dadurch werden Button, rückseitiger Anschluss und Kabel im Profil sichtbar. Anschließend folgt eine zweite Kameraspline dem ON-Impuls oberhalb des Kabelverlaufs bis zum Layer und orbitiert während des Vorwärtsflugs kontinuierlich auf die ursprüngliche Kameraseite zurück; der Button verlässt dabei natürlich den Bildausschnitt.
 4. `chapters/kernel/` übernimmt anschließend und zeigt den Aufbau sowie die Unterteilung des Rust-Kernels.
 
 Die Zeitfenster und das räumliche Layout des Einschaltvorgangs liegen getrennt in `chapters/power-on/timeline.js` und `chapters/power-on/layout.js`. Form und Material des Buttons, Kabels und Layers gehören zu ihren Features beziehungsweise allgemeinen Objekten und enthalten keine Story-Zeitwerte.
