@@ -44,6 +44,15 @@ const CONTROL_DEFINITIONS = Object.freeze([
     value: 0.14,
     format: (value) => value.toFixed(2),
   }),
+  Object.freeze({
+    id: "surfaceRandomness",
+    label: "Zufall",
+    min: 0,
+    max: 1,
+    step: 0.01,
+    value: 0.72,
+    format: (value) => value.toFixed(2),
+  }),
 ]);
 
 export function createGlassControls({ container, onChange }) {

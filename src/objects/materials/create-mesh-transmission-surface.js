@@ -1,6 +1,9 @@
 import * as THREE from "three";
 import { MeshTransmissionMaterial } from "@pmndrs/vanilla/materials/MeshTransmissionMaterial.js";
-import { createProceduralGlassNormalMap } from "./create-procedural-glass-normal-map.js";
+import {
+  createProceduralGlassNormalMap,
+  updateProceduralGlassNormalMap,
+} from "./create-procedural-glass-normal-map.js";
 
 export function createMeshTransmissionSurface({
   geometry,
@@ -13,6 +16,7 @@ export function createMeshTransmissionSurface({
   distortionScale = 0.3,
   backside = false,
   backsideThickness = 0.5,
+  surfaceRandomness = 0.72,
   surfaceVariation = 0,
 }) {
   const renderTarget = new THREE.WebGLRenderTarget(resolution, resolution, {
@@ -53,7 +57,7 @@ export function createMeshTransmissionSurface({
   material.setValues(physicalOptions);
   material.transparent = true;
   const proceduralNormalMap = surfaceVariation > 0
-    ? createProceduralGlassNormalMap()
+    ? createProceduralGlassNormalMap({ randomness: surfaceRandomness })
     : null;
   if (proceduralNormalMap) {
     material.normalMap = proceduralNormalMap;
@@ -64,6 +68,7 @@ export function createMeshTransmissionSurface({
   const surface = new THREE.Mesh(geometry, material);
   const foregroundObjects = [];
   let currentBacksideThickness = backsideThickness;
+  let currentSurfaceRandomness = surfaceRandomness;
   let renderingBuffer = false;
   const prepareRender = (renderer, scene, camera) => {
     if (renderingBuffer || !surface.visible) {
@@ -123,6 +128,7 @@ export function createMeshTransmissionSurface({
       ior,
       frontThickness,
       backThickness,
+      surfaceRandomness: randomness = currentSurfaceRandomness,
       surfaceVariation: variation = material.normalScale.x,
     }) {
       material.ior = THREE.MathUtils.clamp(ior, 1, 2.33);
@@ -130,6 +136,14 @@ export function createMeshTransmissionSurface({
       currentBacksideThickness = Math.max(0, backThickness);
       if (proceduralNormalMap) {
         material.normalScale.setScalar(THREE.MathUtils.clamp(variation, 0, 0.5));
+        const nextRandomness = THREE.MathUtils.clamp(randomness, 0, 1);
+        if (Math.abs(nextRandomness - currentSurfaceRandomness) > 0.0001) {
+          currentSurfaceRandomness = nextRandomness;
+          updateProceduralGlassNormalMap(
+            proceduralNormalMap,
+            currentSurfaceRandomness,
+          );
+        }
       }
     },
     surface,

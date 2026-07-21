@@ -36,6 +36,7 @@ export function createExpandingStageLayer({
   distortionScale = 0.3,
   transmissionBackside = false,
   transmissionBacksideThickness = 0.5,
+  surfaceRandomness = 0.72,
   surfaceVariation = 0,
   surfaceOpacity = 0.8,
   surfaceRenderOrder = 0,
@@ -123,6 +124,7 @@ export function createExpandingStageLayer({
       distortionScale,
       backside: transmissionBackside,
       backsideThickness: transmissionBacksideThickness,
+      surfaceRandomness,
       surfaceVariation,
     })
     : null;

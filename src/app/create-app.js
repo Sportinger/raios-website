@@ -61,12 +61,14 @@ export function createApp({
       environmentRotation,
       frontThickness,
       ior,
+      surfaceRandomness,
       surfaceVariation,
     }) => {
       story.setUefiGlassOptics({
         backThickness,
         frontThickness,
         ior,
+        surfaceRandomness,
         surfaceVariation,
       });
       world.setEnvironmentRotation(environmentRotation);
