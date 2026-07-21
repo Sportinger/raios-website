@@ -89,12 +89,16 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
         progress,
         ...POWER_ON_TIMELINE.bareMetalActivation,
       );
+      const currentProgress = intervalProgress(
+        progress,
+        ...POWER_ON_TIMELINE.bareMetalCurrent,
+      );
       bareMetal.setState({
         revealProgress: 1,
         labelProgress: 1,
         opacity: 1,
         elevationProgress: activationProgress,
-        currentProgress: activationProgress,
+        currentProgress,
       });
       lightRig.setIntensity(smootherstep(intervalProgress(
         progress,

@@ -23,7 +23,7 @@ const fragmentShader = `
     float waveCenter = progress * 1.08;
     float wave = 1.0 - smoothstep(0.0, 0.115, abs(distanceFromContact - waveCenter));
     float poweredSurface = 1.0 - smoothstep(waveCenter - 0.32, waveCenter, distanceFromContact);
-    float edgeFade = smoothstep(0.0, 0.08, progress) * (1.0 - smoothstep(0.92, 1.0, progress));
+    float edgeFade = smoothstep(0.0, 0.025, progress) * (1.0 - smoothstep(0.92, 1.0, progress));
     float alpha = opacity * edgeFade * (wave * 0.46 + poweredSurface * 0.13);
     gl_FragColor = vec4(glowColor, alpha);
   }
