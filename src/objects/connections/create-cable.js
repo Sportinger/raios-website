@@ -14,23 +14,22 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
   const curve = new THREE.CatmullRomCurve3(points, false, "centripetal");
 
   const sheathGeometry = new THREE.TubeGeometry(curve, 128, 0.075, 10, false);
-  const sheathIdleColor = new THREE.Color(0x59636c);
-  const sheathPoweredColor = new THREE.Color(0x073257);
   const sheathMaterial = new THREE.MeshStandardMaterial({
-    color: sheathIdleColor,
-    emissive: accentColor,
-    emissiveIntensity: 0,
+    color: 0x59636c,
     metalness: 0.82,
     roughness: 0.2,
     transparent: true,
   });
   group.add(new THREE.Mesh(sheathGeometry, sheathMaterial));
 
-  const signalGeometry = new THREE.TubeGeometry(curve, 128, 0.022, 8, false);
-  const signalMaterial = new THREE.MeshBasicMaterial({
+  const signalGeometry = new THREE.TubeGeometry(curve, 128, 0.078, 10, false);
+  const signalMaterial = new THREE.MeshStandardMaterial({
     color: accentColor,
+    emissive: accentColor,
+    emissiveIntensity: 0.9,
+    metalness: 0.52,
+    roughness: 0.24,
     transparent: true,
-    toneMapped: false,
   });
   group.add(new THREE.Mesh(signalGeometry, signalMaterial));
 
@@ -70,24 +69,20 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
 
   let opacity = 1;
   let reveal = 0;
-  let power = 0;
   let signal = 0;
   let signalActive = false;
 
   const render = () => {
     const easedReveal = smootherstep(reveal);
-    const easedPower = smootherstep(power);
-    group.visible = opacity > 0.001 && easedReveal > 0.001;
-    sheathMaterial.color.copy(sheathIdleColor).lerp(sheathPoweredColor, easedPower);
-    sheathMaterial.emissiveIntensity = 0.72 * easedPower;
-    sheathMaterial.opacity = opacity;
-    signalMaterial.opacity = opacity * 0.9 * easedPower;
-    glowMaterial.opacity = opacity * 0.14 * easedPower;
-    setGeometryProgress(sheathGeometry, easedReveal);
-    setGeometryProgress(signalGeometry, easedReveal);
-    setGeometryProgress(glowGeometry, easedReveal);
-
     const signalProgress = smootherstep(signal);
+    group.visible = opacity > 0.001 && easedReveal > 0.001;
+    sheathMaterial.opacity = opacity;
+    signalMaterial.opacity = opacity * 0.9;
+    glowMaterial.opacity = opacity * 0.14;
+    setGeometryProgress(sheathGeometry, easedReveal);
+    setGeometryProgress(signalGeometry, Math.min(easedReveal, signalProgress));
+    setGeometryProgress(glowGeometry, Math.min(easedReveal, signalProgress));
+
     const signalEnvelope = signalActive
       ? Math.min(1, Math.max(0, (1 - signalProgress) / 0.08))
       : 0;
@@ -109,11 +104,6 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
 
     setRevealProgress(value) {
       reveal = value;
-      render();
-    },
-
-    setPowerProgress(value) {
-      power = value;
       render();
     },
 

@@ -154,9 +154,6 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
         exitProgress: 0,
       });
       cable.setRevealProgress(1);
-      cable.setPowerProgress(intervalProgress(
-        progress, ...POWER_ON_TIMELINE.cablePower,
-      ));
       const signalProgress = intervalProgress(
         progress, ...POWER_ON_TIMELINE.signalTravel,
       );

@@ -96,6 +96,9 @@ export function createPushButton({
     if (topMark?.glowMaterial) {
       topMark.glowMaterial.opacity = 0.3 * markGlow * opacity;
     }
+    if (topMark?.light) {
+      topMark.light.intensity = 2.2 * markGlow * opacity;
+    }
   };
 
   return {

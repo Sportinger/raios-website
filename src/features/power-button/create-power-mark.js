@@ -18,6 +18,9 @@ export function createPowerMark(color) {
     toneMapped: false,
   });
   const group = new THREE.Group();
+  const light = new THREE.PointLight(color, 0, 3.2, 2);
+  light.position.y = 0.14;
+  group.add(light);
 
   const arcPoints = [];
   for (let index = 0; index <= 28; index += 1) {
@@ -55,5 +58,5 @@ export function createPowerMark(color) {
   group.add(stemGlow);
 
   group.position.y = 0.158;
-  return { glowMaterial, group, material };
+  return { glowMaterial, group, light, material };
 }
