@@ -19,6 +19,7 @@ if ($currentBranch -ne "three.js") {
 }
 
 $python = (Get-Command python -ErrorAction Stop).Source
+$powershell = Join-Path $PSHOME "powershell.exe"
 $serverProcess = $null
 $serverUrl = $null
 
@@ -38,11 +39,11 @@ foreach ($port in 8091..8100) {
 
     $listener = Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue
     if (-not $listener) {
+        $serverCommand = "& '$python' -m http.server $port"
         $serverProcess = Start-Process `
-            -FilePath $python `
-            -ArgumentList @("-m", "http.server", "$port") `
+            -FilePath $powershell `
+            -ArgumentList @("-NoExit", "-NoProfile", "-Command", $serverCommand) `
             -WorkingDirectory $repoRoot `
-            -WindowStyle Hidden `
             -PassThru
         $serverUrl = $candidateUrl
         break
