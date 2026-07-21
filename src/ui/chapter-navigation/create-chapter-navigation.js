@@ -8,6 +8,7 @@ export function createChapterNavigation({ container, items, onSelect }) {
     button.type = "button";
     button.className = "chapter-navigation__pill";
     button.dataset.chapterId = item.id;
+    button.style.setProperty("--chapter-position", `${item.start * 100}%`);
     button.title = `${item.index + 1}. ${item.label}`;
     button.setAttribute("aria-label", `Zu Kapitel ${item.index + 1}: ${item.label}`);
     number.className = "chapter-navigation__number";

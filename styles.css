@@ -43,14 +43,17 @@ body {
 .chapter-navigation {
   position: absolute;
   z-index: 10;
-  top: 1rem;
+  top: 0;
   right: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
+  bottom: 0;
+  width: 4rem;
+  pointer-events: none;
 }
 
 .chapter-navigation__pill {
+  position: absolute;
+  top: var(--chapter-position);
+  right: 0;
   width: 4rem;
   height: 2.75rem;
   padding: 0;
@@ -62,6 +65,7 @@ body {
     inset 0 0 0 1px rgba(255, 255, 255, 0.025),
     0 0 1.4rem rgba(57, 154, 224, 0);
   cursor: pointer;
+  pointer-events: auto;
   transform: translateX(2rem);
   backdrop-filter: blur(12px);
   transition:
@@ -119,8 +123,7 @@ body {
 
 @media (max-width: 520px) {
   .chapter-navigation {
-    top: 0.75rem;
-    gap: 0.5rem;
+    width: 3.6rem;
   }
 
   .chapter-navigation__pill {
