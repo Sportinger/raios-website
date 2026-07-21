@@ -63,7 +63,8 @@ export function createExpandingStageLayer({
     contentGroup.position.copy(expansionPivot).negate();
   }
   const geometry = new THREE.BoxGeometry(...size);
-  const Material = transmission === undefined
+  const usesTransmission = transmission !== undefined;
+  const Material = !usesTransmission
     ? THREE.MeshStandardMaterial
     : THREE.MeshPhysicalMaterial;
   const materialOptions = {
@@ -72,11 +73,11 @@ export function createExpandingStageLayer({
     emissive,
     emissiveIntensity,
     metalness,
-    opacity: 0,
+    opacity: usesTransmission ? 1 : 0,
     roughness,
-    transparent: true,
+    transparent: !usesTransmission,
   };
-  if (transmission !== undefined) {
+  if (usesTransmission) {
     Object.assign(materialOptions, {
       attenuationColor,
       attenuationDistance,
@@ -151,10 +152,13 @@ export function createExpandingStageLayer({
     scalingLabels.forEach((scalingLabel) => {
       scalingLabel.setScaleCompensation(scaleX, scaleY, uniformLabelScale);
     });
-    material.opacity = Math.min(
-      1,
-      surfaceReveal * activeOpacity * surfaceOpacity * surfaceOpacityScale,
-    );
+    surface.visible = surfaceReveal > 0.001 && activeOpacity > 0.001;
+    if (!usesTransmission) {
+      material.opacity = Math.min(
+        1,
+        surfaceReveal * activeOpacity * surfaceOpacity * surfaceOpacityScale,
+      );
+    }
     material.emissiveIntensity = emissiveIntensity * emissiveIntensityScale;
     edgeMaterial.opacity = reveal * activeOpacity * edgeOpacity;
     label.material.opacity = smootherstep(labelProgress) * labelOpacity * activeOpacity;

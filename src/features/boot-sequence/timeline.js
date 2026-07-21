@@ -7,8 +7,6 @@ export const BOOT_TIMELINE = Object.freeze({
   uefi: Object.freeze({
     pattern: segment(0, 0.62),
     layer: segment(0, 0.78),
-    initialOpacityBoost: segment(0.78, 1),
-    opacityBoost: segment(0, 0.5),
     usbService: segment(0.72, 1),
     bootManager: segment(0.58, 0.76),
     usbPath: segment(0.32, 0.66),

@@ -38,18 +38,14 @@ Die Kernel-Landung beginnt bereits im Kontrollwechsel bei lokalem Fortschritt
 `0.40` und läuft ohne Neustart über die folgende Kapitelgrenze hinweg bis zur
 endgültigen Position auf dem Bare Metal.
 
-Die UEFI-Fläche startet nach ihrer Entfaltung mit `0.28` Materialdeckkraft. Ab
-dem Ende der Expansion wird die allgemeine `surfaceOpacityScale` über mehrere
-Scrollabschnitte weich von `1` auf rund `3.21` gefahren. Die Schicht erreicht damit erst
-im frühen USB-Abschnitt ihre endgültige Deckkraft `0.9` und verdeckt den
-darunterliegenden SPI-Flash fast vollständig, ohne Kanten oder Titel zusätzlich
-aufzuhellen.
+Die UEFI-Fläche verwendet unabhängig vom Scrollabschnitt vollständige
+physikalische Transmission. Sichtbarkeit und Form entstehen ausschließlich
+über Entfaltung, Brechung, Studio-Reflexionen, Volumenabsorption und die
+cyanfarbenen Kanten; eine nachträgliche Deckkraftverdichtung existiert nicht.
 
-UEFI und Limine schreiben trotz ihrer transparenten Materialien Tiefe. Ihre
-Flächen werden nach den Kabeloberflächen gerendert: Ein Kabelabschnitt hinter
-beziehungsweise innerhalb einer Softwareschicht wird dadurch von deren Farbe
-und Dichte beeinflusst, während ein geometrisch davorliegender Abschnitt klar
-bleibt. Der Kernel ist eine einzige ungeteilte Fläche mit `0.90` Deckkraft und
+UEFI schreibt als Transmission-Glas keine Tiefe. Limine bleibt eine
+alpha-basierte, tiefenschreibende Softwareschicht. Der Kernel ist eine einzige
+ungeteilte Fläche mit `0.90` Deckkraft und
 bleibt damit als eigene räumliche Ebene lesbar.
 
 Der Datenfluss besitzt eine feste Leserichtung von rechts nach links:

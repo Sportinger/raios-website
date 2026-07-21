@@ -97,9 +97,10 @@ Ein wiederverwendbares Objekt:
 
 UEFI, Limine und Rust-Kernel verwenden gemeinsam `objects/layers/expanding-stage-layer/`. Dieses
 Objekt kapselt Geometrie, Kanten, Seitentitel sowie Aufsteigen, Expansion und
-Rückzug. Eine zustandsbasierte `surfaceOpacityScale` erlaubt zusätzlich eine
-langsame Verdichtung nach der Entfaltung. Die Features liefern nur Quelle,
-Zielhöhe, Material und eigene Inhalte.
+Rückzug. Alpha-basierte Schichten können ihre Oberflächendichte steuern;
+Transmission-Materialien bleiben davon getrennt und werden nicht über
+`material.opacity` simuliert. Die Features liefern nur Quelle, Zielhöhe,
+Material und eigene Inhalte.
 `objects/layers/system-layer-preset.js` hält zusätzlich die identischen Maße von
 Bare Metal, UEFI, Limine und Rust-Kernel fest. Dadurch bleiben alle vollständigen
 Schichten deckungsgleich, ohne dieselben Zahlen oder Transformationsabläufe in
@@ -116,12 +117,11 @@ SPI Flash → UEFI → Boot Manager → Limine → Kernel Loader → Rust Kernel
 Ändert sich ein Chipmaß oder eine Position, wächst die abhängige Schicht damit
 automatisch aus dem neuen Footprint.
 
-Transparente Softwareschichten schreiben bewusst Tiefe und besitzen eine feste
-Renderreihenfolge. So werden Verbindungen hinter einer Schicht von deren Farbe
-und Deckkraft beeinflusst, während räumlich davorliegende Kabelteile sichtbar
-bleiben. UEFI verwendet physikalisches Volumenglas mit hoher Transmission und
-blauer Absorption über die Materialtiefe; Limine und Kernel verwenden eigene
-dunklere Transparenzwerte, damit der Schichtstapel unterscheidbar bleibt.
+Die Softwareschichten besitzen eine feste Renderreihenfolge. UEFI verwendet
+reines physikalisches Volumenglas mit vollständiger Transmission, Brechung und
+blauer Absorption über die Materialtiefe; es schreibt bewusst keine Tiefe.
+Limine und Kernel bleiben alpha-basierte, tiefenschreibende Schichten mit
+eigenen dunkleren Transparenzwerten, damit der Stapel unterscheidbar bleibt.
 
 Wiederkehrende Bewegungslogik gehört unter `animation/`. Dort liegen reine Funktionen für Intervalle, Easing, Tracks und Transformationsschemata. Kapitel bestimmen das Timing; Objekte setzen den übergebenen Zustand um.
 
