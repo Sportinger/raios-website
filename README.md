@@ -126,7 +126,8 @@ automatisch aus dem neuen Footprint.
 Die Softwareschichten besitzen eine feste Renderreihenfolge. UEFI verwendet
 reines physikalisches Volumenglas mit vollständiger Transmission, Brechung,
 leichter Dispersion und blauer Absorption über die Materialtiefe; es schreibt
-bewusst keine Tiefe.
+bewusst keine Tiefe. Eine segmentierte Fase ersetzt bei diesem Material die
+harte Boxkante, damit Reflexion und Brechung an den Rändern räumlich lesbar sind.
 Limine und Kernel bleiben alpha-basierte, tiefenschreibende Schichten mit
 eigenen dunkleren Transparenzwerten, damit der Stapel unterscheidbar bleibt.
 

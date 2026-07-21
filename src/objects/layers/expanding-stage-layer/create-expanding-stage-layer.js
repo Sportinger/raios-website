@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { smootherstep } from "../../../animation/progress.js";
 import { disposeObject3D } from "../../../shared/dispose-object-3d.js";
 import { createHorizontalLabel } from "../../labels/create-horizontal-label.js";
@@ -29,6 +30,8 @@ export function createExpandingStageLayer({
   surfaceRenderOrder = 0,
   edgeOpacity = 1,
   depthWrite = false,
+  bevelRadius = 0,
+  bevelSegments = 4,
   recenterOnExpansion = false,
   retreatOffset = [-8, 0, 0],
   labelWidth = size[0] * 0.92,
@@ -63,8 +66,16 @@ export function createExpandingStageLayer({
     scalePivot.position.copy(expansionPivot);
     contentGroup.position.copy(expansionPivot).negate();
   }
-  const geometry = new THREE.BoxGeometry(...size);
   const usesTransmission = transmission !== undefined;
+  const geometry = bevelRadius > 0
+    ? new RoundedBoxGeometry(
+      size[0],
+      size[1],
+      size[2],
+      bevelSegments,
+      bevelRadius,
+    )
+    : new THREE.BoxGeometry(...size);
   const Material = !usesTransmission
     ? THREE.MeshStandardMaterial
     : THREE.MeshPhysicalMaterial;

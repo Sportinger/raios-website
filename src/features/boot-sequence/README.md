@@ -42,7 +42,8 @@ Die UEFI-Fläche verwendet unabhängig vom Scrollabschnitt vollständige
 physikalische Transmission. Sichtbarkeit und Form entstehen ausschließlich
 über Entfaltung, Brechung, leichte Dispersion, Studio-Reflexionen,
 Volumenabsorption und die cyanfarbenen Kanten; eine nachträgliche
-Deckkraftverdichtung existiert nicht.
+Deckkraftverdichtung existiert nicht. Die Glaskanten sind geometrisch gefast;
+eine schwache Linienkontur dient nur noch als Akzent.
 
 UEFI schreibt als Transmission-Glas keine Tiefe. Limine bleibt eine
 alpha-basierte, tiefenschreibende Softwareschicht. Der Kernel ist eine einzige
