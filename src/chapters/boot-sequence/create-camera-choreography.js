@@ -18,43 +18,20 @@ const USB_RETURN_ORBIT = Object.freeze({
   angle: THREE.MathUtils.degToRad(80),
 });
 
-const BOOT_CAMERA_POSES = Object.freeze([
-  Object.freeze({
-    position: Object.freeze([7.8, 4.8, 8.6]),
-    target: Object.freeze([-0.35, -0.58, 0.25]),
-    up: Object.freeze([0, 1, 0]),
-  }),
-  Object.freeze({
-    position: Object.freeze([6.15, 3.75, 7.25]),
-    target: Object.freeze([-0.55, -0.12, 0.35]),
-    up: Object.freeze([0, 1, 0]),
-  }),
-  Object.freeze({
-    position: Object.freeze([8.35, 3.15, 6.25]),
-    target: Object.freeze([2.35, -0.28, 0.72]),
-    up: Object.freeze([0, 1, 0]),
-  }),
-  Object.freeze({
-    position: Object.freeze([6.75, 3.45, 5.75]),
-    target: Object.freeze([0.85, 0.35, -0.62]),
-    up: Object.freeze([0, 1, 0]),
-  }),
-  Object.freeze({
-    position: Object.freeze([5.65, 4.55, 6.65]),
-    target: Object.freeze([0.45, 1.08, -0.3]),
-    up: Object.freeze([0, 1, 0]),
-  }),
-  Object.freeze({
-    position: Object.freeze([4.95, 5.25, 7.15]),
-    target: Object.freeze([0, 1.55, 0]),
-    up: Object.freeze([0, 1, 0]),
-  }),
-  Object.freeze({
-    position: Object.freeze([4.35, 3.65, 6.05]),
-    target: Object.freeze([0.1, 1.05, -0.45]),
-    up: Object.freeze([0, 1, 0]),
-  }),
-]);
+const CAMERA_FREEZE = Object.freeze({
+  // Local boot progress corresponding to global SCROLL 0.2738.
+  progress: 0.18938947368421058,
+  position: Object.freeze([
+    10.181333473174197,
+    5.311330455914445,
+    7.905153963253411,
+  ]),
+  target: Object.freeze([
+    0.02678466081151004,
+    -0.547704171930442,
+    -0.01913190057965003,
+  ]),
+});
 
 export function createBootCameraChoreography(cameraRig) {
   const startPosition = new THREE.Vector3().fromArray(
@@ -78,30 +55,13 @@ export function createBootCameraChoreography(cameraRig) {
     angle: USB_RETURN_ORBIT.angle,
     easing: (progress) => smootherstepWithMomentum(progress, 0.14),
   });
-  const orbitRadius = usbReturnOrbit.endPosition.clone().sub(startTarget);
-  const orbitTangent = new THREE.Vector3(
-    orbitRadius.z,
-    0,
-    -orbitRadius.x,
-  ).normalize().multiplyScalar(Math.sign(USB_RETURN_ORBIT.angle));
-  const orbitExitPosition = usbReturnOrbit.endPosition.clone()
-    .addScaledVector(orbitTangent, 1.15)
-    .add(new THREE.Vector3(0, 0.18, 0));
-  const path = cameraRig.createHomeboundPath({
-    positions: [
-      usbReturnOrbit.endPosition,
-      orbitExitPosition,
-      ...BOOT_CAMERA_POSES.map(({ position }) => (
-      new THREE.Vector3().fromArray(position)
-      )),
-    ],
-    targets: [startTarget, startTarget, ...BOOT_CAMERA_POSES.map(({ target }) => (
-      new THREE.Vector3().fromArray(target)
-    ))],
-    ups: [startUp, startUp, ...BOOT_CAMERA_POSES.map(({ up }) => (
-      new THREE.Vector3().fromArray(up)
-    ))],
-    easing: (progress) => smootherstepWithMomentum(progress, 0.18),
+  const freezeTransition = cameraRig.createPoseTransition({
+    startPosition: usbReturnOrbit.endPosition,
+    startTarget,
+    endPosition: new THREE.Vector3().fromArray(CAMERA_FREEZE.position),
+    endTarget: new THREE.Vector3().fromArray(CAMERA_FREEZE.target),
+    startUp,
+    endUp: startUp,
   });
 
   return {
@@ -122,7 +82,11 @@ export function createBootCameraChoreography(cameraRig) {
         ));
         return;
       }
-      path.update(intervalProgress(progress, USB_RETURN_ORBIT.end, 1));
+      freezeTransition.update(intervalProgress(
+        progress,
+        USB_RETURN_ORBIT.end,
+        CAMERA_FREEZE.progress,
+      ));
     },
   };
 }

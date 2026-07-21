@@ -14,12 +14,12 @@ Das frühere reine Bare-Metal-Unterkapitel existiert nicht mehr. Kapitel 1 stell
 die physische Plattform bereits fertig her; die erste Boot-Phase beginnt deshalb
 direkt mit UEFI und wird in der Navigation als Kapitel 2 veröffentlicht.
 
-Die Kamera bleibt Kapitelverantwortung. `chapters/boot-sequence/` verwendet den
-allgemeinen `createHomeboundPath()` des Camera-Rigs und fährt unabhängig von den
-Navigationsankern eine einzige kontinuierliche Spline. Der erste Pfadpunkt ist
-die gemeinsame schräge Boot-Pose aus Kapitel 1; erst der letzte Pfadpunkt führt
-zur Home-Pose. UEFI und USB bleiben daher in den sichtbaren Kapiteln 2 und 3
-perspektivisch und wechseln nicht in eine Draufsicht.
+Die Kamera bleibt Kapitelverantwortung. `chapters/boot-sequence/` beendet zuerst
+den UEFI-Reveal-Orbit und den USB-Rückorbit. Danach läuft sie nur noch weich bis
+zur bei global `SCROLL 0.2738` festgelegten Endpose aus. Ab diesem Wert existieren
+im Boot-Kapitel keine weiteren Kamera-Keyframes; die Pose bleibt für alle
+folgenden Boot-Phasen konstant. UEFI und USB bleiben dadurch perspektivisch und
+wechseln nicht in eine Draufsicht.
 
 Die visuelle Hierarchie ist bindend: Bare Metal und Rust-Kernel sind vollständige
 dauerhafte Schichten. UEFI und Limine sind temporäre vollständige
