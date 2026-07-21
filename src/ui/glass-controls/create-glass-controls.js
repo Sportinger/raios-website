@@ -35,6 +35,15 @@ const CONTROL_DEFINITIONS = Object.freeze([
     value: 66,
     format: (value) => `${Math.round(value)}°`,
   }),
+  Object.freeze({
+    id: "surfaceVariation",
+    label: "Oberfläche",
+    min: 0,
+    max: 0.5,
+    step: 0.01,
+    value: 0.14,
+    format: (value) => value.toFixed(2),
+  }),
 ]);
 
 export function createGlassControls({ container, onChange }) {

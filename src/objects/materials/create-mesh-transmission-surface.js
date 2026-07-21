@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { MeshTransmissionMaterial } from "@pmndrs/vanilla/materials/MeshTransmissionMaterial.js";
+import { createProceduralGlassNormalMap } from "./create-procedural-glass-normal-map.js";
 
 export function createMeshTransmissionSurface({
   geometry,
@@ -12,6 +13,7 @@ export function createMeshTransmissionSurface({
   distortionScale = 0.3,
   backside = false,
   backsideThickness = 0.5,
+  surfaceVariation = 0,
 }) {
   const renderTarget = new THREE.WebGLRenderTarget(resolution, resolution, {
     depthBuffer: true,
@@ -50,6 +52,14 @@ export function createMeshTransmissionSurface({
   });
   material.setValues(physicalOptions);
   material.transparent = true;
+  const proceduralNormalMap = surfaceVariation > 0
+    ? createProceduralGlassNormalMap()
+    : null;
+  if (proceduralNormalMap) {
+    material.normalMap = proceduralNormalMap;
+    material.normalScale.setScalar(surfaceVariation);
+    material.needsUpdate = true;
+  }
 
   const surface = new THREE.Mesh(geometry, material);
   const foregroundObjects = [];
@@ -109,14 +119,23 @@ export function createMeshTransmissionSurface({
     },
     material,
     prepareRender,
-    setOptics({ ior, frontThickness, backThickness }) {
+    setOptics({
+      ior,
+      frontThickness,
+      backThickness,
+      surfaceVariation: variation = material.normalScale.x,
+    }) {
       material.ior = THREE.MathUtils.clamp(ior, 1, 2.33);
       material.thickness = Math.max(0, frontThickness);
       currentBacksideThickness = Math.max(0, backThickness);
+      if (proceduralNormalMap) {
+        material.normalScale.setScalar(THREE.MathUtils.clamp(variation, 0, 0.5));
+      }
     },
     surface,
     dispose() {
       backsideTarget?.dispose();
+      proceduralNormalMap?.dispose();
       renderTarget.dispose();
     },
   };

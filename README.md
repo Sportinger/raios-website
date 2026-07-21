@@ -134,7 +134,9 @@ Eine schwache niedrigfrequente Variation der optischen Flächennormale bricht di
 planparallele Gleichförmigkeit auf. Helle Absorption und reduzierte
 Umgebungsreflexion halten das vollständige Glasvolumen zugleich durchsichtig.
 Ein einklappbares Live-Panel steuert IOR, Vorder- und Rückseitendicke sowie die
-Rotation der HDR-Umgebung, ohne die Szene neu aufzubauen.
+Rotation der HDR-Umgebung, ohne die Szene neu aufzubauen. Eine deterministisch
+erzeugte, nahtlos kachelbare Normalenstruktur variiert Reflexion und Brechung
+organisch; ihre Stärke lässt sich im selben Panel über `Oberfläche` einstellen.
 Der physische SPI-Flash bleibt unter dem Glas und damit Bestandteil der
 gebrochenen Szene. UEFI-Seitentitel, Boot Manager und USB Boot stehen dagegen
 auf dem Glas: Sie werden aus beiden Transmission-Buffern ausgeschlossen und

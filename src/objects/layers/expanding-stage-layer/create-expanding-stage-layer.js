@@ -36,6 +36,7 @@ export function createExpandingStageLayer({
   distortionScale = 0.3,
   transmissionBackside = false,
   transmissionBacksideThickness = 0.5,
+  surfaceVariation = 0,
   surfaceOpacity = 0.8,
   surfaceRenderOrder = 0,
   edgeOpacity = 1,
@@ -122,6 +123,7 @@ export function createExpandingStageLayer({
       distortionScale,
       backside: transmissionBackside,
       backsideThickness: transmissionBacksideThickness,
+      surfaceVariation,
     })
     : null;
   const material = transmissionSurface?.material

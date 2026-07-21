@@ -53,6 +53,7 @@ export function createUefiFirmware({ sourceAnchor }) {
     anisotropicBlur: 0.02,
     distortion: 0.035,
     distortionScale: 0.22,
+    surfaceVariation: 0.14,
     surfaceRenderOrder: 20,
     depthWrite: false,
     bevelRadius: 0.09,
