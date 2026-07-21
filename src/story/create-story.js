@@ -17,10 +17,22 @@ export function createStory({ scene, context }) {
     root.name = `chapter:${entry.id}`;
     root.add(chapter.group);
     scene.add(root);
-    return { chapter, end, isLast: index === STORY_MAP.length - 1, root, start };
+    return {
+      chapter,
+      end,
+      index,
+      isLast: index === STORY_MAP.length - 1,
+      label: entry.label,
+      root,
+      start,
+    };
   });
+  const navigationItems = chapters.map(({ chapter, end, index, label, start }) => (
+    Object.freeze({ end, id: chapter.id, index, label, start })
+  ));
 
   return {
+    navigationItems,
     totalWeight,
 
     update(progress) {

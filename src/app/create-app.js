@@ -7,12 +7,13 @@ import { createRenderer } from "../runtime/create-renderer.js";
 import { createScrollDriver } from "../runtime/create-scroll-driver.js";
 import { createViewport } from "../runtime/create-viewport.js";
 import { createWorld } from "../runtime/create-world.js";
+import { createChapterNavigation } from "../ui/chapter-navigation/create-chapter-navigation.js";
 
 const SCROLL_VIEWPORTS_PER_WEIGHT = 620;
 
-export function createApp({ canvas, stage }) {
-  if (!canvas || !stage) {
-    throw new Error("The scroll canvas and stage are required");
+export function createApp({ canvas, chapterNavigation: navigationContainer, stage }) {
+  if (!canvas || !navigationContainer || !stage) {
+    throw new Error("The scroll canvas, stage, and chapter navigation are required");
   }
 
   const renderer = createRenderer(canvas);
@@ -24,13 +25,29 @@ export function createApp({ canvas, stage }) {
     context: { cameraRig, lightRig: world.lightRig },
   });
   const motionPreference = createMotionPreference();
+  let reducedMotionProgress = 1;
+  let chapterNavigation = null;
 
   const renderAt = (progress) => {
-    story.update(motionPreference.matches ? 1 : progress);
+    const storyProgress = motionPreference.matches ? reducedMotionProgress : progress;
+    story.update(storyProgress);
+    chapterNavigation?.setProgress(storyProgress);
     renderer.render(world.scene, camera);
   };
 
   const scrollDriver = createScrollDriver({ stage, onProgress: renderAt });
+  chapterNavigation = createChapterNavigation({
+    container: navigationContainer,
+    items: story.navigationItems,
+    onSelect: (item) => {
+      if (motionPreference.matches) {
+        reducedMotionProgress = item.start;
+        renderAt(reducedMotionProgress);
+        return;
+      }
+      scrollDriver.scrollToProgress(item.start, "smooth");
+    },
+  });
   const viewport = createViewport({
     camera,
     renderer,
@@ -47,6 +64,7 @@ export function createApp({ canvas, stage }) {
   };
 
   const unsubscribeMotion = motionPreference.subscribe(() => {
+    reducedMotionProgress = scrollDriver.getProgress();
     updateScrollTravel();
     renderAt(scrollDriver.getProgress());
   });
@@ -57,6 +75,7 @@ export function createApp({ canvas, stage }) {
   return {
     dispose() {
       unsubscribeMotion();
+      chapterNavigation.dispose();
       viewport.dispose();
       scrollDriver.dispose();
       story.dispose();

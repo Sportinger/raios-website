@@ -21,6 +21,14 @@ export function createScrollDriver({ stage, onProgress }) {
   return {
     getProgress,
 
+    scrollToProgress(progress, behavior = "smooth") {
+      const travel = Math.max(0, stage.offsetHeight - window.innerHeight);
+      window.scrollTo({
+        behavior,
+        top: stage.offsetTop + travel * clamp(progress, 0, 1),
+      });
+    },
+
     dispose() {
       window.removeEventListener("scroll", scheduleRender);
       if (scrollFrame) window.cancelAnimationFrame(scrollFrame);
