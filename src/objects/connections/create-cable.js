@@ -15,9 +15,11 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
 
   const sheathGeometry = new THREE.TubeGeometry(curve, 128, 0.075, 10, false);
   const sheathMaterial = new THREE.MeshStandardMaterial({
-    color: 0x071019,
-    metalness: 0.62,
-    roughness: 0.34,
+    color: 0x073257,
+    emissive: accentColor,
+    emissiveIntensity: 0.72,
+    metalness: 0.48,
+    roughness: 0.28,
     transparent: true,
   });
   group.add(new THREE.Mesh(sheathGeometry, sheathMaterial));
@@ -30,16 +32,61 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
   });
   group.add(new THREE.Mesh(signalGeometry, signalMaterial));
 
+  const glowGeometry = new THREE.TubeGeometry(curve, 128, 0.13, 10, false);
+  const glowMaterial = new THREE.MeshBasicMaterial({
+    color: accentColor,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    opacity: 0.14,
+    transparent: true,
+    toneMapped: false,
+  });
+  group.add(new THREE.Mesh(glowGeometry, glowMaterial));
+
+  const pulse = new THREE.Group();
+  pulse.name = "power-impulse";
+  const pulseMaterial = new THREE.MeshBasicMaterial({
+    color: 0xe5f8ff,
+    toneMapped: false,
+  });
+  pulse.add(new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 14), pulseMaterial));
+
+  const pulseHaloMaterial = new THREE.MeshBasicMaterial({
+    color: accentColor,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    transparent: true,
+    toneMapped: false,
+  });
+  pulse.add(new THREE.Mesh(
+    new THREE.SphereGeometry(0.38, 20, 14),
+    pulseHaloMaterial,
+  ));
+  const pulseLight = new THREE.PointLight(accentColor, 0, 4.5, 2);
+  pulse.add(pulseLight);
+  group.add(pulse);
+
   let opacity = 1;
   let reveal = 0;
+  let signal = 0;
 
   const render = () => {
     const easedReveal = smootherstep(reveal);
     group.visible = opacity > 0.001 && easedReveal > 0.001;
     sheathMaterial.opacity = opacity;
     signalMaterial.opacity = opacity * 0.9;
+    glowMaterial.opacity = opacity * 0.14;
     setGeometryProgress(sheathGeometry, easedReveal);
     setGeometryProgress(signalGeometry, easedReveal);
+    setGeometryProgress(glowGeometry, easedReveal);
+
+    const signalProgress = smootherstep(signal);
+    const signalEnvelope = Math.pow(Math.sin(Math.PI * signalProgress), 0.35);
+    curve.getPointAt(signalProgress, pulse.position);
+    pulse.visible = group.visible && signalEnvelope > 0.001;
+    pulseMaterial.opacity = opacity * signalEnvelope;
+    pulseHaloMaterial.opacity = opacity * signalEnvelope * 0.34;
+    pulseLight.intensity = opacity * signalEnvelope * 5.5;
   };
 
   return {
@@ -53,6 +100,11 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
 
     setRevealProgress(value) {
       reveal = value;
+      render();
+    },
+
+    setSignalProgress(value) {
+      signal = value;
       render();
     },
 

@@ -107,6 +107,9 @@ export function createPowerOnChapter({ cameraRig }) {
       cable.setRevealProgress(intervalProgress(
         progress, ...POWER_ON_TIMELINE.cableReveal,
       ));
+      cable.setSignalProgress(intervalProgress(
+        progress, ...POWER_ON_TIMELINE.signalTravel,
+      ));
       cable.setOpacity(1);
       bareMetal.setState({ revealProgress: 1, labelProgress: 1, opacity: 1 });
       cameraPath.update(intervalProgress(
