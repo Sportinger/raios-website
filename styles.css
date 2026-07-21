@@ -40,6 +40,28 @@ body {
   height: 100%;
 }
 
+.scroll-debug {
+  position: absolute;
+  z-index: 10;
+  top: 1rem;
+  left: 1rem;
+  min-width: 10.5rem;
+  padding: 0.62rem 0.72rem;
+  border: 1px solid rgba(126, 211, 255, 0.2);
+  border-radius: 0.5rem;
+  color: rgba(222, 242, 255, 0.82);
+  background: rgba(5, 11, 18, 0.68);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.55;
+  letter-spacing: 0.035em;
+  pointer-events: none;
+  white-space: pre;
+  backdrop-filter: blur(10px);
+}
+
 .chapter-navigation {
   position: absolute;
   z-index: 10;
@@ -122,6 +144,13 @@ body {
 }
 
 @media (max-width: 520px) {
+  .scroll-debug {
+    top: 0.65rem;
+    left: 0.65rem;
+    min-width: 9.8rem;
+    font-size: 0.66rem;
+  }
+
   .chapter-navigation {
     width: 3.6rem;
   }

@@ -36,6 +36,8 @@ Die rechte Kapitel-Navigation bildet die gesamte Story als vertikale Mini-Timeli
 
 Ein langes Kapitel kann über `navigationSections` eigene, lokal normierte Unterkapitel veröffentlichen. Die Story rechnet deren Start- und Endwerte automatisch in globale Scrollpositionen um. Die Boot-Sequenz nutzt dies für die sichtbaren Kapitel 2–9, bleibt intern aber ein einziger Objektgraph. Dadurch werden komplexe Features und große Labeltexturen nicht achtfach dupliziert.
 
+Die Debug-Anzeige links oben nennt den globalen `SCROLL`-Fortschritt und den lokalen Fortschritt des aktiven sichtbaren `KAPITEL`-Abschnitts jeweils mit vier Nachkommastellen. Damit lassen sich Timing-Korrekturen eindeutig benennen, ohne Werte aus der Scrollposition schätzen zu müssen.
+
 ### Features
 
 Ein Feature ist ein komplexer, fachlich abgegrenzter Darsteller. `features/rust-kernel/` besitzt beispielsweise Konfiguration, Inhalt, Aufbau und Lifecycle des Rust-Kernels. `features/power-button/` kombiniert den allgemeinen Druckknopf mit dem raiOS-Power-Symbol. Ein Feature kennt weder die Scrollposition noch die Position seines Kapitels in der Gesamtgeschichte.

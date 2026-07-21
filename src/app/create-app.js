@@ -8,12 +8,18 @@ import { createScrollDriver } from "../runtime/create-scroll-driver.js";
 import { createViewport } from "../runtime/create-viewport.js";
 import { createWorld } from "../runtime/create-world.js";
 import { createChapterNavigation } from "../ui/chapter-navigation/create-chapter-navigation.js";
+import { createScrollDebug } from "../ui/scroll-debug/index.js";
 
 const SCROLL_VIEWPORTS_PER_WEIGHT = 620;
 
-export function createApp({ canvas, chapterNavigation: navigationContainer, stage }) {
-  if (!canvas || !navigationContainer || !stage) {
-    throw new Error("The scroll canvas, stage, and chapter navigation are required");
+export function createApp({
+  canvas,
+  chapterNavigation: navigationContainer,
+  scrollDebug: scrollDebugContainer,
+  stage,
+}) {
+  if (!canvas || !navigationContainer || !scrollDebugContainer || !stage) {
+    throw new Error("The scroll canvas, stage, navigation, and debug output are required");
   }
 
   const renderer = createRenderer(canvas);
@@ -27,11 +33,16 @@ export function createApp({ canvas, chapterNavigation: navigationContainer, stag
   const motionPreference = createMotionPreference();
   let reducedMotionProgress = 1;
   let chapterNavigation = null;
+  const scrollDebug = createScrollDebug({
+    container: scrollDebugContainer,
+    items: story.navigationItems,
+  });
 
   const renderAt = (progress) => {
     const storyProgress = motionPreference.matches ? reducedMotionProgress : progress;
     story.update(storyProgress);
     chapterNavigation?.setProgress(storyProgress);
+    scrollDebug.setProgress(storyProgress);
     renderer.render(world.scene, camera);
   };
 
@@ -76,6 +87,7 @@ export function createApp({ canvas, chapterNavigation: navigationContainer, stag
     dispose() {
       unsubscribeMotion();
       chapterNavigation.dispose();
+      scrollDebug.dispose();
       viewport.dispose();
       scrollDriver.dispose();
       story.dispose();
