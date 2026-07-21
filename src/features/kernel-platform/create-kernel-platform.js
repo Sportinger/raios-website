@@ -46,14 +46,26 @@ export function createKernelPlatform() {
     platformGroup.add(mesh);
     return { joinedPosition, mesh };
   });
+  const createKernelStatusLabel = (description) => createHorizontalLabel(
+    `RUST KERNEL · ${description}`,
+    "",
+    6.4,
+    KERNEL_PLATFORM_CONFIG.height / 0.7,
+    {
+      panel: false,
+      titleFont: "900 300px ui-monospace, SFMono-Regular, Consolas, monospace",
+      descriptionFont: "600 82px ui-monospace, SFMono-Regular, Consolas, monospace",
+    },
+  );
   const statusLabels = [
-    createHorizontalLabel("RUST KERNEL · LOADING", "", 4.9, 1.65),
-    createHorizontalLabel("RUST KERNEL · READY", "", 4.9, 1.65),
-    createHorizontalLabel("RUST KERNEL · RUNNING", "", 4.9, 1.65),
-    createHorizontalLabel("RUST KERNEL · SURVIVAL CORE", "", 4.9, 1.65),
+    createKernelStatusLabel("LOADING"),
+    createKernelStatusLabel("READY"),
+    createKernelStatusLabel("RUNNING"),
+    createKernelStatusLabel("SURVIVAL CORE"),
   ];
   statusLabels.forEach((statusLabel) => {
-    statusLabel.plane.position.y = KERNEL_PLATFORM_CONFIG.height / 2 + 0.018;
+    statusLabel.plane.position.z = KERNEL_PLATFORM_CONFIG.depth / 2 + 0.018;
+    statusLabel.plane.rotation.x = 0;
     platformGroup.add(statusLabel.plane);
   });
   const landingLight = new THREE.PointLight(0x4ecbff, 0, 7, 2);
@@ -62,10 +74,9 @@ export function createKernelPlatform() {
 
   const transferStream = createDataStream({
     points: [
-      new THREE.Vector3(4.35, 0.55, 1.55),
-      new THREE.Vector3(2.1, -0.15, 0.1),
-      new THREE.Vector3(0.45, -0.48, -1.3),
-      new THREE.Vector3(0.4, 1.05, -1.1),
+      new THREE.Vector3(0, 1.48, 0.9),
+      new THREE.Vector3(-0.45, 1.72, 0.66),
+      new THREE.Vector3(-0.25, 2.02, 0.34),
       new THREE.Vector3(0, KERNEL_PLATFORM_CONFIG.hoverY, 0),
     ],
     count: 24,

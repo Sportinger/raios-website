@@ -5,10 +5,17 @@ import {
 } from "../../animation/progress.js";
 import { BARE_METAL_BOOT_POSE } from "../shared/camera-poses.js";
 
-const UEFI_ORBIT = Object.freeze({
+const UEFI_REVEAL_ORBIT = Object.freeze({
   start: 0,
-  end: 0.143,
+  end: 0.12772330827067677,
   angle: THREE.MathUtils.degToRad(-70),
+});
+
+const USB_RETURN_ORBIT = Object.freeze({
+  // Corresponds to global scroll 0.2272 -> 0.2625 with the current story weights.
+  start: 0.12772330827067677,
+  end: 0.17443609022556397,
+  angle: THREE.MathUtils.degToRad(80),
 });
 
 const BOOT_CAMERA_POSES = Object.freeze([
@@ -59,24 +66,30 @@ export function createBootCameraChoreography(cameraRig) {
   const startUp = new THREE.Vector3().fromArray(
     BARE_METAL_BOOT_POSE.up,
   );
-  const uefiOrbit = cameraRig.createOrbit({
+  const uefiRevealOrbit = cameraRig.createOrbit({
     center: startTarget,
     startPosition,
-    angle: UEFI_ORBIT.angle,
+    angle: UEFI_REVEAL_ORBIT.angle,
     easing: (progress) => smootherstepWithMomentum(progress, 0.14),
   });
-  const orbitRadius = uefiOrbit.endPosition.clone().sub(startTarget);
+  const usbReturnOrbit = cameraRig.createOrbit({
+    center: startTarget,
+    startPosition: uefiRevealOrbit.endPosition,
+    angle: USB_RETURN_ORBIT.angle,
+    easing: (progress) => smootherstepWithMomentum(progress, 0.14),
+  });
+  const orbitRadius = usbReturnOrbit.endPosition.clone().sub(startTarget);
   const orbitTangent = new THREE.Vector3(
     orbitRadius.z,
     0,
     -orbitRadius.x,
-  ).normalize().multiplyScalar(Math.sign(UEFI_ORBIT.angle));
-  const orbitExitPosition = uefiOrbit.endPosition.clone()
+  ).normalize().multiplyScalar(Math.sign(USB_RETURN_ORBIT.angle));
+  const orbitExitPosition = usbReturnOrbit.endPosition.clone()
     .addScaledVector(orbitTangent, 1.15)
     .add(new THREE.Vector3(0, 0.18, 0));
   const path = cameraRig.createHomeboundPath({
     positions: [
-      uefiOrbit.endPosition,
+      usbReturnOrbit.endPosition,
       orbitExitPosition,
       ...BOOT_CAMERA_POSES.map(({ position }) => (
       new THREE.Vector3().fromArray(position)
@@ -93,15 +106,23 @@ export function createBootCameraChoreography(cameraRig) {
 
   return {
     update(progress) {
-      if (progress <= UEFI_ORBIT.end) {
-        uefiOrbit.update(intervalProgress(
+      if (progress <= UEFI_REVEAL_ORBIT.end) {
+        uefiRevealOrbit.update(intervalProgress(
           progress,
-          UEFI_ORBIT.start,
-          UEFI_ORBIT.end,
+          UEFI_REVEAL_ORBIT.start,
+          UEFI_REVEAL_ORBIT.end,
         ));
         return;
       }
-      path.update(intervalProgress(progress, UEFI_ORBIT.end, 1));
+      if (progress <= USB_RETURN_ORBIT.end) {
+        usbReturnOrbit.update(intervalProgress(
+          progress,
+          USB_RETURN_ORBIT.start,
+          USB_RETURN_ORBIT.end,
+        ));
+        return;
+      }
+      path.update(intervalProgress(progress, USB_RETURN_ORBIT.end, 1));
     },
   };
 }

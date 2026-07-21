@@ -36,7 +36,8 @@ export function createBareMetalLayer() {
     BARE_METAL_CONFIG.label.height,
     {
       panel: false,
-      titleFont: "900 360px ui-monospace, SFMono-Regular, Consolas, monospace",
+      titleFont: "900 310px ui-monospace, SFMono-Regular, Consolas, monospace",
+      descriptionFont: "600 86px ui-monospace, SFMono-Regular, Consolas, monospace",
     },
   );
   label.plane.position.set(0, 0, BARE_METAL_CONFIG.depth / 2 + 0.011);

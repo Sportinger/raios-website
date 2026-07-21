@@ -1,11 +1,9 @@
 import * as THREE from "three";
 import { intervalProgress } from "../../animation/progress.js";
-import { createBootInformation } from "../boot-information/index.js";
 import { createBootUsb } from "../boot-usb/index.js";
-import { createControlHandoff } from "../control-handoff/index.js";
 import { createHardwarePlatform } from "../hardware-platform/index.js";
 import { createKernelPlatform } from "../kernel-platform/index.js";
-import { createLimineBridge } from "../limine-bridge/index.js";
+import { createLimineStage } from "../limine-stage/index.js";
 import { createUefiFirmware } from "../uefi-firmware/index.js";
 import { BOOT_SCENES } from "./config.js";
 
@@ -15,18 +13,14 @@ export function createBootSequence() {
   const hardware = createHardwarePlatform();
   const uefi = createUefiFirmware();
   const usb = createBootUsb();
-  const limine = createLimineBridge();
+  const limine = createLimineStage();
   const kernel = createKernelPlatform();
-  const bootInformation = createBootInformation();
-  const handoff = createControlHandoff();
   group.add(
     hardware.group,
     uefi.group,
     usb.group,
     limine.group,
     kernel.group,
-    bootInformation.group,
-    handoff.group,
   );
 
   const setSceneProgress = (sceneIndex, progress) => {
@@ -37,10 +31,6 @@ export function createBootSequence() {
     });
     const [firmware, bootUsb, limineLoad, kernelLoad,
       startInformation, controlHandoff, kernelLanding] = phase;
-    const limineSearch = limineLoad < 1
-      ? intervalProgress(limineLoad, 0.68, 1) * 0.45
-      : 0.45 + kernelLoad * 0.55;
-
     hardware.setState({
       hardwareProgress: 1,
       initializationProgress: firmware,
@@ -51,26 +41,29 @@ export function createBootSequence() {
     uefi.setState({
       patternProgress: intervalProgress(firmware, 0, 0.62),
       layerProgress: intervalProgress(firmware, 0, 0.78),
-      serviceProgress: intervalProgress(firmware, 0.62, 1),
-      usbActivityProgress: intervalProgress(bootUsb, 0.18, 0.76),
-      retreatProgress: intervalProgress(controlHandoff, 0.72, 1),
+      usbServiceProgress: intervalProgress(firmware, 0.72, 1),
+      bootManagerProgress: intervalProgress(bootUsb, 0.55, 0.78),
+      usbActivityProgress: intervalProgress(bootUsb, 0.32, 0.66),
+      bootEntryProgress: intervalProgress(bootUsb, 0.7, 0.98),
+      retreatProgress: intervalProgress(controlHandoff, 0.58, 1),
       opacity: 1,
     });
     usb.setState({
-      insertProgress: intervalProgress(bootUsb, 0, 0.48),
-      searchProgress: intervalProgress(bootUsb, 0.42, 0.76),
+      insertProgress: intervalProgress(bootUsb, 0, 0.42),
+      searchProgress: intervalProgress(bootUsb, 0.32, 0.66),
       partitionProgress: intervalProgress(bootUsb, 0.62, 0.86),
       fileProgress: intervalProgress(bootUsb, 0.82, 1),
       dimProgress: kernelLanding,
       opacity: 1,
     });
     limine.setState({
-      loadProgress: intervalProgress(limineLoad, 0, 0.58),
-      bridgeProgress: intervalProgress(limineLoad, 0.32, 0.76),
-      searchProgress: limineSearch,
-      configurationProgress: intervalProgress(kernelLoad, 0, 0.42),
-      packageProgress: intervalProgress(kernelLoad, 0.24, 0.52),
-      retreatProgress: intervalProgress(controlHandoff, 0.72, 1),
+      bootEntryProgress: intervalProgress(limineLoad, 0, 0.28),
+      layerProgress: intervalProgress(limineLoad, 0.16, 0.72),
+      configProgress: intervalProgress(limineLoad, 0.64, 1),
+      kernelLoaderProgress: intervalProgress(kernelLoad, 0, 0.42),
+      handoffPrepareProgress: startInformation,
+      handoffProgress: intervalProgress(controlHandoff, 0.28, 0.72),
+      retreatProgress: intervalProgress(controlHandoff, 0.58, 1),
       opacity: 1,
     });
     kernel.setState({
@@ -85,18 +78,6 @@ export function createBootSequence() {
       ),
       opacity: 1,
     });
-    bootInformation.setState({
-      prepareProgress: intervalProgress(startInformation, 0, 0.58),
-      dockProgress: intervalProgress(startInformation, 0.36, 0.92),
-      consumeProgress: intervalProgress(controlHandoff, 0.46, 0.78),
-      opacity: 1,
-    });
-    handoff.setState({
-      openProgress: intervalProgress(controlHandoff, 0, 0.34),
-      impulseProgress: intervalProgress(controlHandoff, 0.28, 0.72),
-      closeProgress: intervalProgress(controlHandoff, 0.72, 1),
-      opacity: 1,
-    });
   };
   setSceneProgress(0, 0);
 
@@ -109,8 +90,6 @@ export function createBootSequence() {
       usb.dispose();
       limine.dispose();
       kernel.dispose();
-      bootInformation.dispose();
-      handoff.dispose();
       group.removeFromParent();
     },
   };

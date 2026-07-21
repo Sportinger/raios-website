@@ -10,6 +10,7 @@ export function createSpiFlash() {
   group.position.set(config.position[0], config.position[1], config.position[2]);
   const card = createInfoCard({
     title: config.title,
+    description: "",
     width: config.size[0],
     height: config.size[1],
     depth: config.size[2],
@@ -18,7 +19,8 @@ export function createSpiFlash() {
     labelPlacement: "front",
     labelOptions: {
       panel: false,
-      titleFont: "900 330px ui-monospace, SFMono-Regular, Consolas, monospace",
+      titleFont: "900 250px ui-monospace, SFMono-Regular, Consolas, monospace",
+      descriptionFont: "600 76px ui-monospace, SFMono-Regular, Consolas, monospace",
     },
   });
   group.add(card.group);

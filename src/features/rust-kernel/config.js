@@ -1,3 +1,5 @@
+import { SYSTEM_LAYER_SIZE } from "../../objects/layers/system-layer-preset.js";
+
 export const RUST_KERNEL_CONFIG = Object.freeze({
   baseY: -0.76,
   columns: 3,
@@ -6,9 +8,7 @@ export const RUST_KERNEL_CONFIG = Object.freeze({
   mergedLabel: "RUST KERNEL",
   survivalLabel: "RUST KERNEL · SURVIVAL CORE",
   layer: Object.freeze({
-    width: 7.4,
-    height: 0.72,
-    depth: 5.2,
+    ...SYSTEM_LAYER_SIZE,
     color: 0x080d15,
     edgeColor: 0x38526f,
     outlineColor: 0x6d9dce,

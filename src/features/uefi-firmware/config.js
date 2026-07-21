@@ -1,24 +1,24 @@
+import { SYSTEM_LAYER_SIZE } from "../../objects/layers/system-layer-preset.js";
+
 export const UEFI_FIRMWARE_CONFIG = Object.freeze({
   source: Object.freeze([0, -0.6, 0]),
   sourceSize: Object.freeze([1.55, 0.28, 0.58]),
   layerY: 0.12,
-  width: 7.05,
-  height: 0.64,
-  depth: 4.85,
+  ...SYSTEM_LAYER_SIZE,
   services: Object.freeze([
     Object.freeze({
       id: "boot-manager",
       title: "BOOT MANAGER",
-      description: "UEFI SERVICE",
-      position: [-1.35, 0.52, 0.45],
-      size: [1.55, 0.1, 0.72],
+      description: "SELECT EFI ENTRY",
+      position: [0, 0.6, 0.9],
+      size: [1.85, 0.28, 0.72],
     }),
     Object.freeze({
       id: "usb-boot-service",
-      title: "USB BOOT SERVICE",
-      description: "TEMPORARY DRIVER",
-      position: [1.7, 0.52, 1.05],
-      size: [1.8, 0.1, 0.68],
+      title: "USB BOOT",
+      description: "MASS STORAGE · FAT32",
+      position: [2.35, 0.6, 0.9],
+      size: [1.95, 0.28, 0.72],
     }),
   ]),
 });

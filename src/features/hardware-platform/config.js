@@ -1,7 +1,8 @@
 export const HARDWARE_PLATFORM_CONFIG = Object.freeze({
   topY: -0.76,
   spiFlash: Object.freeze({
-    title: "SPI FLASH · UEFI",
+    title: "SPI FLASH",
+    description: "UEFI IMAGE",
     position: [0, -0.6, 0],
     size: [1.55, 0.28, 0.58],
   }),

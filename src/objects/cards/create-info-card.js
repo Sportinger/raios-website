@@ -11,7 +11,7 @@ export function createInfoCard({
   depth = 0.72,
   color = 0x0a1622,
   edgeColor = 0x68c9ff,
-  labelPlacement = "top",
+  labelPlacement = "front",
   labelOptions,
 }) {
   const group = new THREE.Group();
@@ -39,7 +39,11 @@ export function createInfoCard({
     description,
     width,
     labelDepth,
-    labelOptions,
+    labelOptions ?? (labelPlacement === "front" ? {
+      panel: false,
+      titleFont: "900 220px ui-monospace, SFMono-Regular, Consolas, monospace",
+      descriptionFont: "600 72px ui-monospace, SFMono-Regular, Consolas, monospace",
+    } : undefined),
   );
   if (labelPlacement === "front") {
     label.plane.position.z = depth / 2 + 0.008;

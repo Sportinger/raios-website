@@ -22,11 +22,32 @@ zur Home-Pose. UEFI und USB bleiben daher in den sichtbaren Kapiteln 2 und 3
 perspektivisch und wechseln nicht in eine Draufsicht.
 
 Die visuelle Hierarchie ist bindend: Bare Metal und Rust-Kernel sind vollständige
-dauerhafte Schichten. UEFI ist eine temporäre vollständige Softwareschicht.
-SPI-Flash, USB-Port, Boot Manager und USB Boot Service sind Objekte; Limine ist
-nur ein kleines temporäres Deck. Der Stick dockt ausschließlich am physischen
-Port an. UEFI und Limine ziehen sich erst nach dem Handoff zurück, während der
-SPI-Flash als inaktive Hardware bestehen bleibt.
+dauerhafte Schichten. UEFI und Limine sind temporäre vollständige
+Softwareschichten. Alle vier Vollschichten beziehen Breite, Tiefe und Dicke aus
+dem gemeinsamen `SYSTEM_LAYER_SIZE`-Preset, liegen exakt auf derselben X/Z-Achse
+und unterscheiden sich im Stapel nur durch ihre Höhe. SPI-Flash, USB-Port, Boot
+Manager und USB Boot Service sind Objekte. Der Stick dockt ausschließlich am
+physischen Port an. UEFI und Limine ziehen sich erst nach dem Handoff gemeinsam
+zurück, während der SPI-Flash als inaktive Hardware bestehen bleibt.
+
+Der Datenfluss besitzt eine feste Leserichtung von rechts nach links:
+
+```text
+USB-Stick → USB Boot Service → Boot Manager → Limine → Rust-Kernel
+```
+
+USB Boot Service sitzt rechts direkt über dem physischen Port und Boot Manager
+in der Mitte. Aus `BOOTX64.EFI` wächst darüber die vollständige Limine-Schicht;
+auf ihr läuft der Pfad von rechts nach links durch `CONFIG`, `KERNEL LOADER` und
+`HANDOFF`. Jeder Übergang besitzt einen eigenen Zustand: Der physische USB-Pfad
+dimmt vor dem einzelnen `BOOTX64.EFI`-Paket, dessen Pfad dimmt vor der
+Limine-Entfaltung, und anschließend bleibt nur der aktuelle Kernel-Datenpfad
+aktiv. Einen rückwärts laufenden Suchstrom oder kreuzende Leitungen gibt es nicht.
+
+Beschriftungen liegen ausschließlich auf der zur Startkamera gerichteten
+Seitenfläche. Sichtbar ist nur der große, fette weiße Hauptbegriff; graue
+Erklärungszeilen werden nicht gerendert. Oberseiten bleiben für Lichtmuster,
+Teilungslinien und einfache Symbole frei.
 
 Sprechertexte, Sound und Untertitel gehören später in eine eigene Medien- bzw.
 Narrationsebene und werden nicht in 3D-Features hinterlegt.

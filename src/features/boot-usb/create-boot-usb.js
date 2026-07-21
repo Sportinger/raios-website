@@ -32,34 +32,29 @@ export function createBootUsb() {
   );
   connector.position.x = -bodyWidth / 2 - BOOT_USB_CONFIG.connectorSize[0] / 2;
   bodyGroup.add(connector);
-  const label = createHorizontalLabel("RAIOS BOOT USB", "", bodyWidth, bodyDepth);
-  label.plane.position.y = bodyHeight / 2 + 0.012;
+  const label = createHorizontalLabel(
+    "USB BOOT",
+    "",
+    bodyWidth,
+    bodyHeight / 0.7,
+    {
+      panel: false,
+      titleFont: "900 230px ui-monospace, SFMono-Regular, Consolas, monospace",
+      descriptionFont: "600 66px ui-monospace, SFMono-Regular, Consolas, monospace",
+    },
+  );
+  label.plane.position.z = bodyDepth / 2 + 0.012;
+  label.plane.rotation.x = 0;
   bodyGroup.add(label.plane);
-
-  const partitionLabel = createHorizontalLabel(
-    "EFI SYSTEM PARTITION · FAT32",
-    "",
-    bodyWidth * 0.92,
-    bodyDepth * 0.56,
-  );
-  partitionLabel.plane.position.set(0.12, bodyHeight / 2 + 0.035, 0);
-  bodyGroup.add(partitionLabel.plane);
-  const fileLabel = createHorizontalLabel(
-    "EFI/BOOT/BOOTX64.EFI",
-    "",
-    bodyWidth * 0.72,
-    bodyDepth * 0.34,
-  );
-  fileLabel.plane.position.set(0.05, bodyHeight / 2 + 0.055, 0);
-  bodyGroup.add(fileLabel.plane);
   group.add(bodyGroup);
 
   const searchPulse = createDataStream({
     points: [
       new THREE.Vector3(4.85, -0.25, 1.55),
       new THREE.Vector3(3.72, -0.79, 1.55),
-      new THREE.Vector3(3.0, -0.25, 1.42),
-      new THREE.Vector3(1.7, 0.28, 1.05),
+      new THREE.Vector3(3.42, -0.18, 1.42),
+      new THREE.Vector3(2.92, 0.36, 1.16),
+      new THREE.Vector3(2.35, 0.6, 0.9),
     ],
     count: 7,
     blockSize: [0.13, 0.08, 0.22],
@@ -79,17 +74,17 @@ export function createBootUsb() {
   } = {}) => {
     const insert = smootherstep(insertProgress);
     const dim = smootherstep(dimProgress);
+    const read = smootherstep(searchProgress);
     bodyGroup.position.lerpVectors(startPosition, dockedPosition, insert);
     bodyGroup.visible = insertProgress > 0.001;
-    bodyMaterial.emissiveIntensity = THREE.MathUtils.lerp(0.15, 0.04, dim);
+    bodyMaterial.emissiveIntensity = THREE.MathUtils.lerp(
+      0.15 + Math.sin(read * Math.PI) * 0.62,
+      0.04,
+      dim,
+    );
     bodyEdges.material.opacity = opacity * THREE.MathUtils.lerp(1, 0.3, dim);
     label.material.opacity = smootherstep(intervalProgress(insert, 0.45, 0.85))
-      * (1 - smootherstep(partitionProgress))
       * opacity;
-    partitionLabel.material.opacity = smootherstep(partitionProgress)
-      * (1 - smootherstep(fileProgress))
-      * opacity;
-    fileLabel.material.opacity = smootherstep(fileProgress) * opacity;
     searchPulse.setState({ progress: searchProgress, opacity });
   };
   setState();

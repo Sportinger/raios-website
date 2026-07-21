@@ -1,9 +1,9 @@
+import { SYSTEM_LAYER_SIZE } from "../../objects/layers/system-layer-preset.js";
+
 export const KERNEL_PLATFORM_CONFIG = Object.freeze({
-  width: 7.4,
-  height: 0.72,
-  depth: 5.2,
+  ...SYSTEM_LAYER_SIZE,
   hoverY: 2.35,
-  landedY: -0.4,
+  landedY: -0.44,
   columns: 3,
   rows: 2,
 });

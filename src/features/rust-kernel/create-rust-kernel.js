@@ -24,14 +24,22 @@ export function createRustKernel() {
     mergedLabel: RUST_KERNEL_CONFIG.mergedLabel,
   });
   const survivalLabel = createHorizontalLabel(
-    RUST_KERNEL_CONFIG.survivalLabel,
+    "RUST KERNEL · SURVIVAL CORE",
     "",
-    RUST_KERNEL_CONFIG.layer.width * 0.65,
-    RUST_KERNEL_CONFIG.layer.depth * 0.42,
+    RUST_KERNEL_CONFIG.layer.width * 0.86,
+    RUST_KERNEL_CONFIG.layer.height / 0.7,
+    {
+      panel: false,
+      titleFont: "900 300px ui-monospace, SFMono-Regular, Consolas, monospace",
+      descriptionFont: "600 82px ui-monospace, SFMono-Regular, Consolas, monospace",
+    },
   );
-  survivalLabel.plane.position.y = RUST_KERNEL_CONFIG.baseY
-    + RUST_KERNEL_CONFIG.layer.height
-    + 0.018;
+  survivalLabel.plane.position.set(
+    0,
+    RUST_KERNEL_CONFIG.baseY + RUST_KERNEL_CONFIG.layer.height / 2,
+    RUST_KERNEL_CONFIG.layer.depth / 2 + 0.018,
+  );
+  survivalLabel.plane.rotation.x = 0;
   group.add(base.group, sections.group, survivalLabel.plane);
 
   return {

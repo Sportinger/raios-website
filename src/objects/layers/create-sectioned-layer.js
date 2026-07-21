@@ -38,9 +38,18 @@ function createSectionPiece(options) {
   group.add(new THREE.LineSegments(new THREE.EdgesGeometry(geometry), edgeMaterial));
 
   const label = createHorizontalLabel(
-    definition.title, definition.description, cellWidth, cellDepth,
+    definition.title,
+    "",
+    cellWidth,
+    height / 0.7,
+    {
+      panel: false,
+      titleFont: "900 190px ui-monospace, SFMono-Regular, Consolas, monospace",
+      descriptionFont: "600 62px ui-monospace, SFMono-Regular, Consolas, monospace",
+    },
   );
-  label.plane.position.y = height / 2 + 0.018;
+  label.plane.position.z = cellDepth / 2 + 0.012;
+  label.plane.rotation.x = 0;
   group.add(label.plane);
 
   const joinedPosition = new THREE.Vector3(
@@ -106,8 +115,19 @@ export function createSectionedLayer(options) {
   }
   dividers.forEach((divider) => group.add(divider.line));
 
-  const finalLabel = createHorizontalLabel(mergedLabel, "", width * 0.52, depth * 0.34);
-  finalLabel.plane.position.set(0, topY + 0.012, 0);
+  const finalLabel = createHorizontalLabel(
+    mergedLabel,
+    "",
+    width * 0.86,
+    height / 0.7,
+    {
+      panel: false,
+      titleFont: "900 300px ui-monospace, SFMono-Regular, Consolas, monospace",
+      descriptionFont: "600 82px ui-monospace, SFMono-Regular, Consolas, monospace",
+    },
+  );
+  finalLabel.plane.position.set(0, bottomY + height / 2, depth / 2 + 0.018);
+  finalLabel.plane.rotation.x = 0;
   group.add(finalLabel.plane);
 
   const render = (progress) => {
