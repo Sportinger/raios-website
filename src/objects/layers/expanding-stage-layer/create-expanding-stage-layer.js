@@ -33,6 +33,7 @@ export function createExpandingStageLayer({
   anisotropicBlur = 0.08,
   distortion = 0.01,
   distortionScale = 0.3,
+  transmissionRefractionScale = 1,
   transmissionBackside = false,
   transmissionBacksideThickness = 0.5,
   surfaceOpacity = 0.8,
@@ -118,6 +119,7 @@ export function createExpandingStageLayer({
       anisotropicBlur,
       distortion,
       distortionScale,
+      refractionScale: transmissionRefractionScale,
       backside: transmissionBackside,
       backsideThickness: transmissionBacksideThickness,
     })
@@ -145,7 +147,9 @@ export function createExpandingStageLayer({
   );
   label.plane.position.z = size[2] / 2 + 0.03;
   label.plane.rotation.x = 0;
-  label.plane.renderOrder = surfaceRenderOrder + 2;
+  label.plane.renderOrder = usesTransmission
+    ? surfaceRenderOrder - 1
+    : surfaceRenderOrder + 2;
   contentGroup.add(label.plane);
   const scalingLabels = [label];
 

@@ -127,7 +127,14 @@ Die Softwareschichten besitzen eine feste Renderreihenfolge. UEFI verwendet
 einen eigenen Transmission-Pass: Vor dem Hauptbild wird die Szene ohne die
 Glasoberfläche in einen Half-Float-Buffer gerendert, den der Volumenshader mit
 IOR, Materialtiefe, chromatischer Aberration und blauer Absorption gebrochen
-abtastet. Das Material schreibt bewusst keine Tiefe. Eine segmentierte Fase
+abtastet. Der UEFI-Layer verstärkt die Länge des physikalisch berechneten
+Brechungswegs, damit der Versatz auf der großflächigen Tischtextur lesbar bleibt.
+Eine niedrigfrequente Variation der optischen Flächennormale bricht zusätzlich
+die planparallele Gleichförmigkeit auf, ohne die gerundete Geometrie zu verändern.
+Transparente Beschriftungen und interne Bauteile rendern mit den Ordnungen
+`5–7` vor dem finalen Glaspass auf Ordnung `20`, damit keine ungebrochene zweite
+Darstellung den Transmission-Pass überdeckt.
+Das Material schreibt bewusst keine Tiefe. Eine segmentierte Fase
 ersetzt die harte Boxkante, damit Reflexion und Brechung an den Rändern
 räumlich lesbar sind.
 Limine und Kernel bleiben alpha-basierte, tiefenschreibende Schichten mit
