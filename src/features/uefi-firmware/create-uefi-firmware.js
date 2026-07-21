@@ -137,13 +137,15 @@ export function createUefiFirmware() {
     });
     usbServiceCable.setState({
       headProgress: smootherstep(usbPathProgress),
+      tailProgress: cableRetreat,
       flowPhase,
-      opacity: activeOpacity * (1 - cableRetreat),
+      opacity: activeOpacity,
     });
     bootManagerCable.setState({
       headProgress: smootherstep(bootManagerPathProgress),
+      tailProgress: cableRetreat,
       flowPhase: flowPhase + 0.37,
-      opacity: activeOpacity * (1 - cableRetreat),
+      opacity: activeOpacity,
     });
   };
   setState();

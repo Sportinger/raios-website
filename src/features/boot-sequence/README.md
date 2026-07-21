@@ -85,13 +85,13 @@ Limine steigt zunächst als reiner Wireframe auf und beginnt seine Expansion
 ebenfalls ohne Fläche. Erst im späteren Teil der Expansion wird das Material
 langsam bis zur endgültigen Deckkraft eingeblendet.
 
-Sobald `KERNEL LOADER` vollständig extrudiert ist, startet an seinem Footprint
-ein geordneter Datenstrom. Aus exakt diesem Quellmaß steigt eine kompakte
-`RUST KERNEL`-Ebene hoch und expandiert über denselben modularen
+Sobald `KERNEL LOADER` vollständig extrudiert ist, steigt direkt aus exakt
+diesem Quellmaß eine kompakte `RUST KERNEL`-Ebene hoch und expandiert über den modularen
 `expanding-stage-layer` auf das vollständige Systemmaß. Der Kernel besteht dabei
 aus einer einzigen Fläche; die frühere 3×2-Blockmontage und alle Statussegmente
-existieren nicht mehr. Erst Wireframe, dann Fläche und Seitentitel werden
-sichtbar.
+existieren nicht mehr. Auch fliegende Datenfragmente, Übergabekarten, Tür und
+Kontrollimpuls werden nicht gerendert. Erst Wireframe, dann Fläche und
+Seitentitel werden sichtbar.
 
 Schichttitel liegen ausschließlich auf der zur Startkamera gerichteten
 Seitenfläche. Dort ist nur der große, fette weiße Hauptbegriff sichtbar;
@@ -106,10 +106,14 @@ Die Limine-Schicht besitzt exakt zwei einzeilig beschriftete Funktionsobjekte:
 `CONFIG` und `KERNEL LOADER`. Untertitel werden weder gerendert noch in den
 Labeltexturen vorgehalten. Es steigen keine Signalströme und keine Datenpakete
 aus UEFI oder Bare Metal zu diesen Chips auf. Nur der interne
-Pfad von CONFIG zum Loader wird während seiner aktiven Phase sichtbar. Die sechs
-Boot-Info-Karten bleiben ein separates späteres Übergabeereignis. Beim Handoff
-dimmen beide Chips, während nur die einmalige Tür und der letzte Kontrollimpuls
-aktiv bleiben.
+Pfad von CONFIG zum Loader wird während seiner aktiven Phase sichtbar. Der
+Handoff wird ruhig durch die Aktivierung des Kernels und den geordneten Rückzug
+des Startgerüsts dargestellt, nicht durch zusätzliche fliegende Objekte.
+
+Beim Rückzug bleiben die Energieringe in beiden UEFI-Kabeln aktiv. Die Kabel
+werden vom Anfang her sichtbar kürzer, sodass der Strom bis zur wandernden
+Kabelspitze läuft. Erst wenn die Leitungen vollständig eingezogen sind, folgt
+Limine und anschließend leicht versetzt UEFI.
 
 Der Seitentitel `LIMINE BOOT ENVIRONMENT` bleibt nach seinem Reveal während der
 gesamten Limine-Sequenz sichtbar. Er dimmt nicht beim Erscheinen von CONFIG oder

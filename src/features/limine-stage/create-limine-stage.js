@@ -2,31 +2,8 @@ import * as THREE from "three";
 import { intervalProgress, smootherstep } from "../../animation/progress.js";
 import { createInfoCard } from "../../objects/cards/index.js";
 import { createCircuitTrace } from "../../objects/connections/circuit-trace/index.js";
-import { createDataStream } from "../../objects/effects/data-stream/index.js";
 import { createExpandingStageLayer } from "../../objects/layers/expanding-stage-layer/index.js";
-import { createHandoffCards } from "./create-handoff-cards.js";
 import { LIMINE_STAGE_CONFIG } from "./config.js";
-
-function createHandoffDoor() {
-  const points = [
-    new THREE.Vector3(-1.8, 1.62, 0.76),
-    new THREE.Vector3(-1.8, 2.06, 0.76),
-    new THREE.Vector3(-1.1, 2.06, 0.76),
-    new THREE.Vector3(-1.1, 1.62, 0.76),
-  ];
-  const material = new THREE.LineBasicMaterial({
-    color: 0xd8f8ff,
-    opacity: 0,
-    transparent: true,
-  });
-  const line = new THREE.Line(
-    new THREE.BufferGeometry().setFromPoints(points),
-    material,
-  );
-  line.name = "limine-handoff-door";
-  line.renderOrder = 8;
-  return { line, material };
-}
 
 export function createLimineStage() {
   const config = LIMINE_STAGE_CONFIG;
@@ -96,31 +73,10 @@ export function createLimineStage() {
   });
   stageGroup.add(configToLoader.group);
 
-  const handoffCards = createHandoffCards();
-  const handoffDoor = createHandoffDoor();
-  const handoffImpulse = createDataStream({
-    points: [
-      new THREE.Vector3(-1.45, 1.64, 0.76),
-      new THREE.Vector3(-1.45, 1.94, 0.76),
-      new THREE.Vector3(-0.85, 2.24, 0.46),
-      new THREE.Vector3(0, 2.35, 0),
-    ],
-    count: 12,
-    blockSize: [0.16, 0.08, 0.24],
-    trailLength: 0.42,
-    color: 0xcaf6ff,
-  });
-  group.add(
-    handoffCards.group,
-    handoffDoor.line,
-    handoffImpulse.group,
-  );
-
   const setState = ({
     layerProgress = 0,
     configProgress = 0,
     kernelLoaderProgress = 0,
-    handoffPrepareProgress = 0,
     handoffProgress = 0,
     retreatProgress = 0,
     opacity = 1,
@@ -158,12 +114,6 @@ export function createLimineStage() {
       opacity: configFlow * activeOpacity * (1 - control),
       pulse: 1,
     });
-    handoffCards.setState(handoffPrepareProgress, activeOpacity * (1 - control * 0.35));
-    handoffDoor.material.opacity = control * activeOpacity;
-    handoffImpulse.setState({
-      progress: control,
-      opacity: activeOpacity,
-    });
   };
   setState();
 
@@ -171,10 +121,6 @@ export function createLimineStage() {
     group,
     setState,
     dispose() {
-      handoffImpulse.dispose();
-      handoffCards.dispose();
-      handoffDoor.line.geometry.dispose();
-      handoffDoor.material.dispose();
       configToLoader.dispose();
       zones.forEach(({ card }) => card.dispose());
       stageLayer.dispose();
