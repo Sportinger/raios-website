@@ -4,7 +4,7 @@ import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 import { createRadialGlowTexture } from "../effects/create-radial-glow-texture.js";
 
 const FLOW_DASH_COUNT = 18;
-const FLOW_DASH_AXIS = new THREE.Vector3(0, 1, 0);
+const CABLE_AXIS = new THREE.Vector3(0, 0, 1);
 
 function indexCountAt(geometry, progress) {
   const indexCount = geometry.index?.count || 0;
@@ -46,12 +46,12 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
   });
   group.add(new THREE.Mesh(cableGeometry, [idleMaterial, poweredMaterial]));
 
-  const flowDashGeometry = new THREE.CapsuleGeometry(0.081, 0.16, 4, 8);
+  const flowDashGeometry = new THREE.TorusGeometry(0.079, 0.012, 6, 18);
   const flowDashMaterial = new THREE.MeshBasicMaterial({
-    color: 0xcaf5ff,
+    color: 0x9cddff,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
-    opacity: 0.78,
+    opacity: 0.56,
     transparent: true,
     toneMapped: false,
   });
@@ -71,7 +71,27 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
     transparent: true,
     toneMapped: false,
   });
-  pulse.add(new THREE.Mesh(new THREE.SphereGeometry(0.055, 20, 14), pulseMaterial));
+  pulse.add(new THREE.Mesh(new THREE.SphereGeometry(0.09, 20, 14), pulseMaterial));
+
+  const shockRingMaterial = new THREE.MeshBasicMaterial({
+    color: 0xd8f7ff,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    opacity: 0,
+    side: THREE.DoubleSide,
+    transparent: true,
+    toneMapped: false,
+  });
+  const outerShockRingMaterial = shockRingMaterial.clone();
+  outerShockRingMaterial.color.set(accentColor);
+  pulse.add(new THREE.Mesh(
+    new THREE.TorusGeometry(0.34, 0.026, 8, 48),
+    shockRingMaterial,
+  ));
+  pulse.add(new THREE.Mesh(
+    new THREE.TorusGeometry(0.62, 0.016, 8, 64),
+    outerShockRingMaterial,
+  ));
 
   const glowTexture = createRadialGlowTexture();
   const innerHaloMaterial = new THREE.SpriteMaterial({
@@ -84,13 +104,18 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
   });
   const outerHaloMaterial = innerHaloMaterial.clone();
   outerHaloMaterial.color.set(accentColor);
+  const auraMaterial = outerHaloMaterial.clone();
+  auraMaterial.color.set(0x3c9eff);
   const innerHalo = new THREE.Sprite(innerHaloMaterial);
-  innerHalo.scale.setScalar(0.46);
+  innerHalo.scale.setScalar(0.82);
   pulse.add(innerHalo);
   const outerHalo = new THREE.Sprite(outerHaloMaterial);
-  outerHalo.scale.setScalar(1.35);
+  outerHalo.scale.setScalar(2.8);
   pulse.add(outerHalo);
-  const pulseLight = new THREE.PointLight(accentColor, 0, 3.6, 2);
+  const aura = new THREE.Sprite(auraMaterial);
+  aura.scale.setScalar(5.6);
+  pulse.add(aura);
+  const pulseLight = new THREE.PointLight(accentColor, 0, 7, 2);
   pulse.add(pulseLight);
   group.add(pulse);
 
@@ -106,7 +131,7 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
     group.visible = opacity > 0.001 && easedReveal > 0.001;
     idleMaterial.opacity = opacity;
     poweredMaterial.opacity = opacity;
-    flowDashMaterial.opacity = opacity * 0.78;
+    flowDashMaterial.opacity = opacity * 0.56;
     setCableMaterialProgress(cableGeometry, easedReveal, signalProgress);
 
     flowDashes.forEach((dash, index) => {
@@ -117,7 +142,7 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
       if (!dash.visible) return;
       curve.getPointAt(dashProgress, dash.position);
       dash.quaternion.setFromUnitVectors(
-        FLOW_DASH_AXIS,
+        CABLE_AXIS,
         curve.getTangentAt(dashProgress, flowTangent).normalize(),
       );
     });
@@ -126,11 +151,18 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
       ? Math.min(1, Math.max(0, (1 - signalProgress) / 0.08))
       : 0;
     curve.getPointAt(signalProgress, pulse.position);
+    pulse.quaternion.setFromUnitVectors(
+      CABLE_AXIS,
+      curve.getTangentAt(signalProgress, flowTangent).normalize(),
+    );
     pulse.visible = group.visible && signalEnvelope > 0.001;
     pulseMaterial.opacity = opacity * signalEnvelope;
+    shockRingMaterial.opacity = opacity * signalEnvelope * 0.92;
+    outerShockRingMaterial.opacity = opacity * signalEnvelope * 0.48;
     innerHaloMaterial.opacity = opacity * signalEnvelope * 0.92;
-    outerHaloMaterial.opacity = opacity * signalEnvelope * 0.34;
-    pulseLight.intensity = opacity * signalEnvelope * 3.2;
+    outerHaloMaterial.opacity = opacity * signalEnvelope * 0.38;
+    auraMaterial.opacity = opacity * signalEnvelope * 0.15;
+    pulseLight.intensity = opacity * signalEnvelope * 8;
   };
 
   return {
