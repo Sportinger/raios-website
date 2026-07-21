@@ -129,8 +129,9 @@ ohne die Glasoberfläche vollständig in einen Half-Float-Buffer gerendert, den 
 IOR, Materialtiefe, chromatischer Aberration und blauer Absorption gebrochen
 abtastet. Der Brechungsweg verwendet unverändert den IOR-Wert `1.5` der
 Transmission-Material-Vorlage.
-Eine niedrigfrequente Variation der optischen Flächennormale bricht zusätzlich
-die planparallele Gleichförmigkeit auf, ohne die gerundete Geometrie zu verändern.
+Eine schwache niedrigfrequente Variation der optischen Flächennormale bricht die
+planparallele Gleichförmigkeit auf. Helle Absorption und reduzierte
+Umgebungsreflexion halten das vollständige Glasvolumen zugleich durchsichtig.
 Transparente Beschriftungen und interne Bauteile rendern mit den Ordnungen
 `5–7` vor dem finalen Glaspass auf Ordnung `20`, damit keine ungebrochene zweite
 Darstellung den Transmission-Pass überdeckt.
