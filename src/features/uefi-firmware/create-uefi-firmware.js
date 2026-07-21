@@ -38,7 +38,7 @@ export function createUefiFirmware({ sourceAnchor }) {
     roughness: 0.015,
     transmission: 1,
     thickness: 3.5,
-    ior: 1.5,
+    ior: 1.04,
     dispersion: 0,
     clearcoat: 0.28,
     clearcoatRoughness: 0.12,

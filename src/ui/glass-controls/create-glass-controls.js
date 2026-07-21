@@ -5,7 +5,7 @@ const CONTROL_DEFINITIONS = Object.freeze([
     min: 1,
     max: 2.33,
     step: 0.01,
-    value: 1.5,
+    value: 1.04,
     format: (value) => value.toFixed(2),
   }),
   Object.freeze({
@@ -32,7 +32,7 @@ const CONTROL_DEFINITIONS = Object.freeze([
     min: 0,
     max: 360,
     step: 1,
-    value: 40,
+    value: 66,
     format: (value) => `${Math.round(value)}°`,
   }),
 ]);

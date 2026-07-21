@@ -127,8 +127,9 @@ Die Softwareschichten besitzen eine feste Renderreihenfolge. UEFI verwendet
 einen eigenen Transmission-Pass: Unmittelbar vor jedem Hauptbild wird die Szene
 ohne die Glasoberfläche vollständig in einen Half-Float-Buffer gerendert, den der Volumenshader mit
 IOR, Materialtiefe, chromatischer Aberration und blauer Absorption gebrochen
-abtastet. Der Brechungsweg verwendet unverändert den IOR-Wert `1.5` der
-Transmission-Material-Vorlage.
+abtastet. Der abgestimmte Ausgangszustand verwendet IOR `1.04`, eine Vorder-
+und Rückseitendicke von `3.5` beziehungsweise `0.5` sowie eine HDR-Rotation
+von `66°`.
 Eine schwache niedrigfrequente Variation der optischen Flächennormale bricht die
 planparallele Gleichförmigkeit auf. Helle Absorption und reduzierte
 Umgebungsreflexion halten das vollständige Glasvolumen zugleich durchsichtig.
