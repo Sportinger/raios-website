@@ -34,15 +34,18 @@ export function createEnergyFlow({ curve, config: overrides = {} }) {
 
   const setState = ({
     energizedProgress = 0,
+    retractProgress = 0,
     phase = 0,
     opacity = 1,
   } = {}) => {
     const energized = smootherstep(energizedProgress);
+    const retract = Math.min(smootherstep(retractProgress), energized);
     group.visible = opacity > 0.001 && energized > config.visibleAfter;
     material.opacity = opacity * config.opacity;
     dashes.forEach((dash, index) => {
       const dashProgress = (phase + index / config.count) % 1;
       dash.visible = group.visible
+        && dashProgress >= retract
         && dashProgress < energized - config.signalHeadGap;
       if (!dash.visible) return;
       curve.getPointAt(dashProgress, dash.position);

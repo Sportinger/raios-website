@@ -90,13 +90,17 @@ export function createCable({ points, config: overrides = {} }) {
   const setState = ({
     revealProgress = 1,
     energizedProgress = 0,
+    retractProgress = 0,
     opacity = 1,
   } = {}) => {
     const reveal = smootherstep(revealProgress);
     const energized = smootherstep(energizedProgress);
-    group.visible = opacity > 0.001 && reveal > 0.001;
+    const retract = Math.min(smootherstep(retractProgress), reveal);
+    const startIndex = indexCountAt(geometry, retract);
+    const endIndex = indexCountAt(geometry, reveal);
+    group.visible = opacity > 0.001 && endIndex > startIndex;
     material.opacity = opacity;
-    geometry.setDrawRange(0, indexCountAt(geometry, reveal));
+    geometry.setDrawRange(startIndex, endIndex - startIndex);
     uniforms.uSignal.value = Math.min(energized, reveal);
   };
 

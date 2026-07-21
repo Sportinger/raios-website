@@ -42,8 +42,11 @@ auf ihr läuft der Pfad von rechts nach links durch `CONFIG`, `KERNEL LOADER` un
 `HANDOFF`. Der physische USB-Pfad verwendet dasselbe wiederverwendbare
 `connections/cable` wie der Power-on-Link. Seine feature-spezifische Route steigt
 zunächst gerade aus dem Port und läuft danach in einer weichen Kurve unter den
-USB-Service; die fortschreitende Materialaktivierung und schmale Energieringe
-zeigen die Leserichtung ohne eine separate Blockkette. Jeder Übergang besitzt
+USB-Service. Ein kompaktes Plasmaleuchten an der Spitze legt das Kabel sichtbar
+entlang der Route aus. Nach einer kurzen Haltephase wandert der Kabelanfang nach,
+sodass die temporäre Verbindung von hinten wieder kürzer wird. Das allgemeine
+Kabel unterstützt dafür unabhängig steuerbare Reveal- und Retract-Grenzen;
+schmale Energieringe respektieren dasselbe sichtbare Fenster. Jeder Übergang besitzt
 einen eigenen Zustand: Der physische USB-Pfad dimmt vor dem einzelnen
 `BOOTX64.EFI`-Paket, dessen Pfad dimmt vor der
 Limine-Entfaltung, und anschließend bleibt nur der aktuelle Kernel-Datenpfad

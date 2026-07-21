@@ -4,6 +4,7 @@ import { createInfoCard } from "../../objects/cards/index.js";
 import { createCable } from "../../objects/connections/cable/index.js";
 import { createDataStream } from "../../objects/effects/data-stream/index.js";
 import { createEnergyFlow } from "../../objects/effects/energy-flow/index.js";
+import { createPlasmaPulse } from "../../objects/effects/plasma-pulse/index.js";
 import { createExpandingStageLayer } from "../../objects/layers/expanding-stage-layer/index.js";
 import { UEFI_FIRMWARE_CONFIG } from "./config.js";
 import { createUsbServiceRoute } from "./create-usb-service-route.js";
@@ -90,6 +91,18 @@ export function createUefiFirmware() {
       opacity: 0.72,
     },
   });
+  const usbCableHead = createPlasmaPulse({
+    curve: usbServiceCable.curve,
+    accentColor: 0x58d7ff,
+    config: {
+      scale: 0.13,
+      fadeOutLength: 0.1,
+      lightIntensity: 1.4,
+      lightDistance: 1.15,
+      turbulenceAmount: 0.05,
+    },
+  });
+  usbCableHead.group.name = "usb-cable-writing-light";
   const bootEntryPackage = createDataStream({
     points: [
       new THREE.Vector3(...usbService.position),
@@ -105,6 +118,7 @@ export function createUefiFirmware() {
   group.add(
     usbServiceCable.group,
     usbSignalFlow.group,
+    usbCableHead.group,
     bootEntryPackage.group,
   );
 
@@ -114,7 +128,7 @@ export function createUefiFirmware() {
     usbServiceProgress = 0,
     bootManagerProgress = 0,
     usbPathProgress = 0,
-    usbActivityProgress = 0,
+    usbPathRetractionProgress = 0,
     bootEntryProgress = 0,
     retreatProgress = 0,
     opacity = 1,
@@ -152,18 +166,25 @@ export function createUefiFirmware() {
         definition.position[2],
       );
     });
-    const usbActivity = smootherstep(usbActivityProgress);
     const usbPath = smootherstep(usbPathProgress);
-    const activeSignal = Math.sin(usbActivity * Math.PI);
+    const usbPathRetraction = smootherstep(usbPathRetractionProgress);
     usbServiceCable.setState({
       revealProgress: usbPath,
-      energizedProgress: usbActivity,
-      opacity: activeOpacity * usbPath * (0.28 + activeSignal * 0.72),
+      energizedProgress: usbPath,
+      retractProgress: usbPathRetraction,
+      opacity: activeOpacity,
     });
     usbSignalFlow.setState({
-      energizedProgress: usbActivity,
-      phase: usbActivity * 1.35,
-      opacity: activeOpacity * activeSignal,
+      energizedProgress: usbPath,
+      retractProgress: usbPathRetraction,
+      phase: usbPath * 1.15,
+      opacity: activeOpacity,
+    });
+    usbCableHead.setState({
+      progress: usbPath,
+      active: usbPathProgress > 0.001 && usbPathRetractionProgress < 0.001,
+      opacity: activeOpacity,
+      occludeCore: true,
     });
     bootEntryPackage.setState({
       progress: bootEntryProgress,
@@ -179,6 +200,7 @@ export function createUefiFirmware() {
       services.forEach(({ service }) => service.dispose());
       usbServiceCable.dispose();
       usbSignalFlow.dispose();
+      usbCableHead.dispose();
       bootEntryPackage.dispose();
       stageLayer.dispose();
       group.removeFromParent();
