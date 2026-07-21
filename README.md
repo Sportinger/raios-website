@@ -15,7 +15,7 @@ src/
 ├── runtime/      Renderer, Kamera, Welt, Viewport, Scroll und Motion Preference
 ├── story/        Reihenfolge, Gewichtung und Fortschritt der Kapitel
 ├── chapters/     Dramaturgie einzelner Erzählabschnitte
-├── features/     Gekapselte fachliche 3D-Systeme wie der Rust-Kernel
+├── features/     Gekapselte fachliche 3D-Systeme und Darsteller
 ├── objects/      Kapitelübergreifend wiederverwendbare visuelle Bauteile
 ├── animation/    Wiederverwendbare Fortschritts-, Easing- und Animationsschemata
 └── shared/       Technische Hilfsfunktionen ohne fachliche Abhängigkeiten
@@ -33,7 +33,7 @@ Ein Kapitel entscheidet, wann etwas passiert. Es erstellt komplexe Features, fü
 
 ### Features
 
-Ein Feature ist ein komplexer, fachlich abgegrenzter Darsteller. `features/rust-kernel/` besitzt beispielsweise Konfiguration, Inhalt, Aufbau und Lifecycle des Rust-Kernels. Das Feature kennt weder die Scrollposition noch die Position des Kapitels in der Gesamtgeschichte.
+Ein Feature ist ein komplexer, fachlich abgegrenzter Darsteller. `features/rust-kernel/` besitzt beispielsweise Konfiguration, Inhalt, Aufbau und Lifecycle des Rust-Kernels. `features/power-button/` kombiniert den allgemeinen Druckknopf mit dem raiOS-Power-Symbol. Ein Feature kennt weder die Scrollposition noch die Position seines Kapitels in der Gesamtgeschichte.
 
 Öffentliche Exporte eines Features laufen ausschließlich über dessen `index.js`. Interne Dateien werden von Kapiteln nicht direkt importiert. Wächst ein Feature, können eigene Unterordner wie `parts/`, `layout/`, `materials/` und `animations/` ergänzt werden.
 
@@ -50,7 +50,7 @@ objects/
 └── mechanisms/    Türen, Klappen, Schalter und Verriegelungen
 ```
 
-Die Unterordner `connections/` und `mechanisms/` werden erst angelegt, sobald das erste tatsächlich verwendete Bauteil entsteht. So entstehen keine leeren oder ungenutzten Module.
+Unter `mechanisms/` liegt mit `create-push-button.js` der erste allgemeine Mechanismus. Das Power-Button-Feature konfiguriert ihn, ohne dass der Mechanismus etwas über die Story oder den Einschaltvorgang wissen muss. Weitere Unterordner wie `connections/` werden erst angelegt, sobald das erste tatsächlich verwendete Bauteil entsteht.
 
 Ein wiederverwendbares Objekt:
 
@@ -75,6 +75,13 @@ Imports in die Gegenrichtung sind nicht erlaubt. Dadurch können Kabel, Türen o
 Ein Kapitel exportiert mindestens `id`, `group`, `update(progress)`, `resize(viewport)` und `dispose()`. Danach wird es in `story/story-map.js` mit einem Gewicht registriert. Prozentwerte eines Kapitels bleiben lokal und verändern keine späteren Kapitel.
 
 Für Reduced Motion setzt die Runtime den Storyfortschritt auf den fertigen Zustand. Neue Kapitel und Objekte müssen deshalb für jeden Fortschrittswert deterministisch denselben Zustand darstellen.
+
+### Aktuelle Story
+
+1. `chapters/power-on/` blendet den Power-Button ein, drückt ihn automatisch, aktiviert das Licht und blendet ihn wieder aus.
+2. `chapters/kernel/` übernimmt anschließend und zeigt den Aufbau sowie die Unterteilung des Rust-Kernels.
+
+Die Zeitfenster des Einschaltvorgangs liegen getrennt in `chapters/power-on/timeline.js`. Form und Material des Buttons gehören zum Feature beziehungsweise zum allgemeinen Mechanismus und enthalten keine Story-Zeitwerte.
 
 ## Lokal entwickeln mit HMR
 
