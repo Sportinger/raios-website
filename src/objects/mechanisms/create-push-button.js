@@ -10,7 +10,7 @@ export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}
   group.name = "push-button";
 
   const housingMaterial = new THREE.MeshStandardMaterial({
-    color: 0x090e15,
+    color: 0x171a1e,
     metalness: 0.72,
     roughness: 0.28,
     transparent: true,
@@ -23,9 +23,9 @@ export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}
   group.add(housing);
 
   const rimMaterial = new THREE.MeshStandardMaterial({
-    color: 0x17283a,
+    color: 0x3b4147,
     emissive: accentColor,
-    emissiveIntensity: 0.08,
+    emissiveIntensity: 0,
     metalness: 0.64,
     roughness: 0.24,
     transparent: true,
@@ -36,9 +36,9 @@ export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}
   group.add(rim);
 
   const capMaterial = new THREE.MeshStandardMaterial({
-    color: 0x0b1722,
+    color: 0x292e33,
     emissive: accentColor,
-    emissiveIntensity: 0.12,
+    emissiveIntensity: 0,
     metalness: 0.52,
     roughness: 0.32,
     transparent: true,
@@ -89,8 +89,8 @@ export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}
 
     setPowerProgress(value) {
       power = smootherstep(value);
-      capMaterial.emissiveIntensity = THREE.MathUtils.lerp(0.12, 2.8, power);
-      rimMaterial.emissiveIntensity = THREE.MathUtils.lerp(0.08, 1.5, power);
+      capMaterial.emissiveIntensity = THREE.MathUtils.lerp(0, 2.8, power);
+      rimMaterial.emissiveIntensity = THREE.MathUtils.lerp(0, 1.5, power);
       if (topMark?.material) {
         topMark.material.color.setHex(accentColor).lerp(new THREE.Color(0xffffff), power * 0.45);
       }

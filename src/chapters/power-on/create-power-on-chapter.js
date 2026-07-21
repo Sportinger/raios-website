@@ -129,6 +129,7 @@ export function createPowerOnChapter({ cameraRig }) {
     cameraStart,
     buttonPosition,
   );
+  const impulseTarget = new THREE.Vector3();
   group.add(powerButton.group, cable.group, bareMetal.group);
 
   return {
@@ -167,9 +168,10 @@ export function createPowerOnChapter({ cameraRig }) {
           progress, ...POWER_ON_TIMELINE.cameraOrbit,
         ));
       } else {
+        cable.curve.getPointAt(smootherstep(signalProgress), impulseTarget);
         cameraPath.update(intervalProgress(
           progress, ...POWER_ON_TIMELINE.cameraFlight,
-        ));
+        ), impulseTarget);
       }
     },
 

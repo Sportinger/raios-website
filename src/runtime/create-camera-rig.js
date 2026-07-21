@@ -43,10 +43,14 @@ export function createCameraRig(camera) {
       );
 
       return {
-        update(progress) {
+        update(progress, targetOverride = null) {
           const easedProgress = easing(progress);
           positionCurve.getPointAt(easedProgress, position);
-          targetCurve.getPointAt(easedProgress, target);
+          if (targetOverride) {
+            target.copy(targetOverride);
+          } else {
+            targetCurve.getPointAt(easedProgress, target);
+          }
           setPose(position, target);
         },
       };
