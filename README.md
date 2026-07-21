@@ -79,8 +79,9 @@ Für Reduced Motion setzt die Runtime den Storyfortschritt auf den fertigen Zust
 ### Aktuelle Story
 
 1. `chapters/power-on/` richtet den Power-Button frontal zur Startkamera aus, drückt ihn automatisch und blendet ihn nach dem Einschalten aus.
-2. Ein allgemeines Kabel zeichnet sich hinter dem Button bis zum entfernten `BARE METAL`-Layer. Der Camera-Rig fliegt währenddessen in die reguläre raiOS-Kameraposition.
-3. `chapters/kernel/` übernimmt anschließend und zeigt den Aufbau sowie die Unterteilung des Rust-Kernels.
+2. Ein allgemeines Kabel schlängelt sich hinter dem Button bis an die Seitenkante des weit entfernten `BARE METAL`-Layers. Button und Layer liegen auf derselben Welt-Höhe; der Layer ist von Anfang an räumlich vorhanden und wird nicht eingeblendet.
+3. Der Camera-Rig folgt einer eigenen Spline oberhalb des Kabelverlaufs und richtet den Blick schrittweise auf dessen weitere Punkte, bis der Layer erreicht ist.
+4. `chapters/kernel/` übernimmt anschließend und zeigt den Aufbau sowie die Unterteilung des Rust-Kernels.
 
 Die Zeitfenster und das räumliche Layout des Einschaltvorgangs liegen getrennt in `chapters/power-on/timeline.js` und `chapters/power-on/layout.js`. Form und Material des Buttons, Kabels und Layers gehören zu ihren Features beziehungsweise allgemeinen Objekten und enthalten keine Story-Zeitwerte.
 

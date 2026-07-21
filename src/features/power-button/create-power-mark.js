@@ -6,7 +6,7 @@ export function createPowerMark(color) {
 
   const arcPoints = [];
   for (let index = 0; index <= 28; index += 1) {
-    const angle = THREE.MathUtils.lerp(Math.PI * 0.24, Math.PI * 1.76, index / 28);
+    const angle = THREE.MathUtils.lerp(-Math.PI * 0.25, Math.PI * 1.25, index / 28);
     arcPoints.push(new THREE.Vector3(
       Math.cos(angle) * 0.31,
       0,

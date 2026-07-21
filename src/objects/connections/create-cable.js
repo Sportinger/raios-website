@@ -43,6 +43,7 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
   };
 
   return {
+    curve,
     group,
 
     setOpacity(value) {

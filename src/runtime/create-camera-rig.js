@@ -14,6 +14,28 @@ export function createCameraRig(camera) {
   };
 
   return {
+    createHomeboundPath({ positions, targets }) {
+      const positionCurve = new THREE.CatmullRomCurve3(
+        [...positions, homePosition.clone()],
+        false,
+        "centripetal",
+      );
+      const targetCurve = new THREE.CatmullRomCurve3(
+        [...targets, homeTarget.clone()],
+        false,
+        "centripetal",
+      );
+
+      return {
+        update(progress) {
+          const easedProgress = smootherstep(progress);
+          positionCurve.getPointAt(easedProgress, position);
+          targetCurve.getPointAt(easedProgress, target);
+          setPose(position, target);
+        },
+      };
+    },
+
     reset() {
       setPose(homePosition, homeTarget);
     },

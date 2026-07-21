@@ -1,5 +1,5 @@
 export const POWER_ON_LAYOUT = Object.freeze({
-  cameraStart: Object.freeze([13.2, 10.7, 15.6]),
-  buttonPosition: Object.freeze([3.55, 2.55, 4.18]),
-  layerContact: Object.freeze([0, -0.72, 0]),
+  cameraStart: Object.freeze([13.9, 3.35, 16.4]),
+  buttonPosition: Object.freeze([10.35, -0.92, 12.2]),
+  layerContact: Object.freeze([2.2, -0.92, 2.6]),
 });
