@@ -5,6 +5,7 @@ import { createPlasmaGlowTexture } from "../effects/create-plasma-glow-texture.j
 
 const FLOW_DASH_COUNT = 18;
 const CABLE_AXIS = new THREE.Vector3(0, 0, 1);
+const PULSE_SCALE = 0.52;
 
 function indexCountAt(geometry, progress) {
   const indexCount = geometry.index?.count || 0;
@@ -65,29 +66,35 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
 
   const pulse = new THREE.Group();
   pulse.name = "power-impulse";
+  pulse.scale.setScalar(PULSE_SCALE);
   const pulseMaterial = new THREE.MeshBasicMaterial({
     color: 0xe5f8ff,
-    depthWrite: false,
+    depthWrite: true,
     transparent: true,
     toneMapped: false,
   });
-  pulse.add(new THREE.Mesh(new THREE.SphereGeometry(0.18, 24, 18), pulseMaterial));
+  const pulseCore = new THREE.Mesh(
+    new THREE.SphereGeometry(0.22, 24, 18),
+    pulseMaterial,
+  );
+  pulseCore.scale.set(1.15, 1.15, 2.65);
+  pulse.add(pulseCore);
 
   const plasmaTexture = createPlasmaGlowTexture();
   const plasmaLayerSpecs = [
-    { blending: THREE.NormalBlending, color: 0xf1fdff, depthTest: false, opacity: 1, position: [0, 0, 0.04], rotation: 0.1, scale: [1.65, 1.36] },
-    { color: 0xaeeeff, opacity: 0.62, position: [0.04, -0.03, -0.08], rotation: 0.8, scale: [2.1, 1.72] },
-    { color: accentColor, opacity: 0.34, position: [-0.08, 0.06, -0.24], rotation: -0.55, scale: [3.5, 2.7] },
-    { color: 0x3c91ff, opacity: 0.2, position: [0.12, -0.08, -0.42], rotation: 1.35, scale: [4.8, 3.5] },
-    { color: 0x79cfff, opacity: 0.32, position: [-0.14, 0.09, -0.58], rotation: -1.1, scale: [1.7, 1.18] },
-    { color: 0x3c91ff, opacity: 0.2, position: [0.13, -0.06, -0.82], rotation: 0.45, scale: [1.25, 0.82] },
+    { blending: THREE.NormalBlending, color: 0xf1fdff, opacity: 1, position: [0, 0, 0.04], rotation: 0.1, scale: [1.65, 1.36] },
+    { color: 0xaeeeff, opacity: 0.52, position: [0.04, -0.03, -0.08], rotation: 0.8, scale: [2.1, 1.72] },
+    { color: accentColor, opacity: 0.25, position: [-0.08, 0.06, -0.24], rotation: -0.55, scale: [3.5, 2.7] },
+    { color: 0x3c91ff, opacity: 0.1, position: [0.12, -0.08, -0.42], rotation: 1.35, scale: [4.8, 3.5] },
+    { color: 0x79cfff, opacity: 0.22, position: [-0.14, 0.09, -0.58], rotation: -1.1, scale: [1.7, 1.18] },
+    { color: 0x3c91ff, opacity: 0.1, position: [0.13, -0.06, -0.82], rotation: 0.45, scale: [1.25, 0.82] },
   ];
   const plasmaLayers = plasmaLayerSpecs.map((spec, index) => {
     const material = new THREE.SpriteMaterial({
       map: plasmaTexture,
       color: spec.color,
       blending: spec.blending ?? THREE.AdditiveBlending,
-      depthTest: spec.depthTest ?? true,
+      depthTest: true,
       depthWrite: false,
       rotation: spec.rotation,
       transparent: true,
@@ -101,7 +108,7 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
     pulse.add(sprite);
     return { material, spec, sprite };
   });
-  const pulseLight = new THREE.PointLight(accentColor, 0, 7, 2);
+  const pulseLight = new THREE.PointLight(accentColor, 0, 3.8, 2);
   pulse.add(pulseLight);
   group.add(pulse);
 
@@ -154,7 +161,7 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
         1,
       );
     });
-    pulseLight.intensity = opacity * signalEnvelope * 7;
+    pulseLight.intensity = opacity * signalEnvelope * 3;
   };
 
   return {
