@@ -1,7 +1,7 @@
 import { intervalProgress } from "../../animation/progress.js";
 import { createRustKernel } from "../../features/rust-kernel/index.js";
 
-export function createKernelChapter() {
+export function createKernelChapter({ cameraRig }) {
   const kernel = createRustKernel();
 
   return {
@@ -9,6 +9,7 @@ export function createKernelChapter() {
     group: kernel.group,
 
     update(progress) {
+      cameraRig.reset();
       kernel.setAssemblyProgress(intervalProgress(progress, 0, 0.24));
       kernel.setBreakdownProgress(intervalProgress(progress, 0.24, 1));
     },

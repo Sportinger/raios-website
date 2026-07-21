@@ -1,8 +1,9 @@
 import * as THREE from "three";
+import { CAMERA_HOME } from "./camera-config.js";
 
 export function createCamera() {
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-  camera.position.set(7.8, 6.4, 9.2);
-  camera.lookAt(0, -0.25, 0);
+  camera.position.fromArray(CAMERA_HOME.position);
+  camera.lookAt(...CAMERA_HOME.target);
   return camera;
 }

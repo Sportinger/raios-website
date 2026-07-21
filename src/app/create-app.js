@@ -1,6 +1,7 @@
 import { disposeObject3D } from "../shared/dispose-object-3d.js";
 import { createStory } from "../story/create-story.js";
 import { createCamera } from "../runtime/create-camera.js";
+import { createCameraRig } from "../runtime/create-camera-rig.js";
 import { createMotionPreference } from "../runtime/create-motion-preference.js";
 import { createRenderer } from "../runtime/create-renderer.js";
 import { createScrollDriver } from "../runtime/create-scroll-driver.js";
@@ -16,8 +17,9 @@ export function createApp({ canvas, stage }) {
 
   const renderer = createRenderer(canvas);
   const camera = createCamera();
+  const cameraRig = createCameraRig(camera);
   const world = createWorld();
-  const story = createStory({ scene: world.scene });
+  const story = createStory({ scene: world.scene, context: { cameraRig } });
   const motionPreference = createMotionPreference();
 
   const renderAt = (progress) => {

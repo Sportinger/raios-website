@@ -7,11 +7,13 @@ import { createPowerMark } from "./create-power-mark.js";
 export function createPowerButton() {
   const group = new THREE.Group();
   group.name = "power-button";
+  const presentation = new THREE.Group();
+  group.add(presentation);
   const button = createPushButton({
     accentColor: POWER_BUTTON_CONFIG.accentColor,
     topMark: createPowerMark(POWER_BUTTON_CONFIG.accentColor),
   });
-  group.add(button.group);
+  presentation.add(button.group);
 
   return {
     group,
@@ -25,9 +27,9 @@ export function createPowerButton() {
         * THREE.MathUtils.lerp(1, 0.82, exit);
 
       group.visible = opacity > 0.001;
-      group.scale.setScalar(scale);
-      group.position.y = THREE.MathUtils.lerp(-0.24, 0, reveal) + exit * 0.24;
-      group.rotation.y = THREE.MathUtils.lerp(-0.18, 0, reveal);
+      presentation.scale.setScalar(scale);
+      presentation.position.y = THREE.MathUtils.lerp(-0.24, 0, reveal) + exit * 0.24;
+      presentation.rotation.y = THREE.MathUtils.lerp(-0.18, 0, reveal);
       button.setOpacity(opacity);
       button.setPressProgress(pressProgress);
       button.setPowerProgress(powerProgress);

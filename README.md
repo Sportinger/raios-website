@@ -50,7 +50,7 @@ objects/
 └── mechanisms/    Türen, Klappen, Schalter und Verriegelungen
 ```
 
-Unter `mechanisms/` liegt mit `create-push-button.js` der erste allgemeine Mechanismus. Das Power-Button-Feature konfiguriert ihn, ohne dass der Mechanismus etwas über die Story oder den Einschaltvorgang wissen muss. Weitere Unterordner wie `connections/` werden erst angelegt, sobald das erste tatsächlich verwendete Bauteil entsteht.
+Unter `mechanisms/` liegt mit `create-push-button.js` der erste allgemeine Mechanismus. Das Power-Button-Feature konfiguriert ihn, ohne dass der Mechanismus etwas über die Story oder den Einschaltvorgang wissen muss. `connections/create-cable.js` zeichnet eine beliebige räumliche Punktfolge als progressiv sichtbares Kabel und wird im Power-on-Kapitel für die Verbindung zum Bare-Metal-Layer eingesetzt.
 
 Ein wiederverwendbares Objekt:
 
@@ -78,10 +78,11 @@ Für Reduced Motion setzt die Runtime den Storyfortschritt auf den fertigen Zust
 
 ### Aktuelle Story
 
-1. `chapters/power-on/` blendet den Power-Button ein, drückt ihn automatisch, aktiviert das Licht und blendet ihn wieder aus.
-2. `chapters/kernel/` übernimmt anschließend und zeigt den Aufbau sowie die Unterteilung des Rust-Kernels.
+1. `chapters/power-on/` richtet den Power-Button frontal zur Startkamera aus, drückt ihn automatisch und blendet ihn nach dem Einschalten aus.
+2. Ein allgemeines Kabel zeichnet sich hinter dem Button bis zum entfernten `BARE METAL`-Layer. Der Camera-Rig fliegt währenddessen in die reguläre raiOS-Kameraposition.
+3. `chapters/kernel/` übernimmt anschließend und zeigt den Aufbau sowie die Unterteilung des Rust-Kernels.
 
-Die Zeitfenster des Einschaltvorgangs liegen getrennt in `chapters/power-on/timeline.js`. Form und Material des Buttons gehören zum Feature beziehungsweise zum allgemeinen Mechanismus und enthalten keine Story-Zeitwerte.
+Die Zeitfenster und das räumliche Layout des Einschaltvorgangs liegen getrennt in `chapters/power-on/timeline.js` und `chapters/power-on/layout.js`. Form und Material des Buttons, Kabels und Layers gehören zu ihren Features beziehungsweise allgemeinen Objekten und enthalten keine Story-Zeitwerte.
 
 ## Lokal entwickeln mit HMR
 
