@@ -7,6 +7,6 @@ export const POWER_ON_TIMELINE = Object.freeze({
   power: Object.freeze([0.31, 0.36]),
   cableReveal: Object.freeze([0.26, 0.36]),
   signalTravel: Object.freeze([0.36, 0.78]),
-  environmentLight: Object.freeze([0.42, 0.64]),
+  environmentLight: Object.freeze([0.085, 0.42]),
   cameraFlight: Object.freeze([0.36, 0.96]),
 });

@@ -166,9 +166,9 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
       );
       cable.setOpacity(1);
       bareMetal.setState({ revealProgress: 1, labelProgress: 1, opacity: 1 });
-      lightRig.setIntensity(intervalProgress(
+      lightRig.setIntensity(smootherstep(intervalProgress(
         progress, ...POWER_ON_TIMELINE.environmentLight,
-      ));
+      )));
       if (progress < POWER_ON_TIMELINE.cameraFlight[0]) {
         cameraOrbit.update(intervalProgress(
           progress, ...POWER_ON_TIMELINE.cameraOrbit,
