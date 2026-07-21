@@ -97,7 +97,10 @@ export function createBootSequence() {
     });
     kernel.setState({
       assemblyProgress: intervalProgress(kernelLoad, ...timing.kernel.assembly),
-      landingProgress: intervalProgress(kernelLanding, ...timing.kernel.landing),
+      landingProgress: intervalProgress(
+        controlHandoff + kernelLanding,
+        ...timing.kernel.landingAcrossHandoff,
+      ),
       runningProgress: Math.max(
         intervalProgress(controlHandoff, ...timing.kernel.handoffRunning),
         intervalProgress(kernelLanding, ...timing.kernel.landedRunning),

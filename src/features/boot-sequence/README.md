@@ -34,6 +34,10 @@ physischen Port an. Nach dem Handoff lösen sich zuerst beide UEFI-Kabel auf.
 Danach zieht sich Limine zurück; UEFI folgt mit leichter zeitlicher Überlappung.
 Der SPI-Flash bleibt als inaktive Hardware bestehen.
 
+Die Kernel-Landung beginnt bereits im Kontrollwechsel bei lokalem Fortschritt
+`0.40` und läuft ohne Neustart über die folgende Kapitelgrenze hinweg bis zur
+endgültigen Position auf dem Bare Metal.
+
 Die UEFI-Fläche startet nach ihrer Entfaltung mit `0.28` Materialdeckkraft. Ab
 dem Ende der Expansion wird die allgemeine `surfaceOpacityScale` über mehrere
 Scrollabschnitte weich von `1` auf rund `3.21` gefahren. Die Schicht erreicht damit erst

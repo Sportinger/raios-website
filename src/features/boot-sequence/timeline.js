@@ -29,7 +29,7 @@ export const BOOT_TIMELINE = Object.freeze({
   }),
   kernel: Object.freeze({
     assembly: segment(0.32, 1),
-    landing: segment(0.12, 0.82),
+    landingAcrossHandoff: segment(0.4, 1.82),
     handoffRunning: segment(0, 0.4),
     landedRunning: segment(0.72, 1),
   }),
