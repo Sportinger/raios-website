@@ -1,8 +1,14 @@
 import * as THREE from "three";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { createLightRig } from "../objects/environment/create-light-rig.js";
 import { createStarField } from "../objects/environment/create-star-field.js";
 import { disposeObject3D } from "../shared/dispose-object-3d.js";
+
+const STUDIO_ENVIRONMENT_URL = new URL(
+  "../assets/environment/ferndale_studio_12_2k.hdr",
+  import.meta.url,
+).href;
 
 export function createWorld(renderer) {
   const scene = new THREE.Scene();
@@ -10,11 +16,37 @@ export function createWorld(renderer) {
 
   const pmremGenerator = new THREE.PMREMGenerator(renderer);
   const roomEnvironment = new RoomEnvironment();
-  const environmentMap = pmremGenerator.fromScene(roomEnvironment, 0.04).texture;
+  let environmentMap = pmremGenerator.fromScene(roomEnvironment, 0.04).texture;
+  let disposed = false;
   roomEnvironment.dispose();
-  pmremGenerator.dispose();
   scene.environment = environmentMap;
-  scene.environmentIntensity = 0.72;
+  scene.environmentIntensity = 0.78;
+  scene.environmentRotation.y = Math.PI * 0.22;
+  pmremGenerator.compileEquirectangularShader();
+  new RGBELoader().load(
+    STUDIO_ENVIRONMENT_URL,
+    (studioTexture) => {
+      if (disposed) {
+        studioTexture.dispose();
+        return;
+      }
+      const studioEnvironment = pmremGenerator
+        .fromEquirectangular(studioTexture)
+        .texture;
+      studioTexture.dispose();
+      environmentMap.dispose();
+      environmentMap = studioEnvironment;
+      scene.environment = environmentMap;
+      pmremGenerator.dispose();
+    },
+    undefined,
+    (error) => {
+      pmremGenerator.dispose();
+      if (!disposed) {
+        console.warn("The studio HDR environment could not be loaded", error);
+      }
+    },
+  );
 
   const environment = new THREE.Group();
   environment.name = "environment";
@@ -31,6 +63,8 @@ export function createWorld(renderer) {
       starField.setOpacity(progress);
     },
     dispose() {
+      disposed = true;
+      pmremGenerator.dispose();
       scene.environment = null;
       environmentMap.dispose();
       disposeObject3D(environment);
