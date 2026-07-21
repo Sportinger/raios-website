@@ -122,7 +122,7 @@ export function createHorizontalLabel(title, description, width, depth, options)
     transparent: true,
     opacity: 0,
     depthWrite: false,
-    side: THREE.DoubleSide,
+    side: THREE.FrontSide,
     toneMapped: false,
   });
   const plane = new THREE.Mesh(

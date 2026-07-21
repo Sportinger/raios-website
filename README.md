@@ -168,6 +168,8 @@ Der physische SPI-Flash bleibt unter dem Glas und damit Bestandteil der
 gebrochenen Szene. UEFI-Seitentitel, Boot Manager und USB Boot stehen dagegen
 auf dem Glas: Sie werden aus beiden Transmission-Buffern ausgeschlossen und
 anschließend mit den Ordnungen `22` beziehungsweise `25–27` scharf gerendert.
+Alle Beschriftungsflächen rendern nur ihre Vorderseite, sodass bei einem freien
+Orbit unter den Layern keine spiegelverkehrten Rückseiten sichtbar werden.
 Das Material schreibt bewusst keine Tiefe. Eine segmentierte Fase
 ersetzt die harte Boxkante, damit Reflexion und Brechung an den Rändern
 räumlich lesbar sind. Beim UEFI-Glas entsteht diese Kante ausschließlich aus
