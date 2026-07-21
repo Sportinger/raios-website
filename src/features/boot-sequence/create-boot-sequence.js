@@ -109,6 +109,8 @@ export function createBootSequence() {
     group,
     prepareRender(renderer, scene, camera) {
       uefi.prepareRender(renderer, scene, camera);
+      limine.prepareRender(renderer, scene, camera);
+      kernel.prepareRender(renderer, scene, camera);
     },
     setUefiGlassOptics(settings) {
       uefi.setGlassOptics(settings);

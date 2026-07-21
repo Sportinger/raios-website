@@ -18,15 +18,40 @@ export function createLimineStage({ sourceAnchor }) {
     targetPosition: config.layer.position,
     sourceSize: sourceAnchor.size,
     size: [config.layer.width, config.layer.height, config.layer.depth],
-    color: config.color,
-    edgeColor: 0x72dbff,
-    emissive: 0x37bce8,
-    emissiveIntensity: 0.18,
-    metalness: 0.46,
-    roughness: 0.3,
-    surfaceOpacity: 0.88,
-    surfaceRenderOrder: 4,
-    depthWrite: true,
+    color: 0xe8edff,
+    edgeColor: 0x829cff,
+    emissive: 0x000000,
+    emissiveIntensity: 0,
+    envMapIntensity: 0.3,
+    metalness: 0,
+    roughness: 0.02,
+    transmission: 1,
+    thickness: 3.2,
+    ior: 1.04,
+    dispersion: 0,
+    clearcoat: 0.24,
+    clearcoatRoughness: 0.12,
+    attenuationColor: 0xd5ddff,
+    attenuationDistance: 25,
+    specularIntensity: 0.36,
+    transmissionResolution: 768,
+    transmissionSamples: 8,
+    transmissionBackside: true,
+    transmissionBacksideThickness: 0.45,
+    chromaticAberration: 0.008,
+    anisotropicBlur: 0.02,
+    distortion: 0.03,
+    distortionScale: 0.24,
+    surfaceRandomness: 0.48,
+    surfaceVariation: 0.2,
+    tintHue: 228,
+    tintIntensity: 0.58,
+    transmissionBrightness: 1.45,
+    surfaceRenderOrder: 30,
+    depthWrite: false,
+    bevelRadius: 0.09,
+    bevelSegments: 5,
+    edgeOpacity: 0,
     recenterOnExpansion: true,
     labelWidth: config.layer.width * 0.92,
     labelOptions: {
@@ -54,6 +79,7 @@ export function createLimineStage({ sourceAnchor }) {
         titleColor: "#ffffff",
         titleFont: monospaceFont(900, 310),
       },
+      renderOrder: 35,
     });
     card.group.position.set(
       definition.x,
@@ -61,6 +87,7 @@ export function createLimineStage({ sourceAnchor }) {
       config.zone.z,
     );
     stageLayer.registerScalingLabel(card.label);
+    stageLayer.registerTransmissionForeground(card.group);
     stageGroup.add(card.group);
     return { card, definition };
   });
@@ -79,8 +106,10 @@ export function createLimineStage({ sourceAnchor }) {
         config.zone.z - 0.2,
       ),
     ],
+    renderOrder: 36,
   });
   stageGroup.add(configToLoader.group);
+  stageLayer.registerTransmissionForeground(configToLoader.group);
   const anchors = Object.freeze({
     kernelLoader: createLayerAnchor([
       config.layer.position[0] + kernelLoader.x,
@@ -135,6 +164,9 @@ export function createLimineStage({ sourceAnchor }) {
   return {
     anchors,
     group,
+    prepareRender(renderer, scene, camera) {
+      stageLayer.prepareRender(renderer, scene, camera);
+    },
     setState,
     dispose() {
       configToLoader.dispose();

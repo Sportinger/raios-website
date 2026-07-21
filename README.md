@@ -129,8 +129,8 @@ ohne die Glasoberfläche vollständig in einen Half-Float-Buffer gerendert, den 
 IOR, Materialtiefe, chromatischer Aberration und blauer Absorption gebrochen
 abtastet. Der abgestimmte Ausgangszustand verwendet IOR `1.04`, eine Vorder-
 und Rückseitendicke von `3.5` beziehungsweise `0.5` sowie eine HDR-Rotation
-von `66°`. Die prozedurale Oberfläche startet mit Stärke `0.41` und Zufallsanteil
-`0.55`; eine dezente eisblaue Materialfarbe und Volumenabsorption tönen das Glas.
+von `95°`. Die prozedurale Oberfläche startet mit Stärke `0.24` und Zufallsanteil
+`0.41`; Farbton `190°` und Intensität `0.83` tönen das Glas eisblau.
 Eine schwache niedrigfrequente Variation der optischen Flächennormale bricht die
 planparallele Gleichförmigkeit auf. Helle Absorption und reduzierte
 Umgebungsreflexion halten das vollständige Glasvolumen zugleich durchsichtig.
@@ -140,10 +140,10 @@ erzeugte, nahtlos kachelbare Normalenstruktur variiert Reflexion und Brechung
 organisch. `Oberfläche` steuert ihre Stärke; `Zufall` mischt die regelmäßigen
 Grundwellen stufenlos mit vier Oktaven deterministischen Fractal Noise.
 `Chromatik` regelt die RGB-Aufspaltung der Brechung live von `0` bis `0.2` und
-startet beim zurückhaltenden Wert `0.025`.
+startet beim zurückhaltenden Wert `0.005`.
 `Farbe` wählt den Glaston über `0–360°`, `Farbintensität` mischt ihn mit neutralem
 Klarglas und `Helligkeit` verstärkt das gebrochene Szenenbild unabhängig von der
-HDR-Reflexion. Die Helligkeit startet zur besseren Durchsicht bei `1.25`.
+HDR-Reflexion. Die Helligkeit startet zur besseren Durchsicht bei `2.0`.
 Der physische SPI-Flash bleibt unter dem Glas und damit Bestandteil der
 gebrochenen Szene. UEFI-Seitentitel, Boot Manager und USB Boot stehen dagegen
 auf dem Glas: Sie werden aus beiden Transmission-Buffern ausgeschlossen und
@@ -152,8 +152,10 @@ Das Material schreibt bewusst keine Tiefe. Eine segmentierte Fase
 ersetzt die harte Boxkante, damit Reflexion und Brechung an den Rändern
 räumlich lesbar sind. Beim UEFI-Glas entsteht diese Kante ausschließlich aus
 dem Volumenmaterial; ein zusätzliches `EdgesGeometry`-Wireframe wird nicht erzeugt.
-Limine und Kernel bleiben alpha-basierte, tiefenschreibende Schichten mit
-eigenen dunkleren Transparenzwerten, damit der Stapel unterscheidbar bleibt.
+Limine und Kernel verwenden denselben vollständigen Vorder-/Rückseiten-
+Transmission-Pass mit eigenen Presets. Limine ist kühl blau-violett getönt;
+der Rust-Kernel bleibt farbneutral und wird über eine geringe
+Transmission-Helligkeit als dunkles Glas lesbar. Alle Glaslayer schreiben keine Tiefe.
 
 Wiederkehrende Bewegungslogik gehört unter `animation/`. Dort liegen reine Funktionen für Intervalle, Easing, Tracks und Transformationsschemata. Kapitel bestimmen das Timing; Objekte setzen den übergebenen Zustand um.
 

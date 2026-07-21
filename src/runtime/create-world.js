@@ -23,7 +23,7 @@ export function createWorld(renderer) {
   roomEnvironment.dispose();
   scene.environment = environmentMap;
   scene.environmentIntensity = 0;
-  scene.environmentRotation.y = THREE.MathUtils.degToRad(66);
+  scene.environmentRotation.y = THREE.MathUtils.degToRad(95);
   pmremGenerator.compileEquirectangularShader();
   new RGBELoader().load(
     STUDIO_ENVIRONMENT_URL,

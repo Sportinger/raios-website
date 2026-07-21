@@ -6,6 +6,7 @@ export function createCircuitTrace({
   points,
   color = 0x61d8ff,
   segments = 48,
+  renderOrder = 6,
 }) {
   const group = new THREE.Group();
   group.name = "circuit-trace";
@@ -19,7 +20,7 @@ export function createCircuitTrace({
     transparent: true,
   });
   const line = new THREE.Line(geometry, material);
-  line.renderOrder = 6;
+  line.renderOrder = renderOrder;
   group.add(line);
 
   const setState = ({ progress = 0, opacity = 1, pulse = 0 } = {}) => {

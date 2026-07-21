@@ -32,7 +32,7 @@ const CONTROL_DEFINITIONS = Object.freeze([
     min: 0,
     max: 360,
     step: 1,
-    value: 66,
+    value: 95,
     format: (value) => `${Math.round(value)}°`,
   }),
   Object.freeze({
@@ -41,7 +41,7 @@ const CONTROL_DEFINITIONS = Object.freeze([
     min: 0,
     max: 360,
     step: 1,
-    value: 198,
+    value: 190,
     format: (value) => `${Math.round(value)}°`,
   }),
   Object.freeze({
@@ -50,7 +50,7 @@ const CONTROL_DEFINITIONS = Object.freeze([
     min: 0,
     max: 1,
     step: 0.01,
-    value: 0.18,
+    value: 0.83,
     format: (value) => value.toFixed(2),
   }),
   Object.freeze({
@@ -59,7 +59,7 @@ const CONTROL_DEFINITIONS = Object.freeze([
     min: 0.5,
     max: 2,
     step: 0.01,
-    value: 1.25,
+    value: 2,
     format: (value) => value.toFixed(2),
   }),
   Object.freeze({
@@ -68,7 +68,7 @@ const CONTROL_DEFINITIONS = Object.freeze([
     min: 0,
     max: 0.5,
     step: 0.01,
-    value: 0.41,
+    value: 0.24,
     format: (value) => value.toFixed(2),
   }),
   Object.freeze({
@@ -77,7 +77,7 @@ const CONTROL_DEFINITIONS = Object.freeze([
     min: 0,
     max: 1,
     step: 0.01,
-    value: 0.55,
+    value: 0.41,
     format: (value) => value.toFixed(2),
   }),
   Object.freeze({
@@ -86,7 +86,7 @@ const CONTROL_DEFINITIONS = Object.freeze([
     min: 0,
     max: 0.2,
     step: 0.005,
-    value: 0.025,
+    value: 0.005,
     format: (value) => value.toFixed(3),
   }),
 ]);

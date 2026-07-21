@@ -38,17 +38,17 @@ Die Kernel-Landung beginnt bereits im Kontrollwechsel bei lokalem Fortschritt
 `0.40` und läuft ohne Neustart über die folgende Kapitelgrenze hinweg bis zur
 endgültigen Position auf dem Bare Metal.
 
-Die UEFI-Fläche verwendet unabhängig vom Scrollabschnitt vollständige
-physikalische Transmission. Sichtbarkeit und Form entstehen ausschließlich
-über Entfaltung, Brechung, leichte Dispersion, Studio-Reflexionen,
-Volumenabsorption und die cyanfarbenen Kanten; eine nachträgliche
-Deckkraftverdichtung existiert nicht. Die Glaskanten sind geometrisch gefast;
-eine schwache Linienkontur dient nur noch als Akzent.
+UEFI, Limine und Rust-Kernel verwenden unabhängig vom Scrollabschnitt
+vollständige physikalische Transmission mit separaten Vorder- und
+Rückseitenbuffern. Sichtbarkeit und Form entstehen ausschließlich über
+Entfaltung, Brechung, prozedurale Normalen, Studio-Reflexionen und
+Volumenabsorption; eine nachträgliche Deckkraftverdichtung existiert nicht.
+Die Glaskanten sind geometrisch gefast und besitzen keine Linienkontur.
 
-UEFI schreibt als Transmission-Glas keine Tiefe. Limine bleibt eine
-alpha-basierte, tiefenschreibende Softwareschicht. Der Kernel ist eine einzige
-ungeteilte Fläche mit `0.90` Deckkraft und
-bleibt damit als eigene räumliche Ebene lesbar.
+Keiner der drei Glaslayer schreibt Tiefe. UEFI ist kräftig eisblau, Limine
+kühl blau-violett getönt. Der einzelne ungeteilte Rust-Kernel bleibt ohne
+Farbton und wird durch eine reduzierte Transmission-Helligkeit als dunkles Glas
+von den temporären Startumgebungen unterschieden.
 
 Der Datenfluss besitzt eine feste Leserichtung von rechts nach links:
 
@@ -87,18 +87,16 @@ Manager auf, ohne seitlich zu wandern. Danach expandiert er über einen einmalig
 aus Quellposition, Quellgröße und Zielgröße berechneten Skalier-Pivot. Dadurch
 liegt die fertige Vollschicht bei Skalierung `1` automatisch exakt auf der
 gemeinsamen X/Z-Achse des Systemstapels; eine nachträgliche Positionsanimation
-ist nicht erforderlich. Kanten und Flächen besitzen getrennte Reveal-Werte:
-Limine steigt zunächst als reiner Wireframe auf und beginnt seine Expansion
-ebenfalls ohne Fläche. Erst im späteren Teil der Expansion wird das Material
-langsam bis zur endgültigen Deckkraft eingeblendet.
+ist nicht erforderlich. Limine steigt zunächst über seinen kompakten Footprint
+auf und erhält seine Glasfläche erst im späteren Teil der Expansion.
 
 Sobald `KERNEL LOADER` vollständig extrudiert ist, steigt direkt aus exakt
 diesem Quellmaß eine kompakte `RUST KERNEL`-Ebene hoch und expandiert über den modularen
 `expanding-stage-layer` auf das vollständige Systemmaß. Der Kernel besteht dabei
 aus einer einzigen Fläche; die frühere 3×2-Blockmontage und alle Statussegmente
 existieren nicht mehr. Auch fliegende Datenfragmente, Übergabekarten, Tür und
-Kontrollimpuls werden nicht gerendert. Erst Wireframe, dann Fläche und
-Seitentitel werden sichtbar.
+Kontrollimpuls werden nicht gerendert. Glasfläche und Seitentitel werden
+nacheinander sichtbar.
 
 Schichttitel liegen ausschließlich auf der zur Startkamera gerichteten
 Seitenfläche. Dort ist nur der große, fette weiße Hauptbegriff sichtbar;
