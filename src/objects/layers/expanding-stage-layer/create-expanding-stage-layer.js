@@ -3,6 +3,7 @@ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.j
 import { smootherstep } from "../../../animation/progress.js";
 import { disposeObject3D } from "../../../shared/dispose-object-3d.js";
 import { createHorizontalLabel } from "../../labels/create-horizontal-label.js";
+import { createMeshTransmissionSurface } from "../../materials/create-mesh-transmission-surface.js";
 
 export function createExpandingStageLayer({
   name = "expanding-stage-layer",
@@ -26,6 +27,14 @@ export function createExpandingStageLayer({
   attenuationDistance,
   dispersion,
   specularIntensity,
+  transmissionResolution = 1024,
+  transmissionSamples = 10,
+  chromaticAberration = 0.04,
+  anisotropicBlur = 0.08,
+  distortion = 0.01,
+  distortionScale = 0.3,
+  transmissionBackside = false,
+  transmissionBacksideThickness = 0.5,
   surfaceOpacity = 0.8,
   surfaceRenderOrder = 0,
   edgeOpacity = 1,
@@ -76,9 +85,6 @@ export function createExpandingStageLayer({
       bevelRadius,
     )
     : new THREE.BoxGeometry(...size);
-  const Material = !usesTransmission
-    ? THREE.MeshStandardMaterial
-    : THREE.MeshPhysicalMaterial;
   const materialOptions = {
     color,
     depthWrite,
@@ -102,8 +108,24 @@ export function createExpandingStageLayer({
       transmission,
     });
   }
-  const material = new Material(materialOptions);
-  const surface = new THREE.Mesh(geometry, material);
+  const transmissionSurface = usesTransmission
+    ? createMeshTransmissionSurface({
+      geometry,
+      materialOptions,
+      resolution: transmissionResolution,
+      samples: transmissionSamples,
+      chromaticAberration,
+      anisotropicBlur,
+      distortion,
+      distortionScale,
+      backside: transmissionBackside,
+      backsideThickness: transmissionBacksideThickness,
+    })
+    : null;
+  const material = transmissionSurface?.material
+    ?? new THREE.MeshStandardMaterial(materialOptions);
+  const surface = transmissionSurface?.surface
+    ?? new THREE.Mesh(geometry, material);
   surface.renderOrder = surfaceRenderOrder;
   contentGroup.add(surface);
   const edgeMaterial = new THREE.LineBasicMaterial({
@@ -187,6 +209,7 @@ export function createExpandingStageLayer({
     },
     setState,
     dispose() {
+      transmissionSurface?.dispose();
       disposeObject3D(group);
       group.removeFromParent();
     },

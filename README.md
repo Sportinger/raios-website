@@ -124,10 +124,12 @@ SPI Flash → UEFI → Boot Manager → Limine → Kernel Loader → Rust Kernel
 automatisch aus dem neuen Footprint.
 
 Die Softwareschichten besitzen eine feste Renderreihenfolge. UEFI verwendet
-reines physikalisches Volumenglas mit vollständiger Transmission, Brechung,
-leichter Dispersion und blauer Absorption über die Materialtiefe; es schreibt
-bewusst keine Tiefe. Eine segmentierte Fase ersetzt bei diesem Material die
-harte Boxkante, damit Reflexion und Brechung an den Rändern räumlich lesbar sind.
+einen eigenen Transmission-Pass: Vor dem Hauptbild wird die Szene ohne die
+Glasoberfläche in einen Half-Float-Buffer gerendert, den der Volumenshader mit
+IOR, Materialtiefe, chromatischer Aberration und blauer Absorption gebrochen
+abtastet. Das Material schreibt bewusst keine Tiefe. Eine segmentierte Fase
+ersetzt die harte Boxkante, damit Reflexion und Brechung an den Rändern
+räumlich lesbar sind.
 Limine und Kernel bleiben alpha-basierte, tiefenschreibende Schichten mit
 eigenen dunkleren Transparenzwerten, damit der Stapel unterscheidbar bleibt.
 
