@@ -11,6 +11,18 @@ export function smootherstep(value) {
   return progress * progress * progress * (progress * (progress * 6 - 15) + 10);
 }
 
+export function arriveWithMomentum(value) {
+  const progress = clamp(value);
+  return progress * progress * (2 - progress);
+}
+
+export function departWithMomentum(value, initialVelocity = 0.35) {
+  const progress = clamp(value);
+  return initialVelocity * progress
+    + (3 - 2 * initialVelocity) * progress * progress
+    + (initialVelocity - 2) * progress * progress * progress;
+}
+
 export function fastThenSmooth(value, rushEnd = 0.22, rushDistance = 0.32) {
   const progress = clamp(value);
   if (progress <= rushEnd) {

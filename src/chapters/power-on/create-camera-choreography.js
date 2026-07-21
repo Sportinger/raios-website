@@ -1,5 +1,10 @@
 import * as THREE from "three";
-import { intervalProgress, smootherstep } from "../../animation/progress.js";
+import {
+  arriveWithMomentum,
+  departWithMomentum,
+  intervalProgress,
+  smootherstep,
+} from "../../animation/progress.js";
 import {
   BARE_METAL_IMPACT_POSE,
   BARE_METAL_TOP_DOWN_POSE,
@@ -50,7 +55,7 @@ function createFlightPath({
     aboveCable(0.7, 7.4, 6.3, 0.92),
   ];
   return cameraRig.createHomeboundPath({
-    easing: smootherstep,
+    easing: arriveWithMomentum,
     endPosition,
     endTarget,
     endUp,
@@ -116,6 +121,7 @@ export function createPowerOnCameraChoreography({
     endPosition: topDownPosition,
     endTarget: topDownTarget,
     endUp: topDownUp,
+    easing: departWithMomentum,
   });
   const impulseTarget = new THREE.Vector3();
   const cameraTarget = new THREE.Vector3();
