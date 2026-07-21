@@ -1,9 +1,10 @@
 export const RUST_KERNEL_CONFIG = Object.freeze({
-  baseY: -1.08,
+  baseY: -0.76,
   columns: 3,
   rows: 2,
   gap: 0.22,
   mergedLabel: "RUST KERNEL",
+  survivalLabel: "RUST KERNEL · SURVIVAL CORE",
   layer: Object.freeze({
     width: 7.4,
     height: 0.72,

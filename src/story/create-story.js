@@ -27,9 +27,23 @@ export function createStory({ scene, context }) {
       start,
     };
   });
-  const navigationItems = chapters.map(({ chapter, end, index, label, start }) => (
-    Object.freeze({ end, id: chapter.id, index, label, start })
-  ));
+  let navigationIndex = 0;
+  const navigationItems = chapters.flatMap(({ chapter, end, label, start }) => {
+    const chapterLength = end - start;
+    const sections = chapter.navigationSections ?? [{
+      end: 1,
+      id: chapter.id,
+      label,
+      start: 0,
+    }];
+    return sections.map((section) => Object.freeze({
+      end: start + section.end * chapterLength,
+      id: section.id,
+      index: navigationIndex++,
+      label: section.label,
+      start: start + section.start * chapterLength,
+    }));
+  });
 
   return {
     navigationItems,

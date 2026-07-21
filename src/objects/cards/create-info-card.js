@@ -1,0 +1,56 @@
+import * as THREE from "three";
+import { smootherstep } from "../../animation/progress.js";
+import { createHorizontalLabel } from "../labels/create-horizontal-label.js";
+import { disposeObject3D } from "../../shared/dispose-object-3d.js";
+
+export function createInfoCard({
+  title,
+  description = "",
+  width = 1.4,
+  height = 0.08,
+  depth = 0.72,
+  color = 0x0a1622,
+  edgeColor = 0x68c9ff,
+}) {
+  const group = new THREE.Group();
+  group.name = `info-card:${title.toLowerCase().replaceAll(" ", "-")}`;
+  const geometry = new THREE.BoxGeometry(width, height, depth);
+  const material = new THREE.MeshStandardMaterial({
+    color,
+    emissive: edgeColor,
+    emissiveIntensity: 0.08,
+    metalness: 0.45,
+    opacity: 0,
+    roughness: 0.34,
+    transparent: true,
+  });
+  group.add(new THREE.Mesh(geometry, material));
+  const edgeMaterial = new THREE.LineBasicMaterial({
+    color: edgeColor,
+    opacity: 0,
+    transparent: true,
+  });
+  group.add(new THREE.LineSegments(new THREE.EdgesGeometry(geometry), edgeMaterial));
+  const label = createHorizontalLabel(title, description, width, depth);
+  label.plane.position.y = height / 2 + 0.008;
+  group.add(label.plane);
+
+  const setState = ({ progress = 0, opacity = 1 } = {}) => {
+    const eased = smootherstep(progress);
+    group.visible = opacity > 0.001 && eased > 0.001;
+    group.scale.setScalar(THREE.MathUtils.lerp(0.72, 1, eased));
+    material.opacity = eased * opacity;
+    edgeMaterial.opacity = eased * opacity * 0.9;
+    label.material.opacity = eased * opacity;
+  };
+  setState();
+
+  return {
+    group,
+    setState,
+    dispose() {
+      disposeObject3D(group);
+      group.removeFromParent();
+    },
+  };
+}

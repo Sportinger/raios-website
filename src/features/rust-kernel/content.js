@@ -9,10 +9,3 @@ export const KERNEL_SECTIONS = Object.freeze([
     description: "erkennt Ausfälle und erhält die Recovery-Spur",
   }),
 ]);
-
-export const KERNEL_NARRATION = [
-  "Zuerst übernimmt ein kleiner Rust-Kernel die rohe Maschine.",
-  "Er ordnet den Speicher, verteilt Rechenzeit, kontrolliert Interrupts und zieht Schutzgrenzen um CPU und Geräte.",
-  "Er kennt noch keine Apps, keine Treiber und keinen Agenten.",
-  "Er sorgt nur dafür, dass die Maschine kontrollierbar bleibt – selbst wenn später alles darüber scheitert.",
-].join(" ");

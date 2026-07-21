@@ -34,6 +34,8 @@ Ein Kapitel entscheidet, wann etwas passiert. Es erstellt komplexe Features, fü
 
 Die rechte Kapitel-Navigation bildet die gesamte Story als vertikale Mini-Timeline ab und wird automatisch aus den Einträgen der `story-map.js` erzeugt. Kapitel `1` liegt bei `0 %` am oberen Rand; jede weitere Pill sitzt prozentual genau dort, wo ihr Kapitel innerhalb der gewichteten Scrollstrecke beginnt. Die halb sichtbaren nummerierten Pills markieren das aktive Kapitel, fahren bei Hover beziehungsweise Tastaturfokus aus dem Rand und springen beim Aktivieren zum Kapitelanfang. Neue Story-Einträge erhalten ohne zusätzliches HTML automatisch die nächste Nummer und Position. Bei reduzierter Bewegung wird das Kapitel ohne Scrollanimation direkt umgeschaltet.
 
+Ein langes Kapitel kann über `navigationSections` eigene, lokal normierte Unterkapitel veröffentlichen. Die Story rechnet deren Start- und Endwerte automatisch in globale Scrollpositionen um. Die Boot-Sequenz nutzt dies für die sichtbaren Kapitel 2–9, bleibt intern aber ein einziger Objektgraph. Dadurch werden komplexe Features und große Labeltexturen nicht achtfach dupliziert.
+
 ### Features
 
 Ein Feature ist ein komplexer, fachlich abgegrenzter Darsteller. `features/rust-kernel/` besitzt beispielsweise Konfiguration, Inhalt, Aufbau und Lifecycle des Rust-Kernels. `features/power-button/` kombiniert den allgemeinen Druckknopf mit dem raiOS-Power-Symbol. Ein Feature kennt weder die Scrollposition noch die Position seines Kapitels in der Gesamtgeschichte.
@@ -100,6 +102,24 @@ Das Power-on-Kapitel enthält nur noch die Dramaturgie und setzt folgende Bauste
 
 Für eine andere Route wird daher kein Kabel- oder Shader-Code geändert. Für ein anderes Kabelmaterial wird keine Kameralogik geändert. Ein neues Kapitel importiert Features immer aus deren `index.js`, niemals aus internen Erzeuger- oder Konfigurationsdateien.
 
+### Boot-Sequenz
+
+`features/boot-sequence/` komponiert die sichtbaren Phasen nach dem Einschaltimpuls. Die fachlichen Darsteller bleiben getrennt:
+
+```text
+features/
+├── hardware-platform/   Bare Metal, CPU, RAM, Chipsatz, Controller und Geräte
+├── uefi-firmware/       Firmware-Leiterbahnen und transparente UEFI-Ebene
+├── boot-usb/            Mechanischer Stick, ESP und BOOTX64.EFI
+├── limine-bridge/       Temporäre Boot-Brücke, Suche und Kernelpaket
+├── kernel-platform/     Datenstrom, Aufbau, Landung und Laufpuls
+├── boot-information/    Einmalige Übergabekarten
+├── control-handoff/     Gerichtete UEFI-zu-raiOS-Tür
+└── boot-sequence/       Deterministische Komposition aller Phasen
+```
+
+Die wiederverwendbaren Grundbausteine `objects/cards/` und `objects/effects/data-stream/` kennen diese Fachbegriffe nicht. Sprechertexte und Audio sind bewusst nicht Bestandteil der aktuellen Implementierung.
+
 ## Kapitel ergänzen
 
 Ein Kapitel exportiert mindestens `id`, `group`, `update(progress)`, `resize(viewport)` und `dispose()`. Danach wird es in `story/story-map.js` mit einem Gewicht registriert. Prozentwerte eines Kapitels bleiben lokal und verändern keine späteren Kapitel.
@@ -113,7 +133,8 @@ Für Reduced Motion setzt die Runtime den Storyfortschritt auf den fertigen Zust
 3. Der Button bleibt während seiner Einführung räumlich vollständig statisch und von Anfang an opak; nur reales Licht macht ihn sichtbar. Eine unsichtbare neutralweiße Punktlichtquelle hält zunächst eindeutig hinter seiner Rückseite und orbitiert anschließend auf einer horizontalen 240-Grad-Kreisbahn im Uhrzeigersinn nach vorne. Das orbitierende Point Light erzeugt über eine `BasicShadowMap` bewusst harte wandernde Schatten. Das Power-Symbol verwendet zunächst ein graues `MeshStandardMaterial` und blendet in der zweiten Hälfte des Lichtorbits unabhängig auf raiOS-blaues Emissive ein. Eine schwache, mit Abstand über der Symbolfläche sitzende blaue Punktlichtquelle beleuchtet Kappe, Rand und nahe Objekte tatsächlich. Der größere Abstand verhindert den harten zentralen Lichtreflex; eine zweite additive Symbolkontur wird nicht mehr gezeichnet. Ab exakt diesem Zeitpunkt fahren Hemisphere- und Key-Light langsam per Smootherstep hinzu, sodass Gehäuse und Rand zunehmend lesbarer werden, ohne den wandernden Lichtakzent abrupt zu überdecken. Danach beginnt der Camera-Rig seinen vollständigen 90-Grad-Orbit um den Button. Gleich zu Beginn des Eindrückens starten der blaue Button-Power-Glow und die Plasmawolke gemeinsam. Während der Orbit positionsseitig ungekürzt weiterläuft, mischt sich der Kamerafokus langsam vom Button auf die Wolke. Am Orbit-Ende übernimmt die Flugbahn aus derselben Position und mit demselben Blickziel. Nach dem vollständig gedrückten Zustand fährt die Kappe weich in ihre Ruheposition zurück; Symbollicht, Emissive und Button-Underglow erlöschen synchron. Der Plasmakern bleibt anschließend als Kameraziel im Bildzentrum, während der Follow kontinuierlich an Höhe und Abstand gewinnt und auf die ursprüngliche Kameraseite zurückorbitiert.
 
 Der schwarze Housing-Sockel besitzt nur ein Fünftel seiner ursprünglichen Tiefe. Der Kabel-Socket sitzt bündig an dieser flachen Rückseite.
-4. `chapters/kernel/` übernimmt anschließend und zeigt den Aufbau sowie die Unterteilung des Rust-Kernels.
+4. `chapters/boot-sequence/` übernimmt anschließend als zusammenhängender Objektgraph und veröffentlicht acht navigierbare Abschnitte: Hardware wird auf `BARE METAL` schematisch sichtbar; UEFI breitet sich vom Firmware-Chip aus; der raiOS-USB-Stick dockt mechanisch an; Limine entsteht als kleine temporäre Brücke; `kernel.elf` strömt blockweise in den RAM; sechs Startinformationen docken am schwebenden Kernel an; die gerichtete Tür `UEFI → RAIOS` übergibt die Kontrolle; der fertige `RUST KERNEL · SURVIVAL CORE` landet schwer auf der Hardware.
+5. `chapters/kernel/` setzt ohne erneuten Kernelaufbau fort und zeigt anschließend seine innere Unterteilung. Bare Metal und der abgedunkelte USB-Stick bleiben dabei räumlich vorhanden.
 
 Die Zeitfenster und das räumliche Layout des Einschaltvorgangs liegen getrennt in `chapters/power-on/timeline.js` und `chapters/power-on/layout.js`. Form und Material des Buttons, Kabels und Layers gehören zu ihren Features beziehungsweise allgemeinen Objekten und enthalten keine Story-Zeitwerte.
 

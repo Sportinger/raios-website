@@ -1,6 +1,8 @@
 import * as THREE from "three";
+import { intervalProgress, smootherstep } from "../../animation/progress.js";
 import { createScrollLayerStack } from "../../objects/layers/create-scroll-layer-stack.js";
 import { createSectionedLayer } from "../../objects/layers/create-sectioned-layer.js";
+import { createHorizontalLabel } from "../../objects/labels/create-horizontal-label.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 import { RUST_KERNEL_CONFIG } from "./config.js";
 import { KERNEL_SECTIONS } from "./content.js";
@@ -21,7 +23,16 @@ export function createRustKernel() {
     gap: RUST_KERNEL_CONFIG.gap,
     mergedLabel: RUST_KERNEL_CONFIG.mergedLabel,
   });
-  group.add(base.group, sections.group);
+  const survivalLabel = createHorizontalLabel(
+    RUST_KERNEL_CONFIG.survivalLabel,
+    "",
+    RUST_KERNEL_CONFIG.layer.width * 0.65,
+    RUST_KERNEL_CONFIG.layer.depth * 0.42,
+  );
+  survivalLabel.plane.position.y = RUST_KERNEL_CONFIG.baseY
+    + RUST_KERNEL_CONFIG.layer.height
+    + 0.018;
+  group.add(base.group, sections.group, survivalLabel.plane);
 
   return {
     group,
@@ -33,6 +44,7 @@ export function createRustKernel() {
     setBreakdownProgress(progress) {
       const state = sections.render(progress);
       base.group.visible = !state.replacesBase;
+      survivalLabel.material.opacity = 1 - smootherstep(intervalProgress(progress, 0.02, 0.14));
     },
 
     dispose() {
