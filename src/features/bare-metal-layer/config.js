@@ -5,5 +5,4 @@ export const BARE_METAL_CONFIG = Object.freeze({
   bottomY: -1.08,
   color: 0x0a1018,
   edgeColor: 0x5e9bcb,
-  label: "BARE METAL",
 });

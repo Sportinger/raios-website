@@ -95,7 +95,6 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
       );
       bareMetal.setState({
         revealProgress: 1,
-        labelProgress: 1,
         opacity: 1,
         elevationProgress: activationProgress,
         currentProgress,

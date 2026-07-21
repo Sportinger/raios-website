@@ -35,13 +35,29 @@ export function createInfoCard({
   label.plane.position.y = height / 2 + 0.008;
   group.add(label.plane);
 
-  const setState = ({ progress = 0, opacity = 1 } = {}) => {
-    const eased = smootherstep(progress);
-    group.visible = opacity > 0.001 && eased > 0.001;
-    group.scale.setScalar(THREE.MathUtils.lerp(0.72, 1, eased));
-    material.opacity = eased * opacity;
-    edgeMaterial.opacity = eased * opacity * 0.9;
-    label.material.opacity = eased * opacity;
+  const setState = ({
+    progress = 0,
+    activationProgress = progress,
+    pulseProgress = 0,
+    opacity = 1,
+  } = {}) => {
+    const reveal = smootherstep(progress);
+    const activation = smootherstep(activationProgress);
+    const pulse = smootherstep(pulseProgress);
+    group.visible = opacity > 0.001 && reveal > 0.001;
+    group.scale.setScalar(THREE.MathUtils.lerp(0.72, 1, reveal));
+    material.opacity = reveal * opacity * THREE.MathUtils.lerp(0.3, 1, activation);
+    material.emissiveIntensity = 0.025 + activation * 0.58 + pulse * 0.72;
+    edgeMaterial.opacity = reveal * opacity * THREE.MathUtils.lerp(
+      0.12,
+      0.9,
+      activation,
+    );
+    label.material.opacity = reveal * opacity * THREE.MathUtils.lerp(
+      0.2,
+      1,
+      activation,
+    );
   };
   setState();
 

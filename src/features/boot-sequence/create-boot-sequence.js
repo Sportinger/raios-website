@@ -44,6 +44,7 @@ export function createBootSequence() {
     hardware.setState({
       hardwareProgress: bareMetal,
       initializationProgress: firmware,
+      usbProgress: bootUsb,
       opacity: 1,
     });
     uefi.setState({
