@@ -21,6 +21,9 @@ export function createExpandingStageLayer({
   ior,
   clearcoat,
   clearcoatRoughness,
+  attenuationColor,
+  attenuationDistance,
+  specularIntensity,
   surfaceOpacity = 0.8,
   surfaceRenderOrder = 0,
   edgeOpacity = 1,
@@ -75,9 +78,12 @@ export function createExpandingStageLayer({
   };
   if (transmission !== undefined) {
     Object.assign(materialOptions, {
+      attenuationColor,
+      attenuationDistance,
       clearcoat,
       clearcoatRoughness,
       ior,
+      specularIntensity,
       thickness,
       transmission,
     });

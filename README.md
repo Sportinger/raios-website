@@ -119,8 +119,9 @@ automatisch aus dem neuen Footprint.
 Transparente Softwareschichten schreiben bewusst Tiefe und besitzen eine feste
 Renderreihenfolge. So werden Verbindungen hinter einer Schicht von deren Farbe
 und Deckkraft beeinflusst, während räumlich davorliegende Kabelteile sichtbar
-bleiben. UEFI endet nahezu blickdicht bei `0.9`; Limine und Kernel verwenden
-eigene dunklere Transparenzwerte, damit der Schichtstapel unterscheidbar bleibt.
+bleiben. UEFI verwendet physikalisches Volumenglas mit hoher Transmission und
+blauer Absorption über die Materialtiefe; Limine und Kernel verwenden eigene
+dunklere Transparenzwerte, damit der Schichtstapel unterscheidbar bleibt.
 
 Wiederkehrende Bewegungslogik gehört unter `animation/`. Dort liegen reine Funktionen für Intervalle, Easing, Tracks und Transformationsschemata. Kapitel bestimmen das Timing; Objekte setzen den übergebenen Zustand um.
 
