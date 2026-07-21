@@ -78,7 +78,6 @@ export function createUefiFirmware({ sourceAnchor }) {
       width: definition.size[0],
       height: definition.size[1],
       depth: definition.size[2],
-      color: UEFI_FIRMWARE_CONFIG.color,
       edgeColor: 0x76ddff,
       labelPlacement: "front",
       renderOrder: 25,

@@ -71,7 +71,7 @@ export function createKernelPlatform({ sourceAnchor }) {
     const running = smootherstep(runningProgress);
     kernelLayer.setState({
       revealProgress: intervalProgress(assembly, 0, 0.12),
-      surfaceProgress: intervalProgress(assembly, 0.62, 1),
+      surfaceProgress: intervalProgress(assembly, 0, 0.12),
       liftProgress: intervalProgress(assembly, 0, 0.46),
       expansionProgress: intervalProgress(assembly, 0.42, 1),
       labelProgress: intervalProgress(assembly, 0.7, 1),

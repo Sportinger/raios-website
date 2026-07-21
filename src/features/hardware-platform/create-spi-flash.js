@@ -14,7 +14,6 @@ export function createSpiFlash() {
     width: config.size[0],
     height: config.size[1],
     depth: config.size[2],
-    color: config.color,
     edgeColor: 0x5bd8ff,
     labelPlacement: "front",
     labelOptions: {

@@ -3,6 +3,8 @@ import { intervalProgress, smootherstep } from "../../animation/progress.js";
 import { createHorizontalLabel } from "../labels/create-horizontal-label.js";
 import { monospaceFont } from "../labels/typography.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
+import { applyBoxTextureScale } from "../materials/apply-box-texture-scale.js";
+import { loadMetal048BTextures } from "../materials/load-metal048b-textures.js";
 
 function createFootprintPoints(width, height, depth, segmentsPerEdge = 16) {
   const y = -height / 2 + 0.004;
@@ -30,7 +32,6 @@ export function createInfoCard({
   width = 1.4,
   height = 0.08,
   depth = 0.72,
-  color = 0x0a1622,
   edgeColor = 0x68c9ff,
   labelPlacement = "front",
   labelOptions,
@@ -42,17 +43,29 @@ export function createInfoCard({
   contentGroup.name = `${group.name}:content`;
   group.add(contentGroup);
   const geometry = new THREE.BoxGeometry(width, height, depth);
+  applyBoxTextureScale(geometry, {
+    width,
+    height,
+    depth,
+    tileSize: 0.65,
+  });
+  const textures = loadMetal048BTextures();
   const material = new THREE.MeshStandardMaterial({
-    color,
+    color: 0xffffff,
     depthWrite: false,
     emissive: edgeColor,
     emissiveIntensity: 0.08,
-    metalness: 0.45,
+    map: textures.map,
+    metalness: 1,
+    metalnessMap: textures.metalnessMap,
+    normalMap: textures.normalMap,
+    normalScale: new THREE.Vector2(0.34, 0.34),
     opacity: 0,
     polygonOffset: true,
     polygonOffsetFactor: -1,
     polygonOffsetUnits: -1,
-    roughness: 0.34,
+    roughness: 1,
+    roughnessMap: textures.roughnessMap,
     transparent: true,
   });
   const body = new THREE.Mesh(geometry, material);

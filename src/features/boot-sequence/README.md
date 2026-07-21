@@ -87,16 +87,16 @@ Manager auf, ohne seitlich zu wandern. Danach expandiert er über einen einmalig
 aus Quellposition, Quellgröße und Zielgröße berechneten Skalier-Pivot. Dadurch
 liegt die fertige Vollschicht bei Skalierung `1` automatisch exakt auf der
 gemeinsamen X/Z-Achse des Systemstapels; eine nachträgliche Positionsanimation
-ist nicht erforderlich. Limine steigt zunächst über seinen kompakten Footprint
-auf und erhält seine Glasfläche erst im späteren Teil der Expansion.
+ist nicht erforderlich. Der kompakte Limine-Glaskörper ist bereits beim
+vertikalen Aufstieg sichtbar und expandiert anschließend auf das Systemmaß.
 
 Sobald `KERNEL LOADER` vollständig extrudiert ist, steigt direkt aus exakt
 diesem Quellmaß eine kompakte `RUST KERNEL`-Ebene hoch und expandiert über den modularen
 `expanding-stage-layer` auf das vollständige Systemmaß. Der Kernel besteht dabei
 aus einer einzigen Fläche; die frühere 3×2-Blockmontage und alle Statussegmente
 existieren nicht mehr. Auch fliegende Datenfragmente, Übergabekarten, Tür und
-Kontrollimpuls werden nicht gerendert. Glasfläche und Seitentitel werden
-nacheinander sichtbar.
+Kontrollimpuls werden nicht gerendert. Der kompakte Kernel-Glaskörper fährt
+sichtbar hoch, expandiert und erhält anschließend seinen Seitentitel.
 
 Schichttitel liegen ausschließlich auf der zur Startkamera gerichteten
 Seitenfläche. Dort ist nur der große, fette weiße Hauptbegriff sichtbar;

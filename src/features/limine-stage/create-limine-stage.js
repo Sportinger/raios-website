@@ -71,7 +71,6 @@ export function createLimineStage({ sourceAnchor }) {
       width: config.zone.size[0],
       height: config.zone.size[1],
       depth: config.zone.size[2],
-      color: config.color,
       edgeColor: 0x7de1ff,
       labelPlacement: "front",
       labelOptions: {
@@ -134,7 +133,7 @@ export function createLimineStage({ sourceAnchor }) {
     const control = smootherstep(handoffProgress);
     const stageState = stageLayer.setState({
       revealProgress: layerVisibility,
-      surfaceProgress: intervalProgress(layerProgress, 0.62, 1),
+      surfaceProgress: layerVisibility,
       liftProgress: lift,
       expansionProgress,
       labelProgress: intervalProgress(expansionProgress, 0.18, 0.72),

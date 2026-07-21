@@ -71,6 +71,11 @@ objects/
 └── mechanisms/    Türen, Klappen, Schalter und Verriegelungen
 ```
 
+Alle Chip-Gehäuse aus `objects/cards/` verwenden gemeinsam das goldene
+Metal048B-PBR-Set mit Color-, Metalness-, OpenGL-Normal- und Roughness-Map.
+Die fachlichen Features steuern weiterhin nur Beschriftung, Aktivierung und
+Signalakzente.
+
 Zur Umgebung gehört eine `42 × 34` Welteinheiten große Metalltischplatte. Sie
 liegt unter Button, Kabelweg und Systemstapel und verwendet ein eigenes
 Metal030-PBR-Set aus Color-, Metalness-, Normal- und Roughness-Map.
