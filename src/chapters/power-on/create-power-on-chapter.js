@@ -173,19 +173,19 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
       lightRig.setIntensity(smootherstep(intervalProgress(
         progress, ...POWER_ON_TIMELINE.environmentLight,
       )));
+      cable.curve.getPointAt(smootherstep(signalProgress), impulseTarget);
+      cameraTarget.lerpVectors(
+        buttonPosition,
+        impulseTarget,
+        smootherstep(intervalProgress(
+          progress, ...POWER_ON_TIMELINE.cameraFollow,
+        )),
+      );
       if (progress < POWER_ON_TIMELINE.cameraFlight[0]) {
         cameraOrbit.update(intervalProgress(
           progress, ...POWER_ON_TIMELINE.cameraOrbit,
-        ));
+        ), cameraTarget);
       } else {
-        cable.curve.getPointAt(smootherstep(signalProgress), impulseTarget);
-        cameraTarget.lerpVectors(
-          buttonPosition,
-          impulseTarget,
-          smootherstep(intervalProgress(
-            progress, ...POWER_ON_TIMELINE.cameraFollow,
-          )),
-        );
         cameraPath.update(intervalProgress(
           progress, ...POWER_ON_TIMELINE.cameraFlight,
         ), cameraTarget);

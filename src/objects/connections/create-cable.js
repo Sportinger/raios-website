@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { smootherstep } from "../../animation/progress.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
-import { createRadialGlowTexture } from "../effects/create-radial-glow-texture.js";
+import { createPlasmaGlowTexture } from "../effects/create-plasma-glow-texture.js";
 
 const FLOW_DASH_COUNT = 18;
 const CABLE_AXIS = new THREE.Vector3(0, 0, 1);
@@ -71,50 +71,36 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
     transparent: true,
     toneMapped: false,
   });
-  pulse.add(new THREE.Mesh(new THREE.SphereGeometry(0.09, 20, 14), pulseMaterial));
+  pulse.add(new THREE.Mesh(new THREE.SphereGeometry(0.18, 24, 18), pulseMaterial));
 
-  const shockRingMaterial = new THREE.MeshBasicMaterial({
-    color: 0xd8f7ff,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-    opacity: 0,
-    side: THREE.DoubleSide,
-    transparent: true,
-    toneMapped: false,
+  const plasmaTexture = createPlasmaGlowTexture();
+  const plasmaLayerSpecs = [
+    { blending: THREE.NormalBlending, color: 0xf1fdff, depthTest: false, opacity: 1, position: [0, 0, 0.04], rotation: 0.1, scale: [1.65, 1.36] },
+    { color: 0xaeeeff, opacity: 0.62, position: [0.04, -0.03, -0.08], rotation: 0.8, scale: [2.1, 1.72] },
+    { color: accentColor, opacity: 0.34, position: [-0.08, 0.06, -0.24], rotation: -0.55, scale: [3.5, 2.7] },
+    { color: 0x3c91ff, opacity: 0.2, position: [0.12, -0.08, -0.42], rotation: 1.35, scale: [4.8, 3.5] },
+    { color: 0x79cfff, opacity: 0.32, position: [-0.14, 0.09, -0.58], rotation: -1.1, scale: [1.7, 1.18] },
+    { color: 0x3c91ff, opacity: 0.2, position: [0.13, -0.06, -0.82], rotation: 0.45, scale: [1.25, 0.82] },
+  ];
+  const plasmaLayers = plasmaLayerSpecs.map((spec, index) => {
+    const material = new THREE.SpriteMaterial({
+      map: plasmaTexture,
+      color: spec.color,
+      blending: spec.blending ?? THREE.AdditiveBlending,
+      depthTest: spec.depthTest ?? true,
+      depthWrite: false,
+      rotation: spec.rotation,
+      transparent: true,
+      toneMapped: false,
+    });
+    const sprite = new THREE.Sprite(material);
+    sprite.name = `plasma-layer-${index + 1}`;
+    sprite.position.fromArray(spec.position);
+    sprite.scale.set(spec.scale[0], spec.scale[1], 1);
+    sprite.renderOrder = 8 + index;
+    pulse.add(sprite);
+    return { material, spec, sprite };
   });
-  const outerShockRingMaterial = shockRingMaterial.clone();
-  outerShockRingMaterial.color.set(accentColor);
-  pulse.add(new THREE.Mesh(
-    new THREE.TorusGeometry(0.34, 0.026, 8, 48),
-    shockRingMaterial,
-  ));
-  pulse.add(new THREE.Mesh(
-    new THREE.TorusGeometry(0.62, 0.016, 8, 64),
-    outerShockRingMaterial,
-  ));
-
-  const glowTexture = createRadialGlowTexture();
-  const innerHaloMaterial = new THREE.SpriteMaterial({
-    map: glowTexture,
-    color: 0xd8f7ff,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-    transparent: true,
-    toneMapped: false,
-  });
-  const outerHaloMaterial = innerHaloMaterial.clone();
-  outerHaloMaterial.color.set(accentColor);
-  const auraMaterial = outerHaloMaterial.clone();
-  auraMaterial.color.set(0x3c9eff);
-  const innerHalo = new THREE.Sprite(innerHaloMaterial);
-  innerHalo.scale.setScalar(0.82);
-  pulse.add(innerHalo);
-  const outerHalo = new THREE.Sprite(outerHaloMaterial);
-  outerHalo.scale.setScalar(2.8);
-  pulse.add(outerHalo);
-  const aura = new THREE.Sprite(auraMaterial);
-  aura.scale.setScalar(5.6);
-  pulse.add(aura);
   const pulseLight = new THREE.PointLight(accentColor, 0, 7, 2);
   pulse.add(pulseLight);
   group.add(pulse);
@@ -157,12 +143,18 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
     );
     pulse.visible = group.visible && signalEnvelope > 0.001;
     pulseMaterial.opacity = opacity * signalEnvelope;
-    shockRingMaterial.opacity = opacity * signalEnvelope * 0.92;
-    outerShockRingMaterial.opacity = opacity * signalEnvelope * 0.48;
-    innerHaloMaterial.opacity = opacity * signalEnvelope * 0.92;
-    outerHaloMaterial.opacity = opacity * signalEnvelope * 0.38;
-    auraMaterial.opacity = opacity * signalEnvelope * 0.15;
-    pulseLight.intensity = opacity * signalEnvelope * 8;
+    plasmaLayers.forEach(({ material, spec, sprite }, index) => {
+      const turbulence = 1 + Math.sin(signalProgress * 24 + index * 1.7) * 0.08;
+      material.opacity = opacity * signalEnvelope * spec.opacity;
+      material.rotation = spec.rotation
+        + signalProgress * (index % 2 === 0 ? 4.5 : -3.8);
+      sprite.scale.set(
+        spec.scale[0] * turbulence,
+        spec.scale[1] / turbulence,
+        1,
+      );
+    });
+    pulseLight.intensity = opacity * signalEnvelope * 7;
   };
 
   return {
