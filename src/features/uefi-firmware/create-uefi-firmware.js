@@ -58,7 +58,7 @@ export function createUefiFirmware({ sourceAnchor }) {
     bevelRadius: 0.09,
     bevelSegments: 5,
     edgeColor: 0x83e5ff,
-    edgeOpacity: 0.12,
+    edgeOpacity: 0,
     labelWidth: UEFI_FIRMWARE_CONFIG.width * 0.96,
     labelOptions: {
       panel: false,

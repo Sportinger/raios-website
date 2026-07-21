@@ -141,7 +141,8 @@ auf dem Glas: Sie werden aus beiden Transmission-Buffern ausgeschlossen und
 anschließend mit den Ordnungen `22` beziehungsweise `25–27` scharf gerendert.
 Das Material schreibt bewusst keine Tiefe. Eine segmentierte Fase
 ersetzt die harte Boxkante, damit Reflexion und Brechung an den Rändern
-räumlich lesbar sind.
+räumlich lesbar sind. Beim UEFI-Glas entsteht diese Kante ausschließlich aus
+dem Volumenmaterial; ein zusätzliches `EdgesGeometry`-Wireframe wird nicht erzeugt.
 Limine und Kernel bleiben alpha-basierte, tiefenschreibende Schichten mit
 eigenen dunkleren Transparenzwerten, damit der Stapel unterscheidbar bleibt.
 

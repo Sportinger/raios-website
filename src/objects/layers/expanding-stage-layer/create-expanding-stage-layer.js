@@ -130,14 +130,18 @@ export function createExpandingStageLayer({
     ?? new THREE.Mesh(geometry, material);
   surface.renderOrder = surfaceRenderOrder;
   contentGroup.add(surface);
-  const edgeMaterial = new THREE.LineBasicMaterial({
-    color: edgeColor,
-    opacity: 0,
-    transparent: true,
-  });
-  contentGroup.add(
-    new THREE.LineSegments(new THREE.EdgesGeometry(geometry), edgeMaterial),
-  );
+  const edgeMaterial = edgeOpacity > 0
+    ? new THREE.LineBasicMaterial({
+      color: edgeColor,
+      opacity: 0,
+      transparent: true,
+    })
+    : null;
+  if (edgeMaterial) {
+    contentGroup.add(
+      new THREE.LineSegments(new THREE.EdgesGeometry(geometry), edgeMaterial),
+    );
+  }
   const label = createHorizontalLabel(
     title,
     "",
@@ -200,7 +204,9 @@ export function createExpandingStageLayer({
       );
     }
     material.emissiveIntensity = emissiveIntensity * emissiveIntensityScale;
-    edgeMaterial.opacity = reveal * activeOpacity * edgeOpacity;
+    if (edgeMaterial) {
+      edgeMaterial.opacity = reveal * activeOpacity * edgeOpacity;
+    }
     label.material.opacity = smootherstep(labelProgress) * labelOpacity * activeOpacity;
     return { activeOpacity, alignment, expansion, exit, lift, reveal };
   };
