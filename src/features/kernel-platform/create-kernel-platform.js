@@ -34,10 +34,6 @@ export function createKernelPlatform() {
   });
   group.add(kernelLayer.group);
 
-  const landingLight = new THREE.PointLight(0x4ecbff, 0, 7, 2);
-  landingLight.position.set(0, 0.8, 0);
-  kernelLayer.contentGroup.add(landingLight);
-
   const setState = ({
     assemblyProgress = 0,
     landingProgress = 0,
@@ -59,8 +55,6 @@ export function createKernelPlatform() {
     kernelLayer.group.position.y -= (
       config.hoverY - config.landedY
     ) * landing;
-    landingLight.intensity = Math.sin(landing * Math.PI) * 4
-      + (0.45 + Math.sin(running * Math.PI * 6) * 0.12) * running;
   };
   setState();
 

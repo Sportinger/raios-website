@@ -114,12 +114,21 @@ des Startgerüsts dargestellt, nicht durch zusätzliche fliegende Objekte.
 
 Beim Rückzug bleiben die Energieringe in beiden UEFI-Kabeln aktiv. Die Kabel
 werden vom Anfang her sichtbar kürzer, sodass der Strom bis zur wandernden
-Kabelspitze läuft. Erst wenn die Leitungen vollständig eingezogen sind, folgt
-Limine und anschließend leicht versetzt UEFI.
+Kabelspitze läuft. Dieser Rückzug beginnt ohne Leerlauf direkt am Anfang des
+Kontrollwechsels. Erst wenn die Leitungen vollständig eingezogen sind, folgt
+Limine und anschließend leicht versetzt UEFI; ihre Rückzüge füllen den restlichen
+Abschnitt kontinuierlich aus.
 
 Der Seitentitel `LIMINE BOOT ENVIRONMENT` bleibt nach seinem Reveal während der
 gesamten Limine-Sequenz sichtbar. Er dimmt nicht beim Erscheinen von CONFIG oder
 KERNEL LOADER, sondern verschwindet erst beim eigenen Limine-Rückzug.
+
+Seitentitel expandierender Schichten werden zwei Renderstufen nach ihrer
+transparenten Oberfläche und mit zusätzlichem Abstand vor der Seitenfläche
+gezeichnet. Dadurch bleibt insbesondere `RUST KERNEL` reinweiß und klar lesbar,
+ohne durch das cyanfarbene Layer-Material abgedunkelt zu werden. Der Kernel
+besitzt kein eigenes Point Light mehr; sein Laufzustand wird ausschließlich
+über ein zurückhaltendes Material-Emissive gezeigt.
 
 Alle Chipobjekte verwenden `objects/cards/create-info-card.js`. Das gemeinsame
 Reveal zeichnet zuerst ausschließlich den flachen Footprint als fortlaufenden

@@ -83,8 +83,9 @@ export function createExpandingStageLayer({
     size[1] / 0.7,
     labelOptions,
   );
-  label.plane.position.z = size[2] / 2 + 0.012;
+  label.plane.position.z = size[2] / 2 + 0.03;
   label.plane.rotation.x = 0;
+  label.plane.renderOrder = surfaceRenderOrder + 2;
   contentGroup.add(label.plane);
   const scalingLabels = [label];
 
