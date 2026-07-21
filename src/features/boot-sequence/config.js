@@ -1,5 +1,4 @@
 export const BOOT_SCENES = Object.freeze([
-  Object.freeze({ id: "bare-metal", label: "Bare Metal" }),
   Object.freeze({ id: "uefi-firmware", label: "UEFI Firmware" }),
   Object.freeze({ id: "boot-usb", label: "raiOS Boot USB" }),
   Object.freeze({ id: "limine-bridge", label: "Limine" }),

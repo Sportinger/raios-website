@@ -35,14 +35,14 @@ export function createBootSequence() {
       if (index === sceneIndex) return progress;
       return 0;
     });
-    const [bareMetal, firmware, bootUsb, limineLoad, kernelLoad,
+    const [firmware, bootUsb, limineLoad, kernelLoad,
       startInformation, controlHandoff, kernelLanding] = phase;
     const limineSearch = limineLoad < 1
       ? intervalProgress(limineLoad, 0.68, 1) * 0.45
       : 0.45 + kernelLoad * 0.55;
 
     hardware.setState({
-      hardwareProgress: bareMetal,
+      hardwareProgress: 1,
       initializationProgress: firmware,
       usbProgress: bootUsb,
       firmwareRetiredProgress: intervalProgress(controlHandoff, 0.72, 1),
@@ -50,7 +50,7 @@ export function createBootSequence() {
     });
     uefi.setState({
       patternProgress: intervalProgress(firmware, 0, 0.62),
-      layerProgress: intervalProgress(firmware, 0.28, 1),
+      layerProgress: intervalProgress(firmware, 0, 0.78),
       serviceProgress: intervalProgress(firmware, 0.62, 1),
       usbActivityProgress: intervalProgress(bootUsb, 0.18, 0.76),
       retreatProgress: intervalProgress(controlHandoff, 0.72, 1),

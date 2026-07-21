@@ -16,19 +16,21 @@ function createUsbPort() {
     emissive: 0x238fc2,
     emissiveIntensity: 0,
     metalness: 0.35,
+    opacity: 0,
     roughness: 0.3,
+    transparent: true,
   });
   group.add(new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), openingMaterial));
   const edgeMaterial = new THREE.LineBasicMaterial({
     color: 0x344758,
     transparent: true,
-    opacity: 0.65,
+    opacity: 0,
   });
   group.add(new THREE.LineSegments(
     new THREE.EdgesGeometry(new THREE.BoxGeometry(width, height, depth)),
     edgeMaterial,
   ));
-  return { group, openingMaterial };
+  return { group, openingMaterial, edgeMaterial };
 }
 
 export function createHardwarePlatform() {
@@ -43,7 +45,10 @@ export function createHardwarePlatform() {
     "",
     labelConfig.size[0],
     labelConfig.size[1],
-    { panel: false },
+    {
+      panel: false,
+      titleFont: "900 94px ui-monospace, SFMono-Regular, Consolas, monospace",
+    },
   );
   machineLabel.plane.position.fromArray(labelConfig.position);
   machineLabel.plane.rotation.x = 0;
@@ -65,6 +70,7 @@ export function createHardwarePlatform() {
     const timing = HARDWARE_PLATFORM_CONFIG.timing;
     const physicalReveal = 1;
     const spiPower = intervalProgress(initializationProgress, ...timing.spiPower);
+    const portReveal = smootherstep(intervalProgress(usbProgress, 0.02, 0.18));
     const usbRead = intervalProgress(usbProgress, ...timing.usbRead);
     bareMetal.setState({
       revealProgress: 1,
@@ -79,8 +85,10 @@ export function createHardwarePlatform() {
       retiredProgress: firmwareRetiredProgress,
       opacity,
     });
-    usbPort.group.visible = physicalReveal > 0.001;
+    usbPort.group.visible = portReveal > 0.001;
+    usbPort.openingMaterial.opacity = portReveal * opacity;
     usbPort.openingMaterial.emissiveIntensity = smootherstep(usbRead) * 0.45;
+    usbPort.edgeMaterial.opacity = portReveal * opacity * 0.65;
   };
   setState();
 

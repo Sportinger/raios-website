@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import {
-  departWithMomentum,
   intervalProgress,
   smootherstep,
+  smootherstepWithMomentum,
 } from "../../animation/progress.js";
 import {
   BARE_METAL_DRIFT_POSE,
@@ -85,7 +85,7 @@ export function createPowerOnCameraChoreography({
     endPosition: bootPosition,
     endTarget: bootTarget,
     endUp: bootUp,
-    easing: (progress) => departWithMomentum(progress, 0.12),
+    easing: (progress) => smootherstepWithMomentum(progress, 0.12),
   });
   const impulseTarget = new THREE.Vector3();
   const cameraTarget = new THREE.Vector3();

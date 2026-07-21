@@ -12,7 +12,7 @@ export const STORY_MAP = Object.freeze([
   Object.freeze({
     id: "boot-sequence",
     label: "Boot sequence",
-    weight: 7.6,
+    weight: 6.65,
     create: createBootSequenceChapter,
   }),
   Object.freeze({

@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { smootherstepWithMomentum } from "../../animation/progress.js";
 import { BARE_METAL_BOOT_POSE } from "../shared/camera-poses.js";
 
 const BOOT_CAMERA_POSES = Object.freeze([
@@ -49,24 +50,22 @@ export function createBootCameraChoreography(cameraRig) {
   const startUp = new THREE.Vector3().fromArray(
     BARE_METAL_BOOT_POSE.up,
   );
-  const track = cameraRig.createHomeboundPoseTrack({
-    startPosition,
-    startTarget,
-    startUp,
-    positions: BOOT_CAMERA_POSES.map(({ position }) => (
+  const path = cameraRig.createHomeboundPath({
+    positions: [startPosition, ...BOOT_CAMERA_POSES.map(({ position }) => (
       new THREE.Vector3().fromArray(position)
-    )),
-    targets: BOOT_CAMERA_POSES.map(({ target }) => (
+    ))],
+    targets: [startTarget, ...BOOT_CAMERA_POSES.map(({ target }) => (
       new THREE.Vector3().fromArray(target)
-    )),
-    ups: BOOT_CAMERA_POSES.map(({ up }) => (
+    ))],
+    ups: [startUp, ...BOOT_CAMERA_POSES.map(({ up }) => (
       new THREE.Vector3().fromArray(up)
-    )),
+    ))],
+    easing: (progress) => smootherstepWithMomentum(progress, 0.18),
   });
 
   return {
-    update(sceneIndex, progress) {
-      track.update(sceneIndex, progress);
+    update(progress) {
+      path.update(progress);
     },
   };
 }

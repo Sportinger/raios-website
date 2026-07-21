@@ -11,6 +11,13 @@ export function smootherstep(value) {
   return progress * progress * progress * (progress * (progress * 6 - 15) + 10);
 }
 
+export function smootherstepWithMomentum(value, momentum = 0.12) {
+  const progress = clamp(value);
+  const retainedMomentum = clamp(momentum);
+  return retainedMomentum * progress
+    + (1 - retainedMomentum) * smootherstep(progress);
+}
+
 export function arriveWithMomentum(value) {
   const progress = clamp(value);
   return progress * progress * (2 - progress);

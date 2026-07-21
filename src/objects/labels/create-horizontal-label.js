@@ -18,7 +18,10 @@ function wrapLines(context, copy, maximumWidth) {
   return lines;
 }
 
-function createLabelTexture(title, description = "", { panel = true } = {}) {
+function createLabelTexture(title, description = "", {
+  panel = true,
+  titleFont = "700 62px ui-monospace, SFMono-Regular, Consolas, monospace",
+} = {}) {
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
   canvas.height = 512;
@@ -36,7 +39,7 @@ function createLabelTexture(title, description = "", { panel = true } = {}) {
   }
 
   context.fillStyle = "#eef1f5";
-  context.font = "700 62px ui-monospace, SFMono-Regular, Consolas, monospace";
+  context.font = titleFont;
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.fillText(title, 512, description ? 178 : 256, 900);

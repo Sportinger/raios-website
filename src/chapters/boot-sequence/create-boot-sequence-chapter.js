@@ -25,7 +25,7 @@ export function createBootSequenceChapter({ cameraRig, lightRig }) {
       const sceneIndex = Math.floor(scaledProgress);
       const sceneProgress = scaledProgress - sceneIndex;
       sequence.setSceneProgress(sceneIndex, sceneProgress);
-      cameraChoreography.update(sceneIndex, sceneProgress);
+      cameraChoreography.update(progress);
     },
 
     resize() {},

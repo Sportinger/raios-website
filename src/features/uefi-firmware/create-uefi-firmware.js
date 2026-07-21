@@ -40,11 +40,20 @@ export function createUefiFirmware() {
   layerGroup.add(new THREE.LineSegments(new THREE.EdgesGeometry(geometry), edgeMaterial));
   const label = createHorizontalLabel(
     "UEFI BOOT ENVIRONMENT",
-    "RUNNING FIRMWARE",
-    UEFI_FIRMWARE_CONFIG.width * 0.58,
-    UEFI_FIRMWARE_CONFIG.depth * 0.38,
+    "",
+    UEFI_FIRMWARE_CONFIG.width * 0.88,
+    0.52,
+    {
+      panel: false,
+      titleFont: "900 96px ui-monospace, SFMono-Regular, Consolas, monospace",
+    },
   );
-  label.plane.position.y = UEFI_FIRMWARE_CONFIG.height / 2 + 0.012;
+  label.plane.position.set(
+    0,
+    0,
+    UEFI_FIRMWARE_CONFIG.depth / 2 + 0.012,
+  );
+  label.plane.rotation.x = 0;
   layerGroup.add(label.plane);
   group.add(layerGroup);
 
