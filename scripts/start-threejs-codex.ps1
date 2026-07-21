@@ -24,7 +24,7 @@ $serverProcess = $null
 $serverUrl = $null
 
 foreach ($port in 8091..8100) {
-    $candidateUrl = "http://localhost:$port/ui-lab/site/scroll-cube/"
+    $candidateUrl = "http://localhost:$port/"
 
     try {
         $response = Invoke-WebRequest -UseBasicParsing -Uri $candidateUrl -TimeoutSec 1

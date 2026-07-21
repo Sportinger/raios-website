@@ -2,9 +2,14 @@
 
 Dieser Branch enthält ausschließlich das experimentelle Three.js-Scroll-Projekt der raiOS-Website. Die produktive Website liegt auf dem Branch [`main`](https://github.com/Sportinger/raios-website/tree/main).
 
-## Inhalt
+## Struktur
 
-Das Experiment liegt unter [`ui-lab/site/scroll-cube`](ui-lab/site/scroll-cube). Es besteht aus statischem HTML, CSS und JavaScript und lädt Three.js als ES-Modul über jsDelivr. Ein Paketmanager oder Build-Framework ist nicht nötig.
+- `index.html`: Einstiegspunkt und Three.js-Importmap
+- `styles.css`: Seitenlayout
+- `src/`: Animation, Layer und Inhalte
+- `scripts/`: lokaler Start und Produktions-Build
+
+Das Projekt besteht aus statischem HTML, CSS und JavaScript und lädt Three.js als ES-Modul über jsDelivr. Ein Paketmanager oder Build-Framework ist nicht nötig.
 
 ## Lokal starten
 
@@ -18,7 +23,7 @@ Alternativ kann ein beliebiger statischer Webserver im Repository gestartet werd
 python -m http.server 8091
 ```
 
-Danach ist das Experiment unter `http://localhost:8091/ui-lab/site/scroll-cube/` erreichbar.
+Danach ist das Projekt unter `http://localhost:8091/` erreichbar.
 
 ## Produktions-Build
 

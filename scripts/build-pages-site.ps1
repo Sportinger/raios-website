@@ -5,7 +5,6 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
-$sourcePath = Join-Path $repoRoot "ui-lab/site/scroll-cube"
 $outputPath = if ([IO.Path]::IsPathRooted($OutputDirectory)) {
     [IO.Path]::GetFullPath($OutputDirectory)
 } else {
@@ -26,7 +25,9 @@ if (Test-Path -LiteralPath $outputPath) {
 }
 
 New-Item -ItemType Directory -Path $outputPath | Out-Null
-Copy-Item -Path (Join-Path $sourcePath "*") -Destination $outputPath -Recurse
+Copy-Item -LiteralPath (Join-Path $repoRoot "index.html") -Destination $outputPath
+Copy-Item -LiteralPath (Join-Path $repoRoot "styles.css") -Destination $outputPath
+Copy-Item -LiteralPath (Join-Path $repoRoot "src") -Destination $outputPath -Recurse
 
 $htmlPath = Join-Path $outputPath "index.html"
 $html = Get-Content -Raw -LiteralPath $htmlPath
