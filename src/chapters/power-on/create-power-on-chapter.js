@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import {
-  fastThenSmooth,
   intervalProgress,
   smootherstep,
 } from "../../animation/progress.js";
@@ -84,7 +83,7 @@ function createCameraPath(
   };
 
   return cameraRig.createHomeboundPath({
-    easing: fastThenSmooth,
+    easing: smootherstep,
     positions: [
       pathStart,
       aboveCable(0.12, 3.2, 1, 0.18),
@@ -130,6 +129,7 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
     buttonPosition,
   );
   const impulseTarget = new THREE.Vector3();
+  const cameraTarget = new THREE.Vector3();
   group.add(powerButton.group, cable.group, bareMetal.group);
 
   return {
@@ -175,9 +175,16 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
         ));
       } else {
         cable.curve.getPointAt(smootherstep(signalProgress), impulseTarget);
+        cameraTarget.lerpVectors(
+          buttonPosition,
+          impulseTarget,
+          smootherstep(intervalProgress(
+            progress, ...POWER_ON_TIMELINE.cameraFollow,
+          )),
+        );
         cameraPath.update(intervalProgress(
           progress, ...POWER_ON_TIMELINE.cameraFlight,
-        ), impulseTarget);
+        ), cameraTarget);
       }
     },
 

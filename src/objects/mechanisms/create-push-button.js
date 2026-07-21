@@ -3,11 +3,12 @@ import { smootherstep } from "../../animation/progress.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 
 const CAP_REST_Y = 0.19;
+const HOUSING_HEIGHT = 0.076;
 const PRESS_DEPTH = 0.17;
 
 export function createPushButton({
   accentColor = 0x78c8ff,
-  markGlowColor = 0x63ff92,
+  markGlowColor = 0x69c7ff,
   topMark = null,
 } = {}) {
   const group = new THREE.Group();
@@ -20,10 +21,10 @@ export function createPushButton({
     transparent: true,
   });
   const housing = new THREE.Mesh(
-    new THREE.CylinderGeometry(1.06, 1.2, 0.38, 64),
+    new THREE.CylinderGeometry(1.06, 1.2, HOUSING_HEIGHT, 64),
     housingMaterial,
   );
-  housing.position.y = -0.19;
+  housing.position.y = -HOUSING_HEIGHT / 2;
   housing.castShadow = true;
   housing.receiveShadow = true;
   group.add(housing);
@@ -58,7 +59,7 @@ export function createPushButton({
   group.add(cap);
   if (topMark) {
     topMark.group.traverse((object) => {
-      if (object.isMesh) {
+      if (object.isMesh && object.material !== topMark.glowMaterial) {
         object.castShadow = true;
         object.receiveShadow = true;
       }
@@ -88,9 +89,13 @@ export function createPushButton({
   const markHotColor = new THREE.Color(0xffffff);
   let opacity = 1;
   let power = 0;
+  let markGlow = 0;
 
   const renderGlow = () => {
     underglowMaterial.opacity = 0.5 * power * opacity;
+    if (topMark?.glowMaterial) {
+      topMark.glowMaterial.opacity = 0.3 * markGlow * opacity;
+    }
   };
 
   return {
@@ -111,7 +116,7 @@ export function createPushButton({
     },
 
     setMarkGlowProgress(value) {
-      const markGlow = smootherstep(value);
+      markGlow = smootherstep(value);
       if (topMark?.material) {
         topMark.material.color.copy(markOffColor)
           .lerp(markPowerColor, markGlow)
@@ -119,6 +124,7 @@ export function createPushButton({
         topMark.material.emissive.copy(markPowerColor);
         topMark.material.emissiveIntensity = markGlow * 2.2;
       }
+      renderGlow();
     },
 
     setPressProgress(value) {
