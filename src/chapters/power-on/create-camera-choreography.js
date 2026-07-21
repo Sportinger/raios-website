@@ -85,7 +85,7 @@ export function createPowerOnCameraChoreography({
     endPosition: bootPosition,
     endTarget: bootTarget,
     endUp: bootUp,
-    easing: (progress) => departWithMomentum(progress, 0.02),
+    easing: (progress) => departWithMomentum(progress, 0.12),
   });
   const impulseTarget = new THREE.Vector3();
   const cameraTarget = new THREE.Vector3();

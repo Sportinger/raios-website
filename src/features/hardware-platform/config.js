@@ -15,8 +15,6 @@ export const HARDWARE_PLATFORM_CONFIG = Object.freeze({
     openingSize: [0.07, 0.17, 0.72],
   }),
   timing: Object.freeze({
-    surfacePower: Object.freeze([0, 0.46]),
-    physicalReveal: Object.freeze([0.12, 0.68]),
     spiPower: Object.freeze([0, 0.24]),
     usbRead: Object.freeze([0.28, 0.76]),
   }),

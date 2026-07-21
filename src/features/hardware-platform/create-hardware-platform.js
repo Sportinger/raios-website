@@ -1,10 +1,10 @@
 import * as THREE from "three";
 import { intervalProgress, smootherstep } from "../../animation/progress.js";
-import { createInfoCard } from "../../objects/cards/index.js";
 import { createHorizontalLabel } from "../../objects/labels/create-horizontal-label.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 import { createBareMetalLayer } from "../bare-metal-layer/index.js";
 import { HARDWARE_PLATFORM_CONFIG } from "./config.js";
+import { createSpiFlash } from "./create-spi-flash.js";
 
 function createUsbPort() {
   const group = new THREE.Group();
@@ -49,16 +49,7 @@ export function createHardwarePlatform() {
   machineLabel.plane.rotation.x = 0;
   group.add(machineLabel.plane);
 
-  const flashConfig = HARDWARE_PLATFORM_CONFIG.spiFlash;
-  const spiFlash = createInfoCard({
-    title: flashConfig.title,
-    width: flashConfig.size[0],
-    height: flashConfig.size[1],
-    depth: flashConfig.size[2],
-    color: 0x0a1119,
-    edgeColor: 0x5bd8ff,
-  });
-  spiFlash.group.position.fromArray(flashConfig.position);
+  const spiFlash = createSpiFlash();
   group.add(spiFlash.group);
 
   const usbPort = createUsbPort();
@@ -72,22 +63,20 @@ export function createHardwarePlatform() {
     opacity = 1,
   } = {}) => {
     const timing = HARDWARE_PLATFORM_CONFIG.timing;
-    const physicalReveal = intervalProgress(hardwareProgress, ...timing.physicalReveal);
-    const retired = smootherstep(firmwareRetiredProgress);
-    const spiPower = intervalProgress(initializationProgress, ...timing.spiPower)
-      * (1 - retired);
+    const physicalReveal = 1;
+    const spiPower = intervalProgress(initializationProgress, ...timing.spiPower);
     const usbRead = intervalProgress(usbProgress, ...timing.usbRead);
     bareMetal.setState({
       revealProgress: 1,
       opacity,
       elevationProgress: 1,
-      currentProgress: intervalProgress(hardwareProgress, ...timing.surfacePower),
+      currentProgress: 1,
     });
     machineLabel.material.opacity = smootherstep(physicalReveal) * opacity * 0.72;
     spiFlash.setState({
-      progress: physicalReveal,
-      activationProgress: spiPower,
-      pulseProgress: Math.sin(spiPower * Math.PI),
+      revealProgress: physicalReveal,
+      powerProgress: spiPower,
+      retiredProgress: firmwareRetiredProgress,
       opacity,
     });
     usbPort.group.visible = physicalReveal > 0.001;

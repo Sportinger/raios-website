@@ -85,30 +85,33 @@ export function createUefiFirmware() {
     opacity = 1,
   } = {}) => {
     const pattern = smootherstep(patternProgress);
-    const layer = smootherstep(layerProgress);
+    const lift = smootherstep(intervalProgress(layerProgress, 0, 0.48));
+    const expansion = smootherstep(intervalProgress(layerProgress, 0.48, 1));
+    const layerVisibility = smootherstep(intervalProgress(layerProgress, 0, 0.16));
     const servicesIn = smootherstep(serviceProgress);
     const retreat = smootherstep(retreatProgress);
     const activeOpacity = (1 - retreat) * opacity;
     sourceLight.intensity = Math.sin(pattern * Math.PI) * activeOpacity * 2.2;
-    layerGroup.visible = layer > 0.001 && retreat < 0.999;
-    const deployedLayer = layer * (1 - retreat);
+    layerGroup.visible = layerVisibility > 0.001 && retreat < 0.999;
+    const deployedLift = lift * (1 - retreat);
+    const deployedExpansion = expansion * (1 - retreat);
     layerGroup.position.set(
-      THREE.MathUtils.lerp(UEFI_FIRMWARE_CONFIG.source[0], 0, deployedLayer),
+      0,
       THREE.MathUtils.lerp(
         UEFI_FIRMWARE_CONFIG.source[1],
         UEFI_FIRMWARE_CONFIG.layerY,
-        deployedLayer,
+        deployedLift,
       ),
-      THREE.MathUtils.lerp(UEFI_FIRMWARE_CONFIG.source[2], 0, deployedLayer),
+      0,
     );
     layerGroup.scale.set(
-      THREE.MathUtils.lerp(0.04, 1, deployedLayer),
-      THREE.MathUtils.lerp(0.2, 1, deployedLayer),
-      THREE.MathUtils.lerp(0.04, 1, deployedLayer),
+      THREE.MathUtils.lerp(0.12, 1, deployedExpansion),
+      1,
+      THREE.MathUtils.lerp(0.12, 1, deployedExpansion),
     );
-    material.opacity = layer * activeOpacity * 0.28;
-    edgeMaterial.opacity = layer * activeOpacity * 0.9;
-    label.material.opacity = smootherstep(intervalProgress(layer, 0.62, 1))
+    material.opacity = layerVisibility * activeOpacity * 0.28;
+    edgeMaterial.opacity = layerVisibility * activeOpacity * 0.9;
+    label.material.opacity = smootherstep(intervalProgress(expansion, 0.55, 1))
       * activeOpacity;
     services.forEach(({ service }, index) => service.setState({
       progress: intervalProgress(servicesIn, index * 0.16, 0.68 + index * 0.16),

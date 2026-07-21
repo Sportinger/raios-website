@@ -16,9 +16,10 @@ export const POWER_ON_TIMELINE = Object.freeze({
   environmentLight: segment(LIGHT_REVEAL_START, 0.42),
   cameraFollow: segment(BUTTON_PRESS_START, 0.4),
   cameraFlight: segment(CAMERA_FLIGHT_START, 0.505),
-  cameraDrift: segment(0.505, 0.87),
+  cameraDrift: segment(0.505, 0.82),
   cameraRelease: segment(CAMERA_FLIGHT_START, 0.57),
   bareMetalCurrent: segment(0.72, 0.92),
   bareMetalActivation: segment(0.72, 0.94),
-  cameraBootOverview: segment(0.87, 1),
+  spiFlashReveal: segment(0.79, 0.96),
+  cameraBootOverview: segment(0.82, 1),
 });

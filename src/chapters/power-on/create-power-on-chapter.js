@@ -3,6 +3,7 @@ import { intervalProgress, smootherstep } from "../../animation/progress.js";
 import { createBareMetalLayer } from "../../features/bare-metal-layer/index.js";
 import { createPowerButton } from "../../features/power-button/index.js";
 import { createPowerLink } from "../../features/power-link/index.js";
+import { createSpiFlash } from "../../features/hardware-platform/index.js";
 import {
   createPowerOnCameraChoreography,
   orientObjectToCamera,
@@ -30,13 +31,14 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
     }),
   });
   const bareMetal = createBareMetalLayer();
+  const spiFlash = createSpiFlash();
   const cameraChoreography = createPowerOnCameraChoreography({
     cameraRig,
     curve: powerLink.curve,
     cameraStart,
     buttonPosition,
   });
-  group.add(powerButton.group, powerLink.group, bareMetal.group);
+  group.add(powerButton.group, powerLink.group, bareMetal.group, spiFlash.group);
 
   return {
     id: "power-on",
@@ -99,6 +101,13 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
         elevationProgress: activationProgress,
         currentProgress,
       });
+      spiFlash.setState({
+        revealProgress: intervalProgress(
+          progress,
+          ...POWER_ON_TIMELINE.spiFlashReveal,
+        ),
+        opacity: 1,
+      });
       lightRig.setIntensity(smootherstep(intervalProgress(
         progress,
         ...POWER_ON_TIMELINE.environmentLight,
@@ -111,6 +120,7 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
       powerButton.dispose();
       powerLink.dispose();
       bareMetal.dispose();
+      spiFlash.dispose();
       group.removeFromParent();
     },
   };
