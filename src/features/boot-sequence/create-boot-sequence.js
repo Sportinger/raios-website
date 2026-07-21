@@ -107,6 +107,9 @@ export function createBootSequence() {
 
   return {
     group,
+    prepareRender(renderer, scene, camera) {
+      uefi.prepareRender(renderer, scene, camera);
+    },
     setSceneProgress,
     dispose() {
       hardware.dispose();

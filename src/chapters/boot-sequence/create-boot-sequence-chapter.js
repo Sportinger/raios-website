@@ -21,6 +21,10 @@ export function createBootSequenceChapter({ cameraRig, lightRig }) {
     group: sequence.group,
     navigationSections,
 
+    prepareRender(renderer, scene, camera) {
+      sequence.prepareRender(renderer, scene, camera);
+    },
+
     update(progress, animationTime = 0) {
       lightRig.setIntensity(1);
       const scaledProgress = Math.min(

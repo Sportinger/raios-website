@@ -49,6 +49,14 @@ export function createStory({ scene, context }) {
     navigationItems,
     totalWeight,
 
+    prepareRender(renderer, scene, camera) {
+      chapters.forEach(({ chapter, root }) => {
+        if (root.visible) {
+          chapter.prepareRender?.(renderer, scene, camera);
+        }
+      });
+    },
+
     update(progress, animationTime = 0) {
       chapters.forEach(({ chapter, start, end, isLast, root }) => {
         const isActive = progress >= start && (progress < end || isLast);

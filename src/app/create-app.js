@@ -46,6 +46,10 @@ export function createApp({
     container: scrollDebugContainer,
     items: story.navigationItems,
   });
+  const renderScene = () => {
+    story.prepareRender(renderer, world.scene, camera);
+    renderer.render(world.scene, camera);
+  };
 
   const renderAt = (progress) => {
     currentProgress = progress;
@@ -69,7 +73,7 @@ export function createApp({
     story.update(storyProgress, motionPreference.matches ? 0 : animationTime);
     chapterNavigation?.setProgress(storyProgress);
     scrollDebug.setProgress(storyProgress);
-    renderer.render(world.scene, camera);
+    renderScene();
   };
 
   const scrollDriver = createScrollDriver({ stage, onProgress: renderAt });
@@ -116,7 +120,7 @@ export function createApp({
       ? reducedMotionProgress
       : currentProgress;
     story.update(storyProgress, motionPreference.matches ? 0 : animationTime);
-    renderer.render(world.scene, camera);
+    renderScene();
     animationFrame = window.requestAnimationFrame(animate);
   };
   animationFrame = window.requestAnimationFrame(animate);

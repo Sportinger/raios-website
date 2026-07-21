@@ -206,6 +206,9 @@ export function createExpandingStageLayer({
   return {
     contentGroup,
     group,
+    prepareRender(renderer, scene, camera) {
+      transmissionSurface?.prepareRender(renderer, scene, camera);
+    },
     registerScalingLabel(scalingLabel) {
       scalingLabels.push(scalingLabel);
     },

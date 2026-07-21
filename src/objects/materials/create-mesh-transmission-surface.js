@@ -53,7 +53,7 @@ export function createMeshTransmissionSurface({
 
   const surface = new THREE.Mesh(geometry, material);
   let renderingBuffer = false;
-  surface.onBeforeRender = (renderer, scene, camera) => {
+  const prepareRender = (renderer, scene, camera) => {
     if (renderingBuffer || !surface.visible) {
       return;
     }
@@ -96,9 +96,9 @@ export function createMeshTransmissionSurface({
 
   return {
     material,
+    prepareRender,
     surface,
     dispose() {
-      surface.onBeforeRender = () => {};
       backsideTarget?.dispose();
       renderTarget.dispose();
     },

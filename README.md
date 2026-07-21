@@ -124,8 +124,8 @@ SPI Flash → UEFI → Boot Manager → Limine → Kernel Loader → Rust Kernel
 automatisch aus dem neuen Footprint.
 
 Die Softwareschichten besitzen eine feste Renderreihenfolge. UEFI verwendet
-einen eigenen Transmission-Pass: Vor dem Hauptbild wird die Szene ohne die
-Glasoberfläche in einen Half-Float-Buffer gerendert, den der Volumenshader mit
+einen eigenen Transmission-Pass: Unmittelbar vor jedem Hauptbild wird die Szene
+ohne die Glasoberfläche vollständig in einen Half-Float-Buffer gerendert, den der Volumenshader mit
 IOR, Materialtiefe, chromatischer Aberration und blauer Absorption gebrochen
 abtastet. Der Brechungsweg verwendet unverändert den IOR-Wert `1.5` der
 Transmission-Material-Vorlage.

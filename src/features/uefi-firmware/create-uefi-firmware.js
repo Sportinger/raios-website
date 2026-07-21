@@ -186,6 +186,9 @@ export function createUefiFirmware({ sourceAnchor }) {
   return {
     anchors,
     group,
+    prepareRender(renderer, scene, camera) {
+      stageLayer.prepareRender(renderer, scene, camera);
+    },
     setState,
     dispose() {
       services.forEach(({ service }) => service.dispose());
