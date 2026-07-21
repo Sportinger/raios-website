@@ -28,7 +28,7 @@ export function createUefiFirmware() {
       UEFI_FIRMWARE_CONFIG.height,
       UEFI_FIRMWARE_CONFIG.depth,
     ],
-    color: 0x087ca8,
+    color: UEFI_FIRMWARE_CONFIG.color,
     emissive: 0x28cfff,
     emissiveIntensity: 0.22,
     metalness: 0.12,
@@ -52,7 +52,7 @@ export function createUefiFirmware() {
       width: definition.size[0],
       height: definition.size[1],
       depth: definition.size[2],
-      color: 0x092033,
+      color: UEFI_FIRMWARE_CONFIG.color,
       edgeColor: 0x76ddff,
       labelPlacement: "front",
     });

@@ -53,8 +53,9 @@ USB-Stick → USB Boot Service → Boot Manager → Limine → Rust-Kernel
 USB Boot Service und Boot Manager sitzen mit großem Abstand symmetrisch rechts
 und links der Schichtmitte. Aus dem Footprint des Boot Managers steigt die
 vollständige Limine-Schicht kompakt auf und expandiert erst auf Zielhöhe;
-auf ihr läuft der Pfad von rechts nach links durch `CONFIG`, `KERNEL LOADER` und
-`HANDOFF`. Der physische USB-Pfad verwendet dasselbe wiederverwendbare
+auf ihr läuft der einzige interne Pfad von `CONFIG` nach `KERNEL LOADER`.
+Der spätere Handoff ist ein Übergabeereignis und kein dritter Chip. Der physische
+USB-Pfad verwendet dasselbe wiederverwendbare
 `connections/cable` wie der Power-on-Link. Die wiederverwendbare Komposition
 `transient-signal-cable` verbindet Kabel, Energieringe und Lichtkopf. Die erste
 feature-spezifische Route beginnt innerhalb des eingesteckten Sticks, läuft kurz
@@ -92,13 +93,23 @@ immer dasselbe Seitenverhältnis; Text wird durch Font-Fitting statt durch
 nicht-uniforme Elternskalierung für alle registrierten Labels, sodass Glyphen
 weder während des Aufbaus noch im Endzustand gestaucht werden.
 
-Die Limine-Schicht besitzt exakt drei Funktionsobjekte: `CONFIG · SELECT BOOT
-ENTRY`, `KERNEL LOADER · LOAD ELF IMAGE` und `HANDOFF · BOOT INFO · ENTRY`.
-`limine.conf` und `kernel.elf` verwenden das allgemeine beschriftete
-`objects/effects/labeled-data-packet`; die ausgewählten Konfigurationswerte und
-die sechs Boot-Info-Karten bleiben in eigenen Limine-Untermodulen. Beim Handoff
-dimmen CONFIG und Loader, während nur HANDOFF, die einmalige Tür und der letzte
-Kontrollimpuls aktiv bleiben.
+Die Limine-Schicht besitzt exakt zwei Funktionsobjekte: `CONFIG · SELECT BOOT
+ENTRY` und `KERNEL LOADER · LOAD ELF IMAGE`. Es steigen keine Signalströme und
+keine Datenpakete aus UEFI oder Bare Metal zu diesen Chips auf. Nur der interne
+Pfad von CONFIG zum Loader wird während seiner aktiven Phase sichtbar. Die sechs
+Boot-Info-Karten bleiben ein separates späteres Übergabeereignis. Beim Handoff
+dimmen beide Chips, während nur die einmalige Tür und der letzte Kontrollimpuls
+aktiv bleiben.
+
+Alle Chipobjekte verwenden `objects/cards/create-info-card.js`. Das gemeinsame
+Reveal zeichnet zuerst ausschließlich den flachen Footprint als fortlaufenden
+Umriss auf die Oberfläche der Trägerschicht. Danach werden Seiten, Kanten und
+Deckfläche bodenverankert nach oben extrudiert; das unverzerrte Label erscheint
+erst im letzten Teil der Extrusion. Der SPI-Flash besitzt dafür keine eigene
+Positionsanimation mehr; SPI, UEFI-Karten und Limine-Karten verwenden exakt
+denselben Mechanismus. Ihre inaktive Grundfarbe stammt jeweils aus der
+Konfiguration der Trägerschicht. Transparente Vorstufen schreiben keine Tiefe
+und können deshalb kein schwarzes Loch in die Layerfläche stanzen.
 
 Sprechertexte, Sound und Untertitel gehören später in eine eigene Medien- bzw.
 Narrationsebene und werden nicht in 3D-Features hinterlegt.

@@ -14,7 +14,7 @@ export function createSpiFlash() {
     width: config.size[0],
     height: config.size[1],
     depth: config.size[2],
-    color: 0x0a1119,
+    color: config.color,
     edgeColor: 0x5bd8ff,
     labelPlacement: "front",
     labelOptions: {
@@ -34,13 +34,7 @@ export function createSpiFlash() {
       retiredProgress = 0,
       opacity = 1,
     } = {}) {
-      const reveal = smootherstep(revealProgress);
       const retired = smootherstep(retiredProgress);
-      group.position.y = THREE.MathUtils.lerp(
-        config.position[1] - config.size[1] * 0.72,
-        config.position[1],
-        reveal,
-      );
       card.setState({
         progress: revealProgress,
         activationProgress: powerProgress * (1 - retired),

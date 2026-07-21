@@ -11,7 +11,7 @@ const CARD_TITLES = Object.freeze([
   "MODULES",
 ]);
 
-const START = new THREE.Vector3(-2.2, 1.63, 0.2);
+const START = new THREE.Vector3(-1.45, 1.63, 0.2);
 
 export function createHandoffCards() {
   const group = new THREE.Group();
