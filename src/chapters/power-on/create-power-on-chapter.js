@@ -1,5 +1,9 @@
 import * as THREE from "three";
-import { intervalProgress, smootherstep } from "../../animation/progress.js";
+import {
+  fastThenSmooth,
+  intervalProgress,
+  smootherstep,
+} from "../../animation/progress.js";
 import { createBareMetalLayer } from "../../features/bare-metal-layer/index.js";
 import { createPowerButton } from "../../features/power-button/index.js";
 import { createCable } from "../../objects/connections/create-cable.js";
@@ -80,18 +84,19 @@ function createCameraPath(
   };
 
   return cameraRig.createHomeboundPath({
+    easing: fastThenSmooth,
     positions: [
       pathStart,
-      aboveCable(0.08, 3.7, 1.4, 0.16),
-      aboveCable(0.3, 3.45, 1.15, 0.4),
-      aboveCable(0.54, 3.2, 0.95, 0.68),
-      aboveCable(0.78, 3.05, 0.72, 0.9),
+      aboveCable(0.12, 3.2, 1, 0.18),
+      aboveCable(0.32, 3.8, 1.3, 0.42),
+      aboveCable(0.56, 4.6, 1.7, 0.7),
+      aboveCable(0.78, 5.4, 2.1, 0.92),
     ],
     targets: [
       buttonPosition,
-      cable.curve.getPoint(0.23),
-      cable.curve.getPoint(0.46),
-      cable.curve.getPoint(0.7),
+      cable.curve.getPoint(0.26),
+      cable.curve.getPoint(0.5),
+      cable.curve.getPoint(0.73),
       cable.curve.getPoint(1),
     ],
   });
@@ -147,9 +152,14 @@ export function createPowerOnChapter({ cameraRig }) {
       cable.setRevealProgress(intervalProgress(
         progress, ...POWER_ON_TIMELINE.cableReveal,
       ));
-      cable.setSignalProgress(intervalProgress(
+      const signalProgress = intervalProgress(
         progress, ...POWER_ON_TIMELINE.signalTravel,
-      ));
+      );
+      cable.setSignalProgress(
+        signalProgress,
+        progress >= POWER_ON_TIMELINE.signalTravel[0]
+          && progress < POWER_ON_TIMELINE.signalTravel[1],
+      );
       cable.setOpacity(1);
       bareMetal.setState({ revealProgress: 1, labelProgress: 1, opacity: 1 });
       if (progress < POWER_ON_TIMELINE.cameraFlight[0]) {

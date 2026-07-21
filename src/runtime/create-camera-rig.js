@@ -30,7 +30,7 @@ export function createCameraRig(camera) {
       };
     },
 
-    createHomeboundPath({ positions, targets }) {
+    createHomeboundPath({ positions, targets, easing = smootherstep }) {
       const positionCurve = new THREE.CatmullRomCurve3(
         [...positions, homePosition.clone()],
         false,
@@ -44,7 +44,7 @@ export function createCameraRig(camera) {
 
       return {
         update(progress) {
-          const easedProgress = smootherstep(progress);
+          const easedProgress = easing(progress);
           positionCurve.getPointAt(easedProgress, position);
           targetCurve.getPointAt(easedProgress, target);
           setPose(position, target);

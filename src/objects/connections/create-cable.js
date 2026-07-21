@@ -69,6 +69,7 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
   let opacity = 1;
   let reveal = 0;
   let signal = 0;
+  let signalActive = false;
 
   const render = () => {
     const easedReveal = smootherstep(reveal);
@@ -81,7 +82,9 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
     setGeometryProgress(glowGeometry, easedReveal);
 
     const signalProgress = smootherstep(signal);
-    const signalEnvelope = Math.pow(Math.sin(Math.PI * signalProgress), 0.35);
+    const signalEnvelope = signalActive
+      ? Math.min(1, Math.max(0, (1 - signalProgress) / 0.08))
+      : 0;
     curve.getPointAt(signalProgress, pulse.position);
     pulse.visible = group.visible && signalEnvelope > 0.001;
     pulseMaterial.opacity = opacity * signalEnvelope;
@@ -103,8 +106,9 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
       render();
     },
 
-    setSignalProgress(value) {
+    setSignalProgress(value, active = value > 0 && value < 1) {
       signal = value;
+      signalActive = active;
       render();
     },
 
