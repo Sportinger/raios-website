@@ -3,6 +3,7 @@ import { intervalProgress, smootherstep } from "../../animation/progress.js";
 import { createSurfaceCurrent } from "../../objects/effects/surface-current/index.js";
 import { createHorizontalLabel } from "../../objects/labels/create-horizontal-label.js";
 import { monospaceFont } from "../../objects/labels/typography.js";
+import { createBrushedMetalTexture } from "../../objects/materials/create-brushed-metal-texture.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 import { BARE_METAL_CONFIG } from "./config.js";
 
@@ -14,12 +15,18 @@ export function createBareMetalLayer() {
     BARE_METAL_CONFIG.height,
     BARE_METAL_CONFIG.depth,
   );
-  const material = new THREE.MeshStandardMaterial({
+  const brushedMetalTexture = createBrushedMetalTexture();
+  const material = new THREE.MeshPhysicalMaterial({
     color: BARE_METAL_CONFIG.color,
+    anisotropy: 0.72,
+    anisotropyRotation: Math.PI / 2,
+    clearcoat: 0.22,
+    clearcoatRoughness: 0.38,
     emissive: BARE_METAL_CONFIG.edgeColor,
     emissiveIntensity: 0,
-    metalness: 0.72,
-    roughness: 0.36,
+    metalness: 0.94,
+    roughness: 0.3,
+    roughnessMap: brushedMetalTexture,
     transparent: true,
   });
   group.add(new THREE.Mesh(geometry, material));

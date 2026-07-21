@@ -16,6 +16,11 @@ export function createExpandingStageLayer({
   emissiveIntensity = 0.18,
   metalness = 0.35,
   roughness = 0.3,
+  transmission,
+  thickness,
+  ior,
+  clearcoat,
+  clearcoatRoughness,
   surfaceOpacity = 0.8,
   surfaceRenderOrder = 0,
   edgeOpacity = 1,
@@ -55,7 +60,10 @@ export function createExpandingStageLayer({
     contentGroup.position.copy(expansionPivot).negate();
   }
   const geometry = new THREE.BoxGeometry(...size);
-  const material = new THREE.MeshStandardMaterial({
+  const Material = transmission === undefined
+    ? THREE.MeshStandardMaterial
+    : THREE.MeshPhysicalMaterial;
+  const materialOptions = {
     color,
     depthWrite,
     emissive,
@@ -64,7 +72,17 @@ export function createExpandingStageLayer({
     opacity: 0,
     roughness,
     transparent: true,
-  });
+  };
+  if (transmission !== undefined) {
+    Object.assign(materialOptions, {
+      clearcoat,
+      clearcoatRoughness,
+      ior,
+      thickness,
+      transmission,
+    });
+  }
+  const material = new Material(materialOptions);
   const surface = new THREE.Mesh(geometry, material);
   surface.renderOrder = surfaceRenderOrder;
   contentGroup.add(surface);
