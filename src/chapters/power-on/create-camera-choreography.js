@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import {
-  arriveWithMomentum,
   departWithMomentum,
   intervalProgress,
   smootherstep,
 } from "../../animation/progress.js";
 import {
+  BARE_METAL_DRIFT_POSE,
   BARE_METAL_IMPACT_POSE,
   BARE_METAL_TOP_DOWN_POSE,
 } from "../shared/camera-poses.js";
@@ -22,59 +22,6 @@ export function orientObjectToCamera(group, objectPosition, cameraPosition) {
   group.quaternion.setFromRotationMatrix(
     new THREE.Matrix4().makeBasis(localX, localY, localZ),
   );
-}
-
-function createFlightPath({
-  cameraRig,
-  curve,
-  pathStart,
-  originalCameraStart,
-  buttonPosition,
-  endPosition,
-  endTarget,
-  endUp,
-}) {
-  const profileSide = pathStart.clone().sub(buttonPosition).setY(0).normalize();
-  const originalSide = originalCameraStart.clone()
-    .sub(buttonPosition)
-    .setY(0)
-    .normalize();
-  const sideDirection = new THREE.Vector3();
-  const aboveCable = (progress, height, distance, orbitReturn) => {
-    sideDirection.lerpVectors(profileSide, originalSide, orbitReturn).normalize();
-    return curve.getPoint(progress)
-      .add(new THREE.Vector3(0, height, 0))
-      .addScaledVector(sideDirection, distance);
-  };
-
-  const positions = [
-    pathStart,
-    aboveCable(0.12, 3.2, 1, 0.18),
-    aboveCable(0.32, 4.6, 2.2, 0.42),
-    aboveCable(0.52, 6.1, 4.2, 0.7),
-    aboveCable(0.7, 7.4, 6.3, 0.92),
-  ];
-  return cameraRig.createHomeboundPath({
-    easing: arriveWithMomentum,
-    endPosition,
-    endTarget,
-    endUp,
-    positions,
-    targets: [
-      buttonPosition,
-      curve.getPoint(0.26),
-      curve.getPoint(0.5),
-      curve.getPoint(0.86),
-      endTarget.clone(),
-    ],
-    ups: [
-      new THREE.Vector3(0, 1, 0),
-      new THREE.Vector3(0, 1, 0),
-      new THREE.Vector3(0, 1, 0),
-      new THREE.Vector3(0, 1, 0),
-      new THREE.Vector3(0, 1, 0),
-    ],
-  });
 }
 
 export function createPowerOnCameraChoreography({
@@ -104,15 +51,32 @@ export function createPowerOnCameraChoreography({
     BARE_METAL_IMPACT_POSE.target,
   );
   const impactUp = new THREE.Vector3().fromArray(BARE_METAL_IMPACT_POSE.up);
-  const flightPath = createFlightPath({
-    cameraRig,
-    curve,
-    pathStart: orbit.endPosition,
-    originalCameraStart: cameraStart,
-    buttonPosition,
+  const driftPosition = new THREE.Vector3().fromArray(
+    BARE_METAL_DRIFT_POSE.position,
+  );
+  const driftUp = new THREE.Vector3().fromArray(BARE_METAL_DRIFT_POSE.up);
+  const driftStartSignal = intervalProgress(
+    POWER_ON_TIMELINE.cameraDrift[0],
+    ...POWER_ON_TIMELINE.signalTravel,
+  );
+  const driftTarget = curve.getPointAt(smootherstep(driftStartSignal));
+  const followFlight = cameraRig.createPoseTransition({
+    startPosition: orbit.endPosition,
+    startTarget: buttonPosition,
+    startUp: driftUp,
+    endPosition: driftPosition,
+    endTarget: driftTarget,
+    endUp: driftUp,
+    easing: (progress) => progress,
+  });
+  const slowDrift = cameraRig.createPoseTransition({
+    startPosition: driftPosition,
+    startTarget: driftTarget,
+    startUp: driftUp,
     endPosition: impactPosition,
     endTarget: impactTarget,
     endUp: impactUp,
+    easing: (progress) => progress,
   });
   const topDownTransition = cameraRig.createPoseTransition({
     startPosition: impactPosition,
@@ -121,7 +85,7 @@ export function createPowerOnCameraChoreography({
     endPosition: topDownPosition,
     endTarget: topDownTarget,
     endUp: topDownUp,
-    easing: (progress) => departWithMomentum(progress, 0.1),
+    easing: (progress) => departWithMomentum(progress, 0.02),
   });
   const impulseTarget = new THREE.Vector3();
   const cameraTarget = new THREE.Vector3();
@@ -151,14 +115,26 @@ export function createPowerOnCameraChoreography({
         ));
         return;
       }
-      const targetFollowWeight = 1 - smootherstep(intervalProgress(
+      if (progress >= POWER_ON_TIMELINE.cameraDrift[0]) {
+        const followWeight = 1 - smootherstep(intervalProgress(
+          progress,
+          ...POWER_ON_TIMELINE.cameraRelease,
+        ));
+        slowDrift.update(
+          intervalProgress(progress, ...POWER_ON_TIMELINE.cameraDrift),
+          impulseTarget,
+          followWeight,
+        );
+        return;
+      }
+      const followWeight = 1 - smootherstep(intervalProgress(
         progress,
         ...POWER_ON_TIMELINE.cameraRelease,
       ));
-      flightPath.update(
+      followFlight.update(
         intervalProgress(progress, ...POWER_ON_TIMELINE.cameraFlight),
         cameraTarget,
-        targetFollowWeight,
+        followWeight,
       );
     },
   };

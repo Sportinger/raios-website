@@ -135,11 +135,17 @@ export function createCameraRig(camera) {
       easing = smootherstep,
     }) {
       return {
-        update(progress) {
+        update(progress, targetOverride = null, targetOverrideWeight = 0) {
           const easedProgress = easing(progress);
           position.lerpVectors(startPosition, endPosition, easedProgress);
           target.lerpVectors(startTarget, endTarget, easedProgress);
           up.lerpVectors(startUp, endUp, easedProgress).normalize();
+          if (targetOverride) {
+            target.lerp(
+              targetOverride,
+              THREE.MathUtils.clamp(targetOverrideWeight, 0, 1),
+            );
+          }
           setPose(position, target, up);
         },
       };
