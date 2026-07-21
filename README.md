@@ -100,6 +100,8 @@ Das Power-on-Kapitel enthält nur noch die Dramaturgie und setzt folgende Bauste
 - `layout.js` besitzt ausschließlich feste Szenenpositionen und Abstände.
 - `create-power-on-chapter.js` übersetzt den lokalen Kapitel-Fortschritt in Zustände der Features.
 
+Am Ende des Kabel-Flugs löst `cameraRelease` den Kamerablick weich vom Impuls und führt sowohl Position als auch Blickziel exakt in die gemeinsame Home-Pose. Dadurch übernimmt die folgende Boot-Sequenz ohne Kamerasprung.
+
 Für eine andere Route wird daher kein Kabel- oder Shader-Code geändert. Für ein anderes Kabelmaterial wird keine Kameralogik geändert. Ein neues Kapitel importiert Features immer aus deren `index.js`, niemals aus internen Erzeuger- oder Konfigurationsdateien.
 
 ### Boot-Sequenz
@@ -119,6 +121,8 @@ features/
 ```
 
 Die wiederverwendbaren Grundbausteine `objects/cards/` und `objects/effects/data-stream/` kennen diese Fachbegriffe nicht. Sprechertexte und Audio sind bewusst nicht Bestandteil der aktuellen Implementierung.
+
+`chapters/boot-sequence/create-camera-choreography.js` definiert sieben fachliche Zwischenposen. Der allgemeine Camera-Rig verbindet daraus acht kontinuierliche Abschnitte von Home über Hardware, UEFI, USB, Limine, Kernel und Kontrollübergabe zurück nach Home. Die Kamera bewegt sich damit in jedem sichtbaren Boot-Kapitel und kann trotzdem ohne Sprung an Power-on und Kernel-Kapitel übergeben.
 
 ## Kapitel ergänzen
 

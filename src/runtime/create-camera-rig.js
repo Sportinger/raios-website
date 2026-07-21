@@ -46,14 +46,48 @@ export function createCameraRig(camera) {
       );
 
       return {
-        update(progress, targetOverride = null) {
+        update(progress, targetOverride = null, targetOverrideWeight = 1) {
           const easedProgress = easing(progress);
           positionCurve.getPointAt(easedProgress, position);
+          targetCurve.getPointAt(easedProgress, target);
           if (targetOverride) {
-            target.copy(targetOverride);
-          } else {
-            targetCurve.getPointAt(easedProgress, target);
+            target.lerp(
+              targetOverride,
+              THREE.MathUtils.clamp(targetOverrideWeight, 0, 1),
+            );
           }
+          setPose(position, target);
+        },
+      };
+    },
+
+    createHomeboundPoseTrack({ positions, targets, easing = smootherstep }) {
+      if (positions.length !== targets.length) {
+        throw new Error("Camera pose positions and targets must have equal length");
+      }
+      const trackPositions = [homePosition, ...positions, homePosition];
+      const trackTargets = [homeTarget, ...targets, homeTarget];
+
+      return {
+        segmentCount: trackPositions.length - 1,
+
+        update(segmentIndex, progress) {
+          const index = THREE.MathUtils.clamp(
+            Math.floor(segmentIndex),
+            0,
+            trackPositions.length - 2,
+          );
+          const easedProgress = easing(progress);
+          position.lerpVectors(
+            trackPositions[index],
+            trackPositions[index + 1],
+            easedProgress,
+          );
+          target.lerpVectors(
+            trackTargets[index],
+            trackTargets[index + 1],
+            easedProgress,
+          );
           setPose(position, target);
         },
       };

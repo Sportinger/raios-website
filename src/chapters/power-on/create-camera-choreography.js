@@ -93,10 +93,15 @@ export function createPowerOnCameraChoreography({
         ), cameraTarget);
         return;
       }
-      flightPath.update(intervalProgress(
+      const targetFollowWeight = 1 - smootherstep(intervalProgress(
         progress,
-        ...POWER_ON_TIMELINE.cameraFlight,
-      ), cameraTarget);
+        ...POWER_ON_TIMELINE.cameraRelease,
+      ));
+      flightPath.update(
+        intervalProgress(progress, ...POWER_ON_TIMELINE.cameraFlight),
+        cameraTarget,
+        targetFollowWeight,
+      );
     },
   };
 }

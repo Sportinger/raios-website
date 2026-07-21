@@ -1,7 +1,9 @@
 import { createBootSequence, BOOT_SCENES } from "../../features/boot-sequence/index.js";
+import { createBootCameraChoreography } from "./create-camera-choreography.js";
 
 export function createBootSequenceChapter({ cameraRig, lightRig }) {
   const sequence = createBootSequence();
+  const cameraChoreography = createBootCameraChoreography(cameraRig);
   const sceneLength = 1 / BOOT_SCENES.length;
   const navigationSections = BOOT_SCENES.map((scene, index) => Object.freeze({
     ...scene,
@@ -15,14 +17,15 @@ export function createBootSequenceChapter({ cameraRig, lightRig }) {
     navigationSections,
 
     update(progress) {
-      cameraRig.reset();
       lightRig.setIntensity(1);
       const scaledProgress = Math.min(
         BOOT_SCENES.length - 0.000001,
         progress * BOOT_SCENES.length,
       );
       const sceneIndex = Math.floor(scaledProgress);
-      sequence.setSceneProgress(sceneIndex, scaledProgress - sceneIndex);
+      const sceneProgress = scaledProgress - sceneIndex;
+      sequence.setSceneProgress(sceneIndex, sceneProgress);
+      cameraChoreography.update(sceneIndex, sceneProgress);
     },
 
     resize() {},

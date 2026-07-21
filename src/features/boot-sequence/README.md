@@ -10,5 +10,10 @@ deterministisch. Die einzelnen Darsteller kennen weder Scrollpositionen noch
 Kapitelnummern. Neue Phasen werden in `config.js` registriert und in
 `create-boot-sequence.js` auf semantische Feature-Zustände abgebildet.
 
+Die Kamera bleibt Kapitelverantwortung. `chapters/boot-sequence/` verwendet den
+allgemeinen `createHomeboundPoseTrack()` des Camera-Rigs und fährt pro Szene eine
+eigene Pose an. Erster und letzter Trackpunkt sind automatisch die gemeinsame
+Home-Pose, sodass benachbarte Root-Kapitel nahtlos anschließen.
+
 Sprechertexte, Sound und Untertitel gehören später in eine eigene Medien- bzw.
 Narrationsebene und werden nicht in 3D-Features hinterlegt.
