@@ -5,11 +5,14 @@ import { CAMERA_HOME } from "./camera-config.js";
 export function createCameraRig(camera) {
   const homePosition = new THREE.Vector3().fromArray(CAMERA_HOME.position);
   const homeTarget = new THREE.Vector3().fromArray(CAMERA_HOME.target);
+  const homeUp = camera.up?.clone() ?? new THREE.Vector3(0, 1, 0);
   const position = new THREE.Vector3();
   const target = new THREE.Vector3();
+  const up = new THREE.Vector3();
 
-  const setPose = (nextPosition, nextTarget) => {
+  const setPose = (nextPosition, nextTarget, nextUp = homeUp) => {
     camera.position.copy(nextPosition);
+    camera.up.copy(nextUp).normalize();
     camera.lookAt(nextTarget);
   };
 
@@ -28,7 +31,7 @@ export function createCameraRig(camera) {
 
         update(progress, targetOverride = null) {
           getPositionAt(progress, position);
-          setPose(position, targetOverride ?? center);
+          setPose(position, targetOverride ?? center, homeUp);
         },
       };
     },
@@ -39,7 +42,13 @@ export function createCameraRig(camera) {
       easing = smootherstep,
       endPosition = homePosition,
       endTarget = homeTarget,
+      endUp = homeUp,
+      ups = null,
     }) {
+      const pathUps = ups ?? positions.map(() => homeUp.clone());
+      if (positions.length !== targets.length || positions.length !== pathUps.length) {
+        throw new Error("Camera path positions, targets, and up vectors must match");
+      }
       const positionCurve = new THREE.CatmullRomCurve3(
         [...positions, endPosition.clone()],
         false,
@@ -50,19 +59,25 @@ export function createCameraRig(camera) {
         false,
         "centripetal",
       );
+      const upCurve = new THREE.CatmullRomCurve3(
+        [...pathUps, endUp.clone()],
+        false,
+        "centripetal",
+      );
 
       return {
         update(progress, targetOverride = null, targetOverrideWeight = 1) {
           const easedProgress = easing(progress);
           positionCurve.getPointAt(easedProgress, position);
           targetCurve.getPointAt(easedProgress, target);
+          upCurve.getPointAt(easedProgress, up).normalize();
           if (targetOverride) {
             target.lerp(
               targetOverride,
               THREE.MathUtils.clamp(targetOverrideWeight, 0, 1),
             );
           }
-          setPose(position, target);
+          setPose(position, target, up);
         },
       };
     },
@@ -73,12 +88,16 @@ export function createCameraRig(camera) {
       easing = smootherstep,
       startPosition = homePosition,
       startTarget = homeTarget,
+      startUp = homeUp,
+      ups = null,
     }) {
-      if (positions.length !== targets.length) {
-        throw new Error("Camera pose positions and targets must have equal length");
+      const poseUps = ups ?? positions.map(() => homeUp.clone());
+      if (positions.length !== targets.length || positions.length !== poseUps.length) {
+        throw new Error("Camera pose positions, targets, and up vectors must match");
       }
       const trackPositions = [startPosition, ...positions, homePosition];
       const trackTargets = [startTarget, ...targets, homeTarget];
+      const trackUps = [startUp, ...poseUps, homeUp];
 
       return {
         segmentCount: trackPositions.length - 1,
@@ -100,20 +119,21 @@ export function createCameraRig(camera) {
             trackTargets[index + 1],
             easedProgress,
           );
-          setPose(position, target);
+          up.lerpVectors(trackUps[index], trackUps[index + 1], easedProgress).normalize();
+          setPose(position, target, up);
         },
       };
     },
 
     reset() {
-      setPose(homePosition, homeTarget);
+      setPose(homePosition, homeTarget, homeUp);
     },
 
     transitionFrom(startPosition, startTarget, progress) {
       const easedProgress = smootherstep(progress);
       position.lerpVectors(startPosition, homePosition, easedProgress);
       target.lerpVectors(startTarget, homeTarget, easedProgress);
-      setPose(position, target);
+      setPose(position, target, homeUp);
     },
   };
 }

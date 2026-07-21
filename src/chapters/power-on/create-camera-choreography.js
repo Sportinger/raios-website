@@ -24,6 +24,7 @@ function createFlightPath({
   buttonPosition,
   endPosition,
   endTarget,
+  endUp,
 }) {
   const profileSide = pathStart.clone().sub(buttonPosition).setY(0).normalize();
   const originalSide = originalCameraStart.clone()
@@ -38,23 +39,32 @@ function createFlightPath({
       .addScaledVector(sideDirection, distance);
   };
 
+  const positions = [
+    pathStart,
+    aboveCable(0.12, 3.2, 1, 0.18),
+    aboveCable(0.32, 3.8, 1.3, 0.42),
+    aboveCable(0.56, 5.8, 2.8, 0.7),
+    aboveCable(0.78, 8.2, 5.4, 0.92),
+  ];
   return cameraRig.createHomeboundPath({
     easing: smootherstep,
     endPosition,
     endTarget,
-    positions: [
-      pathStart,
-      aboveCable(0.12, 3.2, 1, 0.18),
-      aboveCable(0.32, 3.8, 1.3, 0.42),
-      aboveCable(0.56, 4.6, 1.7, 0.7),
-      aboveCable(0.78, 5.4, 2.1, 0.92),
-    ],
+    endUp,
+    positions,
     targets: [
       buttonPosition,
       curve.getPoint(0.26),
       curve.getPoint(0.5),
       curve.getPoint(0.73),
       curve.getPoint(1),
+    ],
+    ups: [
+      new THREE.Vector3(0, 1, 0),
+      new THREE.Vector3(0, 1, 0),
+      new THREE.Vector3(0, 1, 0),
+      new THREE.Vector3(0, 0.92, -0.38).normalize(),
+      new THREE.Vector3(0, 0.55, -0.84).normalize(),
     ],
   });
 }
@@ -76,6 +86,9 @@ export function createPowerOnCameraChoreography({
   const topDownTarget = new THREE.Vector3().fromArray(
     BARE_METAL_TOP_DOWN_POSE.target,
   );
+  const topDownUp = new THREE.Vector3().fromArray(
+    BARE_METAL_TOP_DOWN_POSE.up,
+  );
   const flightPath = createFlightPath({
     cameraRig,
     curve,
@@ -84,6 +97,7 @@ export function createPowerOnCameraChoreography({
     buttonPosition,
     endPosition: topDownPosition,
     endTarget: topDownTarget,
+    endUp: topDownUp,
   });
   const impulseTarget = new THREE.Vector3();
   const cameraTarget = new THREE.Vector3();
