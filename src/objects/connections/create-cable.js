@@ -70,7 +70,6 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
   const pulseMaterial = new THREE.MeshBasicMaterial({
     color: 0xe5f8ff,
     depthWrite: true,
-    transparent: true,
     toneMapped: false,
   });
   const pulseCore = new THREE.Mesh(
@@ -149,7 +148,6 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
       curve.getTangentAt(signalProgress, flowTangent).normalize(),
     );
     pulse.visible = group.visible && signalEnvelope > 0.001;
-    pulseMaterial.opacity = opacity * signalEnvelope;
     plasmaLayers.forEach(({ material, spec, sprite }, index) => {
       const turbulence = 1 + Math.sin(signalProgress * 24 + index * 1.7) * 0.08;
       material.opacity = opacity * signalEnvelope * spec.opacity;
