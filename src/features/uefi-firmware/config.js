@@ -1,5 +1,6 @@
 export const UEFI_FIRMWARE_CONFIG = Object.freeze({
-  source: Object.freeze([0, -0.44, 0]),
+  source: Object.freeze([0, -0.6, 0]),
+  sourceSize: Object.freeze([1.55, 0.28, 0.58]),
   layerY: 0.12,
   width: 7.05,
   height: 0.64,

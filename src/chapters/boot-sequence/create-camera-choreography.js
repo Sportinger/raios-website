@@ -8,7 +8,7 @@ import { BARE_METAL_BOOT_POSE } from "../shared/camera-poses.js";
 const UEFI_ORBIT = Object.freeze({
   start: 0,
   end: 0.143,
-  angle: THREE.MathUtils.degToRad(-100),
+  angle: THREE.MathUtils.degToRad(-70),
 });
 
 const BOOT_CAMERA_POSES = Object.freeze([

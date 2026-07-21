@@ -10,6 +10,11 @@ export function createUefiFirmware() {
   const group = new THREE.Group();
   group.name = "uefi-firmware";
   const source = new THREE.Vector3().fromArray(UEFI_FIRMWARE_CONFIG.source);
+  const collapsedScale = new THREE.Vector3(
+    UEFI_FIRMWARE_CONFIG.sourceSize[0] / UEFI_FIRMWARE_CONFIG.width,
+    UEFI_FIRMWARE_CONFIG.sourceSize[1] / UEFI_FIRMWARE_CONFIG.height,
+    UEFI_FIRMWARE_CONFIG.sourceSize[2] / UEFI_FIRMWARE_CONFIG.depth,
+  );
   const sourceLight = new THREE.PointLight(0x55d6ff, 0, 3.2, 2);
   sourceLight.position.copy(source).setY(source.y + 0.24);
   group.add(sourceLight);
@@ -114,9 +119,9 @@ export function createUefiFirmware() {
       0,
     );
     layerGroup.scale.set(
-      THREE.MathUtils.lerp(0.12, 1, deployedExpansion),
-      1,
-      THREE.MathUtils.lerp(0.12, 1, deployedExpansion),
+      THREE.MathUtils.lerp(collapsedScale.x, 1, deployedExpansion),
+      THREE.MathUtils.lerp(collapsedScale.y, 1, deployedExpansion),
+      THREE.MathUtils.lerp(collapsedScale.z, 1, deployedExpansion),
     );
     material.opacity = layerVisibility * activeOpacity * 0.28;
     edgeMaterial.opacity = layerVisibility * activeOpacity * 0.9;
