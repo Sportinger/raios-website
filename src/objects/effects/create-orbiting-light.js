@@ -1,32 +1,20 @@
 import * as THREE from "three";
 import { smootherstep } from "../../animation/progress.js";
-import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 
 const ORBIT_ANGLE = THREE.MathUtils.degToRad(240);
-const ORBIT_RADIUS = 1.68;
-const POLAR_END = Math.PI * 0.92;
+const ORBIT_RADIUS = 1.72;
 
 export function createOrbitingLight({ color = 0xffffff } = {}) {
   const group = new THREE.Group();
   group.name = "orbiting-light";
 
-  const coreMaterial = new THREE.MeshBasicMaterial({
-    color,
-    transparent: true,
-    toneMapped: false,
-  });
-  group.add(new THREE.Mesh(new THREE.SphereGeometry(0.075, 18, 12), coreMaterial));
-
-  const haloMaterial = new THREE.MeshBasicMaterial({
-    color,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-    transparent: true,
-    toneMapped: false,
-  });
-  group.add(new THREE.Mesh(new THREE.SphereGeometry(0.24, 18, 12), haloMaterial));
-
-  const light = new THREE.PointLight(color, 0, 4.8, 2);
+  const light = new THREE.PointLight(color, 0, 5.2, 2);
+  light.castShadow = true;
+  light.shadow.mapSize.set(1024, 1024);
+  light.shadow.camera.near = 0.05;
+  light.shadow.camera.far = 6;
+  light.shadow.bias = -0.001;
+  light.shadow.radius = 0;
   group.add(light);
 
   return {
@@ -34,24 +22,19 @@ export function createOrbitingLight({ color = 0xffffff } = {}) {
 
     setProgress(value) {
       const progress = smootherstep(value);
-      const polar = progress * POLAR_END;
-      const azimuth = progress * ORBIT_ANGLE;
-      const projectedRadius = Math.sin(polar) * ORBIT_RADIUS;
-      const envelope = Math.pow(Math.sin(Math.PI * progress), 0.3);
+      const angle = progress * ORBIT_ANGLE;
+      const fadeIn = smootherstep(Math.min(1, progress / 0.08));
+      const fadeOut = smootherstep(Math.min(1, (1 - progress) / 0.08));
 
-      group.visible = envelope > 0.001;
       group.position.set(
-        Math.cos(azimuth) * projectedRadius,
-        -Math.cos(polar) * ORBIT_RADIUS,
-        -Math.sin(azimuth) * projectedRadius,
+        Math.sin(angle) * ORBIT_RADIUS,
+        -Math.cos(angle) * ORBIT_RADIUS,
+        0,
       );
-      coreMaterial.opacity = envelope;
-      haloMaterial.opacity = envelope * 0.34;
-      light.intensity = envelope * 7.2;
+      light.intensity = fadeIn * fadeOut * 7.4;
     },
 
     dispose() {
-      disposeObject3D(group);
       group.removeFromParent();
     },
   };

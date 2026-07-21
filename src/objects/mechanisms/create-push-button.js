@@ -20,6 +20,8 @@ export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}
     housingMaterial,
   );
   housing.position.y = -0.19;
+  housing.castShadow = true;
+  housing.receiveShadow = true;
   group.add(housing);
 
   const rimMaterial = new THREE.MeshStandardMaterial({
@@ -33,6 +35,8 @@ export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}
   const rim = new THREE.Mesh(new THREE.TorusGeometry(0.75, 0.105, 20, 72), rimMaterial);
   rim.rotation.x = -Math.PI / 2;
   rim.position.y = 0.015;
+  rim.castShadow = true;
+  rim.receiveShadow = true;
   group.add(rim);
 
   const capMaterial = new THREE.MeshStandardMaterial({
@@ -45,8 +49,18 @@ export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}
   });
   const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.67, 0.7, 0.3, 64), capMaterial);
   cap.position.y = CAP_REST_Y;
+  cap.castShadow = true;
+  cap.receiveShadow = true;
   group.add(cap);
-  if (topMark) cap.add(topMark.group);
+  if (topMark) {
+    topMark.group.traverse((object) => {
+      if (object.isMesh) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+      }
+    });
+    cap.add(topMark.group);
+  }
 
   const underglowMaterial = new THREE.MeshBasicMaterial({
     color: accentColor,
