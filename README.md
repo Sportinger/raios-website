@@ -100,7 +100,7 @@ Das Power-on-Kapitel enthält nur noch die Dramaturgie und setzt folgende Bauste
 - `layout.js` besitzt ausschließlich feste Szenenpositionen und Abstände.
 - `create-power-on-chapter.js` übersetzt den lokalen Kapitel-Fortschritt in Zustände der Features.
 
-Am Ende des Kabel-Flugs löst `cameraRelease` den Kamerablick weich vom Impuls. Die letzten Flugpunkte gewinnen deutlich früher an Höhe und Abstand, sodass Kabel und Platte bereits vor der Endpose vollständig lesbar werden. Position, Blickziel und ein expliziter Screen-Up-Vektor gehen anschließend in eine senkrechte, auf der Bare-Metal-Platte zentrierte Draufsicht über. Dadurch endet bereits Kapitel 1 weit über der Hardware, ohne den früheren Roll-Flip, und die folgende Boot-Sequenz übernimmt dieselbe Orientierung ohne Kamerasprung.
+Noch bevor der Impuls in die Platte eintritt, löst `cameraRelease` den Kamerablick weich vom Impuls. Die letzten Flugpunkte gewinnen früh an Höhe und Abstand; die Zielkurve übernimmt bereits vor dem Kontakt das Zentrum der Bare-Metal-Platte. Dadurch bleiben Impuls und Kabel am Rand sichtbar, während die vollständige Platte den Bildmittelpunkt bildet. Position, Blickziel und ein expliziter Screen-Up-Vektor gehen anschließend in eine senkrechte Draufsicht über. Kapitel 1 endet weit über der Hardware, ohne den früheren Roll-Flip, und die folgende Boot-Sequenz übernimmt dieselbe Orientierung ohne Kamerasprung.
 
 Für eine andere Route wird daher kein Kabel- oder Shader-Code geändert. Für ein anderes Kabelmaterial wird keine Kameralogik geändert. Ein neues Kapitel importiert Features immer aus deren `index.js`, niemals aus internen Erzeuger- oder Konfigurationsdateien.
 

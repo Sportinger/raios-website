@@ -15,6 +15,6 @@ export const POWER_ON_TIMELINE = Object.freeze({
   signalTravel: segment(BUTTON_PRESS_START, 0.78),
   environmentLight: segment(LIGHT_REVEAL_START, 0.42),
   cameraFollow: segment(BUTTON_PRESS_START, 0.4),
-  cameraFlight: segment(CAMERA_FLIGHT_START, 0.96),
-  cameraRelease: segment(0.78, 0.96),
+  cameraFlight: segment(CAMERA_FLIGHT_START, 0.86),
+  cameraRelease: segment(0.56, 0.74),
 });

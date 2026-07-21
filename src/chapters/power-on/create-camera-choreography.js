@@ -42,9 +42,9 @@ function createFlightPath({
   const positions = [
     pathStart,
     aboveCable(0.12, 3.2, 1, 0.18),
-    aboveCable(0.32, 3.8, 1.3, 0.42),
-    aboveCable(0.56, 5.8, 2.8, 0.7),
-    aboveCable(0.78, 8.2, 5.4, 0.92),
+    aboveCable(0.32, 4.6, 2.2, 0.42),
+    aboveCable(0.52, 7, 4.2, 0.7),
+    aboveCable(0.72, 9.5, 6.2, 0.92),
   ];
   return cameraRig.createHomeboundPath({
     easing: smootherstep,
@@ -56,8 +56,8 @@ function createFlightPath({
       buttonPosition,
       curve.getPoint(0.26),
       curve.getPoint(0.5),
-      curve.getPoint(0.73),
-      curve.getPoint(1),
+      curve.getPoint(0.86),
+      endTarget.clone(),
     ],
     ups: [
       new THREE.Vector3(0, 1, 0),
