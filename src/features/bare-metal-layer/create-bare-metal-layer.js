@@ -32,7 +32,7 @@ export function createBareMetalLayer() {
     metalness: 1,
     metalnessMap: textures.metalnessMap,
     normalMap: textures.normalMap,
-    normalScale: new THREE.Vector2(0.48, 0.48),
+    normalScale: new THREE.Vector2(0.28, 0.28),
     roughness: 1,
     roughnessMap: textures.roughnessMap,
     transparent: true,

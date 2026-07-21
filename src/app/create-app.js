@@ -28,7 +28,7 @@ export function createApp({
   const viewportElement = canvas.closest(".viewport");
   const camera = createCamera();
   const cameraRig = createCameraRig(camera);
-  const world = createWorld();
+  const world = createWorld(renderer);
   const story = createStory({
     scene: world.scene,
     context: { cameraRig, lightRig: world.lightRig },
