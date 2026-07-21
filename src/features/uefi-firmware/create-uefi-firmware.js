@@ -91,6 +91,7 @@ export function createUefiFirmware() {
     usbPathProgress = 0,
     bootManagerPathProgress = 0,
     flowPhase = 0,
+    cableRetreatProgress = 0,
     retreatProgress = 0,
     opacity = 1,
   } = {}) => {
@@ -100,6 +101,7 @@ export function createUefiFirmware() {
     const layerVisibility = intervalProgress(layerProgress, 0, 0.16);
     const usbServiceIn = smootherstep(usbServiceProgress);
     const bootManagerIn = smootherstep(bootManagerProgress);
+    const cableRetreat = smootherstep(cableRetreatProgress);
     const retreat = smootherstep(retreatProgress);
     const activeOpacity = (1 - retreat) * opacity;
     sourceLight.intensity = Math.sin(pattern * Math.PI) * activeOpacity * 2.2;
@@ -136,12 +138,12 @@ export function createUefiFirmware() {
     usbServiceCable.setState({
       headProgress: smootherstep(usbPathProgress),
       flowPhase,
-      opacity: activeOpacity,
+      opacity: activeOpacity * (1 - cableRetreat),
     });
     bootManagerCable.setState({
       headProgress: smootherstep(bootManagerPathProgress),
       flowPhase: flowPhase + 0.37,
-      opacity: activeOpacity,
+      opacity: activeOpacity * (1 - cableRetreat),
     });
   };
   setState();

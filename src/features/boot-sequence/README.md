@@ -27,8 +27,9 @@ Softwareschichten. Alle vier Vollschichten beziehen Breite, Tiefe und Dicke aus
 dem gemeinsamen `SYSTEM_LAYER_SIZE`-Preset, liegen exakt auf derselben X/Z-Achse
 und unterscheiden sich im Stapel nur durch ihre Höhe. SPI-Flash, USB-Port, Boot
 Manager und USB Boot Service sind Objekte. Der Stick dockt ausschließlich am
-physischen Port an. UEFI und Limine ziehen sich erst nach dem Handoff gemeinsam
-zurück, während der SPI-Flash als inaktive Hardware bestehen bleibt.
+physischen Port an. Nach dem Handoff lösen sich zuerst beide UEFI-Kabel auf.
+Danach zieht sich Limine zurück; UEFI folgt mit leichter zeitlicher Überlappung.
+Der SPI-Flash bleibt als inaktive Hardware bestehen.
 
 Die UEFI-Fläche startet nach ihrer Entfaltung mit `0.28` Materialdeckkraft. Ab
 dem Ende der Expansion wird die allgemeine `surfaceOpacityScale` über mehrere
@@ -41,8 +42,8 @@ UEFI und Limine schreiben trotz ihrer transparenten Materialien Tiefe. Ihre
 Flächen werden nach den Kabeloberflächen gerendert: Ein Kabelabschnitt hinter
 beziehungsweise innerhalb einer Softwareschicht wird dadurch von deren Farbe
 und Dichte beeinflusst, während ein geometrisch davorliegender Abschnitt klar
-bleibt. Der Kernel startet mit `0.76` Deckkraft und verdichtet sich beim Running
-nur bis `0.90`; auch er bleibt damit als eigene räumliche Ebene lesbar.
+bleibt. Der Kernel ist eine einzige ungeteilte Fläche mit `0.90` Deckkraft und
+bleibt damit als eigene räumliche Ebene lesbar.
 
 Der Datenfluss besitzt eine feste Leserichtung von rechts nach links:
 
@@ -84,6 +85,14 @@ Limine steigt zunächst als reiner Wireframe auf und beginnt seine Expansion
 ebenfalls ohne Fläche. Erst im späteren Teil der Expansion wird das Material
 langsam bis zur endgültigen Deckkraft eingeblendet.
 
+Sobald `KERNEL LOADER` vollständig extrudiert ist, startet an seinem Footprint
+ein geordneter Datenstrom. Aus exakt diesem Quellmaß steigt eine kompakte
+`RUST KERNEL`-Ebene hoch und expandiert über denselben modularen
+`expanding-stage-layer` auf das vollständige Systemmaß. Der Kernel besteht dabei
+aus einer einzigen Fläche; die frühere 3×2-Blockmontage und alle Statussegmente
+existieren nicht mehr. Erst Wireframe, dann Fläche und Seitentitel werden
+sichtbar.
+
 Schichttitel liegen ausschließlich auf der zur Startkamera gerichteten
 Seitenfläche. Dort ist nur der große, fette weiße Hauptbegriff sichtbar;
 graue Erklärungszeilen werden nicht gerendert. Funktionale Karten dürfen eine
@@ -104,7 +113,7 @@ aktiv bleiben.
 
 Der Seitentitel `LIMINE BOOT ENVIRONMENT` bleibt nach seinem Reveal während der
 gesamten Limine-Sequenz sichtbar. Er dimmt nicht beim Erscheinen von CONFIG oder
-KERNEL LOADER, sondern verschwindet erst mit dem gemeinsamen Layer-Rückzug.
+KERNEL LOADER, sondern verschwindet erst beim eigenen Limine-Rückzug.
 
 Alle Chipobjekte verwenden `objects/cards/create-info-card.js`. Das gemeinsame
 Reveal zeichnet zuerst ausschließlich den flachen Footprint als fortlaufenden

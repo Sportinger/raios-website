@@ -50,7 +50,8 @@ export function createBootSequence() {
       usbPathProgress: intervalProgress(bootUsb, 0.32, 0.66),
       bootManagerPathProgress: intervalProgress(bootUsb, 0.58, 0.88),
       flowPhase: animationTime * 0.42,
-      retreatProgress: intervalProgress(controlHandoff, 0.58, 1),
+      cableRetreatProgress: intervalProgress(controlHandoff, 0.52, 0.66),
+      retreatProgress: intervalProgress(controlHandoff, 0.76, 1),
       opacity: 1,
     });
     usb.setState({
@@ -64,14 +65,14 @@ export function createBootSequence() {
     limine.setState({
       layerProgress: intervalProgress(limineLoad, 0, 0.72),
       configProgress: intervalProgress(limineLoad, 0.72, 1),
-      kernelLoaderProgress: intervalProgress(kernelLoad, 0, 0.42),
+      kernelLoaderProgress: intervalProgress(kernelLoad, 0, 0.28),
       handoffPrepareProgress: startInformation,
       handoffProgress: intervalProgress(controlHandoff, 0.28, 0.72),
-      retreatProgress: intervalProgress(controlHandoff, 0.58, 1),
+      retreatProgress: intervalProgress(controlHandoff, 0.66, 0.88),
       opacity: 1,
     });
     kernel.setState({
-      transferProgress: intervalProgress(kernelLoad, 0.38, 0.88),
+      transferProgress: intervalProgress(kernelLoad, 0.32, 0.72),
       assemblyProgress: intervalProgress(kernelLoad, 0.46, 1),
       readyProgress: intervalProgress(startInformation, 0.7, 1),
       handoffProgress: intervalProgress(controlHandoff, 0.28, 0.72),

@@ -96,6 +96,7 @@ export function createExpandingStageLayer({
     alignmentProgress = liftProgress,
     labelProgress = expansionProgress,
     labelOpacity = 1,
+    emissiveIntensityScale = 1,
     surfaceOpacityScale = 1,
     retreatProgress = 0,
     opacity = 1,
@@ -129,6 +130,7 @@ export function createExpandingStageLayer({
       1,
       surfaceReveal * activeOpacity * surfaceOpacity * surfaceOpacityScale,
     );
+    material.emissiveIntensity = emissiveIntensity * emissiveIntensityScale;
     edgeMaterial.opacity = reveal * activeOpacity * edgeOpacity;
     label.material.opacity = smootherstep(labelProgress) * labelOpacity * activeOpacity;
     return { activeOpacity, alignment, expansion, exit, lift, reveal };
