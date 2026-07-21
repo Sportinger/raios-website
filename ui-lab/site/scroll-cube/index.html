@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#05070a">
+  <title>raiOS · Scroll Layers</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main class="scroll-stage" aria-label="Abstrakte Layer-Animation">
+    <div class="viewport">
+      <canvas id="layer-canvas" aria-hidden="true"></canvas>
+    </div>
+  </main>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
