@@ -33,7 +33,6 @@ export function createExpandingStageLayer({
   anisotropicBlur = 0.08,
   distortion = 0.01,
   distortionScale = 0.3,
-  transmissionRefractionScale = 1,
   transmissionBackside = false,
   transmissionBacksideThickness = 0.5,
   surfaceOpacity = 0.8,
@@ -119,7 +118,6 @@ export function createExpandingStageLayer({
       anisotropicBlur,
       distortion,
       distortionScale,
-      refractionScale: transmissionRefractionScale,
       backside: transmissionBackside,
       backsideThickness: transmissionBacksideThickness,
     })

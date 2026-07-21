@@ -46,7 +46,6 @@ export function createUefiFirmware({ sourceAnchor }) {
     specularIntensity: 1,
     transmissionResolution: 1024,
     transmissionSamples: 10,
-    transmissionRefractionScale: 3.2,
     transmissionBackside: true,
     transmissionBacksideThickness: 1.4,
     chromaticAberration: 0.06,

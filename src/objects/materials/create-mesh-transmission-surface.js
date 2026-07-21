@@ -10,7 +10,6 @@ export function createMeshTransmissionSurface({
   anisotropicBlur = 0.08,
   distortion = 0.01,
   distortionScale = 0.3,
-  refractionScale = 1,
   backside = false,
   backsideThickness = 0.5,
 }) {
@@ -51,20 +50,6 @@ export function createMeshTransmissionSurface({
   });
   material.setValues(physicalOptions);
   material.transparent = true;
-  material.uniforms.refractionScale = { value: refractionScale };
-  const compileTransmissionShader = material.onBeforeCompile;
-  material.onBeforeCompile = (shader) => {
-    compileTransmissionShader(shader);
-    shader.fragmentShader = shader.fragmentShader
-      .replace(
-        "uniform float chromaticAberration;",
-        "uniform float chromaticAberration;\nuniform float refractionScale;",
-      )
-      .replace(
-        "vec3 refractedRayExit = position + transmissionRay;",
-        "vec3 refractedRayExit = position + transmissionRay * refractionScale;",
-      );
-  };
 
   const surface = new THREE.Mesh(geometry, material);
   let renderingBuffer = false;

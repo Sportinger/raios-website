@@ -127,8 +127,8 @@ Die Softwareschichten besitzen eine feste Renderreihenfolge. UEFI verwendet
 einen eigenen Transmission-Pass: Vor dem Hauptbild wird die Szene ohne die
 Glasoberfläche in einen Half-Float-Buffer gerendert, den der Volumenshader mit
 IOR, Materialtiefe, chromatischer Aberration und blauer Absorption gebrochen
-abtastet. Der UEFI-Layer verstärkt die Länge des physikalisch berechneten
-Brechungswegs, damit der Versatz auf der großflächigen Tischtextur lesbar bleibt.
+abtastet. Der Brechungsweg verwendet unverändert den IOR-Wert `1.5` der
+Transmission-Material-Vorlage.
 Eine niedrigfrequente Variation der optischen Flächennormale bricht zusätzlich
 die planparallele Gleichförmigkeit auf, ohne die gerundete Geometrie zu verändern.
 Transparente Beschriftungen und interne Bauteile rendern mit den Ordnungen
