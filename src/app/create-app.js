@@ -64,6 +64,9 @@ export function createApp({
       ior,
       surfaceRandomness,
       surfaceVariation,
+      tintHue,
+      tintIntensity,
+      transmissionBrightness,
     }) => {
       story.setUefiGlassOptics({
         backThickness,
@@ -72,6 +75,9 @@ export function createApp({
         ior,
         surfaceRandomness,
         surfaceVariation,
+        tintHue,
+        tintIntensity,
+        transmissionBrightness,
       });
       world.setEnvironmentRotation(environmentRotation);
     },

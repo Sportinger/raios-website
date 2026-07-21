@@ -18,6 +18,9 @@ export function createMeshTransmissionSurface({
   backsideThickness = 0.5,
   surfaceRandomness = 0.72,
   surfaceVariation = 0,
+  tintHue = 198,
+  tintIntensity = 0.18,
+  transmissionBrightness = 1,
 }) {
   const renderTarget = new THREE.WebGLRenderTarget(resolution, resolution, {
     depthBuffer: true,
@@ -56,6 +59,33 @@ export function createMeshTransmissionSurface({
   });
   material.setValues(physicalOptions);
   material.transparent = true;
+  material.uniforms.glassBrightness = { value: transmissionBrightness };
+  const compileTransmissionShader = material.onBeforeCompile;
+  material.onBeforeCompile = (shader) => {
+    compileTransmissionShader(shader);
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "uniform float chromaticAberration;",
+        "uniform float chromaticAberration;\nuniform float glassBrightness;",
+      )
+      .replace(
+        "totalDiffuse = mix( totalDiffuse, transmission.rgb, material.transmission );",
+        "totalDiffuse = mix( totalDiffuse, transmission.rgb * glassBrightness, material.transmission );",
+      );
+  };
+  const tintColor = new THREE.Color();
+  const attenuationTint = new THREE.Color();
+  const applyTint = (hue, intensity) => {
+    const normalizedHue = THREE.MathUtils.euclideanModulo(hue, 360) / 360;
+    const strength = THREE.MathUtils.clamp(intensity, 0, 1);
+    tintColor.setHSL(normalizedHue, 1, 0.75);
+    attenuationTint.setHSL(normalizedHue, 0.9, 0.78);
+    material.color.set(0xffffff).lerp(tintColor, strength);
+    material.attenuationColor
+      .set(0xffffff)
+      .lerp(attenuationTint, Math.min(1, strength * 1.8));
+  };
+  applyTint(tintHue, tintIntensity);
   const proceduralNormalMap = surfaceVariation > 0
     ? createProceduralGlassNormalMap({ randomness: surfaceRandomness })
     : null;
@@ -131,6 +161,9 @@ export function createMeshTransmissionSurface({
       chromaticAberration: chromaticShift = material.chromaticAberration,
       surfaceRandomness: randomness = currentSurfaceRandomness,
       surfaceVariation: variation = material.normalScale.x,
+      tintHue: hue = tintHue,
+      tintIntensity: colorStrength = tintIntensity,
+      transmissionBrightness: brightness = material.uniforms.glassBrightness.value,
     }) {
       material.ior = THREE.MathUtils.clamp(ior, 1, 2.33);
       material.thickness = Math.max(0, frontThickness);
@@ -140,6 +173,12 @@ export function createMeshTransmissionSurface({
         0.2,
       );
       currentBacksideThickness = Math.max(0, backThickness);
+      applyTint(hue, colorStrength);
+      material.uniforms.glassBrightness.value = THREE.MathUtils.clamp(
+        brightness,
+        0.5,
+        2,
+      );
       if (proceduralNormalMap) {
         material.normalScale.setScalar(THREE.MathUtils.clamp(variation, 0, 0.5));
         const nextRandomness = THREE.MathUtils.clamp(randomness, 0, 1);

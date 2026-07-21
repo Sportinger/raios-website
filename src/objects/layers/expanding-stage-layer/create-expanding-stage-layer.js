@@ -38,6 +38,9 @@ export function createExpandingStageLayer({
   transmissionBacksideThickness = 0.5,
   surfaceRandomness = 0.72,
   surfaceVariation = 0,
+  tintHue = 198,
+  tintIntensity = 0.18,
+  transmissionBrightness = 1,
   surfaceOpacity = 0.8,
   surfaceRenderOrder = 0,
   edgeOpacity = 1,
@@ -126,6 +129,9 @@ export function createExpandingStageLayer({
       backsideThickness: transmissionBacksideThickness,
       surfaceRandomness,
       surfaceVariation,
+      tintHue,
+      tintIntensity,
+      transmissionBrightness,
     })
     : null;
   const material = transmissionSurface?.material

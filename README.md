@@ -141,6 +141,9 @@ organisch. `Oberfläche` steuert ihre Stärke; `Zufall` mischt die regelmäßige
 Grundwellen stufenlos mit vier Oktaven deterministischen Fractal Noise.
 `Chromatik` regelt die RGB-Aufspaltung der Brechung live von `0` bis `0.2` und
 startet beim zurückhaltenden Wert `0.025`.
+`Farbe` wählt den Glaston über `0–360°`, `Farbintensität` mischt ihn mit neutralem
+Klarglas und `Helligkeit` verstärkt das gebrochene Szenenbild unabhängig von der
+HDR-Reflexion. Die Helligkeit startet zur besseren Durchsicht bei `1.25`.
 Der physische SPI-Flash bleibt unter dem Glas und damit Bestandteil der
 gebrochenen Szene. UEFI-Seitentitel, Boot Manager und USB Boot stehen dagegen
 auf dem Glas: Sie werden aus beiden Transmission-Buffern ausgeschlossen und
