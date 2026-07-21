@@ -165,6 +165,9 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
         progress >= POWER_ON_TIMELINE.signalTravel[0]
           && progress < POWER_ON_TIMELINE.signalTravel[1],
       );
+      cable.setFlowProgress(intervalProgress(
+        progress, POWER_ON_TIMELINE.signalTravel[0], 1,
+      ) * 3.5);
       cable.setOpacity(1);
       bareMetal.setState({ revealProgress: 1, labelProgress: 1, opacity: 1 });
       lightRig.setIntensity(smootherstep(intervalProgress(
