@@ -1,13 +1,13 @@
 import * as THREE from "three";
 import { intervalProgress, smootherstep } from "../../animation/progress.js";
 import { createInfoCard } from "../../objects/cards/index.js";
-import { createCable } from "../../objects/connections/cable/index.js";
-import { createDataStream } from "../../objects/effects/data-stream/index.js";
-import { createEnergyFlow } from "../../objects/effects/energy-flow/index.js";
-import { createPlasmaPulse } from "../../objects/effects/plasma-pulse/index.js";
+import { createTransientSignalCable } from "../../objects/connections/transient-signal-cable/index.js";
 import { createExpandingStageLayer } from "../../objects/layers/expanding-stage-layer/index.js";
 import { UEFI_FIRMWARE_CONFIG } from "./config.js";
-import { createUsbServiceRoute } from "./create-usb-service-route.js";
+import {
+  createBootManagerRoute,
+  createUsbServiceRoute,
+} from "./create-usb-service-route.js";
 
 export function createUefiFirmware() {
   const group = new THREE.Group();
@@ -33,8 +33,9 @@ export function createUefiFirmware() {
     emissiveIntensity: 0.22,
     metalness: 0.12,
     roughness: 0.22,
-    surfaceOpacity: 0.28,
-    depthWrite: false,
+    surfaceOpacity: UEFI_FIRMWARE_CONFIG.surfaceOpacity,
+    surfaceRenderOrder: 3,
+    depthWrite: true,
     edgeColor: 0x83e5ff,
     labelWidth: UEFI_FIRMWARE_CONFIG.width * 0.96,
     labelOptions: {
@@ -65,61 +66,20 @@ export function createUefiFirmware() {
   const bootManager = UEFI_FIRMWARE_CONFIG.services.find(
     ({ id }) => id === "boot-manager",
   );
-  const usbServiceCable = createCable({
-    points: createUsbServiceRoute(),
-    config: {
-      radius: 0.042,
-      tubularSegments: 96,
-      radialSegments: 10,
-      signalFade: 0.09,
-      idleColor: 0x263d4b,
-      poweredColor: 0x58d7ff,
-      poweredEmissiveStrength: 1.05,
-      idleMetalness: 0.68,
-      idleRoughness: 0.26,
-    },
+  const usbServiceCable = createTransientSignalCable({
+    name: "usb-stick-to-boot-service",
+    points: createUsbServiceRoute(usbService),
   });
-  usbServiceCable.group.name = "usb-service-cable";
-  const usbSignalFlow = createEnergyFlow({
-    curve: usbServiceCable.curve,
-    config: {
-      count: 11,
-      cableRadius: 0.042,
-      ringOffset: 0.003,
-      ringThickness: 0.008,
-      color: 0xb8f2ff,
-      opacity: 0.72,
-    },
+  const bootManagerCable = createTransientSignalCable({
+    name: "boot-service-to-manager",
+    points: createBootManagerRoute(usbService, bootManager),
+    cable: { radius: 0.036, tubularSegments: 72 },
+    energyFlow: { count: 8, cableRadius: 0.036 },
+    head: { scale: 0.11, lightDistance: 0.9 },
   });
-  const usbCableHead = createPlasmaPulse({
-    curve: usbServiceCable.curve,
-    accentColor: 0x58d7ff,
-    config: {
-      scale: 0.13,
-      fadeOutLength: 0.1,
-      lightIntensity: 1.4,
-      lightDistance: 1.15,
-      turbulenceAmount: 0.05,
-    },
-  });
-  usbCableHead.group.name = "usb-cable-writing-light";
-  const bootEntryPackage = createDataStream({
-    points: [
-      new THREE.Vector3(...usbService.position),
-      new THREE.Vector3(1.18, 0.66, 0.9),
-      new THREE.Vector3(...bootManager.position),
-    ],
-    count: 1,
-    blockSize: [0.42, 0.16, 0.26],
-    trailLength: 0,
-    color: 0xc8f5ff,
-  });
-  bootEntryPackage.group.name = "bootx64-efi-package";
   group.add(
     usbServiceCable.group,
-    usbSignalFlow.group,
-    usbCableHead.group,
-    bootEntryPackage.group,
+    bootManagerCable.group,
   );
 
   const setState = ({
@@ -129,8 +89,8 @@ export function createUefiFirmware() {
     usbServiceProgress = 0,
     bootManagerProgress = 0,
     usbPathProgress = 0,
-    usbPathRetractionProgress = 0,
-    bootEntryProgress = 0,
+    bootManagerPathProgress = 0,
+    flowPhase = 0,
     retreatProgress = 0,
     opacity = 1,
   } = {}) => {
@@ -151,7 +111,8 @@ export function createUefiFirmware() {
       labelProgress: intervalProgress(expansion, 0.18, 0.72),
       surfaceOpacityScale: THREE.MathUtils.lerp(
         1,
-        2,
+        UEFI_FIRMWARE_CONFIG.finalSurfaceOpacity
+          / UEFI_FIRMWARE_CONFIG.surfaceOpacity,
         smootherstep(opacityBoostProgress),
       ),
       retreatProgress,
@@ -172,28 +133,14 @@ export function createUefiFirmware() {
         definition.position[2],
       );
     });
-    const usbPath = smootherstep(usbPathProgress);
-    const usbPathRetraction = smootherstep(usbPathRetractionProgress);
     usbServiceCable.setState({
-      revealProgress: usbPath,
-      energizedProgress: usbPath,
-      retractProgress: usbPathRetraction,
+      headProgress: smootherstep(usbPathProgress),
+      flowPhase,
       opacity: activeOpacity,
     });
-    usbSignalFlow.setState({
-      energizedProgress: usbPath,
-      retractProgress: usbPathRetraction,
-      phase: usbPath * 1.15,
-      opacity: activeOpacity,
-    });
-    usbCableHead.setState({
-      progress: usbPath,
-      active: usbPathProgress > 0.001 && usbPathRetractionProgress < 0.001,
-      opacity: activeOpacity,
-      occludeCore: true,
-    });
-    bootEntryPackage.setState({
-      progress: bootEntryProgress,
+    bootManagerCable.setState({
+      headProgress: smootherstep(bootManagerPathProgress),
+      flowPhase: flowPhase + 0.37,
       opacity: activeOpacity,
     });
   };
@@ -205,9 +152,7 @@ export function createUefiFirmware() {
     dispose() {
       services.forEach(({ service }) => service.dispose());
       usbServiceCable.dispose();
-      usbSignalFlow.dispose();
-      usbCableHead.dispose();
-      bootEntryPackage.dispose();
+      bootManagerCable.dispose();
       stageLayer.dispose();
       group.removeFromParent();
     },

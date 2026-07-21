@@ -49,11 +49,13 @@ export function createStory({ scene, context }) {
     navigationItems,
     totalWeight,
 
-    update(progress) {
+    update(progress, animationTime = 0) {
       chapters.forEach(({ chapter, start, end, isLast, root }) => {
         const isActive = progress >= start && (progress < end || isLast);
         root.visible = isActive;
-        if (isActive) chapter.update(intervalProgress(progress, start, end));
+        if (isActive) {
+          chapter.update(intervalProgress(progress, start, end), animationTime);
+        }
       });
     },
 

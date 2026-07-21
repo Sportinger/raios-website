@@ -18,7 +18,7 @@ export function createBootSequenceChapter({ cameraRig, lightRig }) {
     group: sequence.group,
     navigationSections,
 
-    update(progress) {
+    update(progress, animationTime = 0) {
       lightRig.setIntensity(1);
       const scaledProgress = Math.min(
         BOOT_SCENES.length - 0.000001,
@@ -26,7 +26,7 @@ export function createBootSequenceChapter({ cameraRig, lightRig }) {
       );
       const sceneIndex = Math.floor(scaledProgress);
       const sceneProgress = scaledProgress - sceneIndex;
-      sequence.setSceneProgress(sceneIndex, sceneProgress);
+      sequence.setSceneProgress(sceneIndex, sceneProgress, animationTime);
       cameraChoreography.update(progress);
     },
 

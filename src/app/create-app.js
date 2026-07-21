@@ -33,14 +33,19 @@ export function createApp({
   const motionPreference = createMotionPreference();
   let reducedMotionProgress = 1;
   let chapterNavigation = null;
+  let animationFrame = 0;
+  let animationStartedAt = null;
+  let animationTime = 0;
+  let currentProgress = 0;
   const scrollDebug = createScrollDebug({
     container: scrollDebugContainer,
     items: story.navigationItems,
   });
 
   const renderAt = (progress) => {
+    currentProgress = progress;
     const storyProgress = motionPreference.matches ? reducedMotionProgress : progress;
-    story.update(storyProgress);
+    story.update(storyProgress, motionPreference.matches ? 0 : animationTime);
     chapterNavigation?.setProgress(storyProgress);
     scrollDebug.setProgress(storyProgress);
     renderer.render(world.scene, camera);
@@ -83,8 +88,21 @@ export function createApp({
   updateScrollTravel();
   viewport.resize();
 
+  const animate = (timestamp) => {
+    animationStartedAt ??= timestamp;
+    animationTime = (timestamp - animationStartedAt) / 1000;
+    const storyProgress = motionPreference.matches
+      ? reducedMotionProgress
+      : currentProgress;
+    story.update(storyProgress, motionPreference.matches ? 0 : animationTime);
+    renderer.render(world.scene, camera);
+    animationFrame = window.requestAnimationFrame(animate);
+  };
+  animationFrame = window.requestAnimationFrame(animate);
+
   return {
     dispose() {
+      window.cancelAnimationFrame(animationFrame);
       unsubscribeMotion();
       chapterNavigation.dispose();
       scrollDebug.dispose();

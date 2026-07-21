@@ -25,11 +25,17 @@ function renderDivider(divider, progress, opacity) {
 function createSectionPiece(options) {
   const {
     index, column, row, columns, rows, cellWidth, cellDepth, height,
-    bottomY, gap, definition, color, edgeColor, metalness, roughness,
+    bottomY, gap, definition, color, edgeColor, metalness, opacity, roughness,
   } = options;
   const group = new THREE.Group();
   const geometry = new THREE.BoxGeometry(cellWidth, height, cellDepth);
-  const material = new THREE.MeshStandardMaterial({ color, metalness, roughness });
+  const material = new THREE.MeshStandardMaterial({
+    color,
+    metalness,
+    opacity,
+    roughness,
+    transparent: opacity < 1,
+  });
   group.add(new THREE.Mesh(geometry, material));
 
   const edgeMaterial = new THREE.LineBasicMaterial({
@@ -71,7 +77,7 @@ export function createSectionedLayer(options) {
   const {
     width, height, depth, bottomY, sections, columns = 3, rows = 2, gap = 0.2,
     color, edgeColor, outlineColor = edgeColor, metalness = 0.4,
-    roughness = 0.5, mergedLabel = "RUST KERNEL",
+    opacity = 1, roughness = 0.5, mergedLabel = "RUST KERNEL",
   } = options;
 
   if (sections.length !== columns * rows) {
@@ -89,7 +95,7 @@ export function createSectionedLayer(options) {
       column: index % columns,
       row: Math.floor(index / columns),
       columns, rows, cellWidth, cellDepth, height, bottomY, gap, definition,
-      color, edgeColor, metalness, roughness,
+      color, edgeColor, metalness, opacity, roughness,
     });
     piecesGroup.add(piece.group);
     return piece;

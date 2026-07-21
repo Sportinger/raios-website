@@ -22,7 +22,9 @@ export function createKernelPlatform() {
     emissive: 0x0e5f88,
     emissiveIntensity: 0.12,
     metalness: 0.5,
+    opacity: 0.76,
     roughness: 0.38,
+    transparent: true,
   });
   const edgeMaterial = new THREE.LineBasicMaterial({
     color: 0x65cfff,
@@ -118,6 +120,7 @@ export function createKernelPlatform() {
     const running = smootherstep(runningProgress);
     const ready = smootherstep(readyProgress);
     const handoff = smootherstep(handoffProgress);
+    blockMaterial.opacity = opacity * THREE.MathUtils.lerp(0.76, 0.9, running);
     statusLabels[0].material.opacity = assembly * (1 - ready) * opacity;
     statusLabels[1].material.opacity = ready * (1 - handoff) * opacity;
     statusLabels[2].material.opacity = handoff * (1 - landing) * opacity;

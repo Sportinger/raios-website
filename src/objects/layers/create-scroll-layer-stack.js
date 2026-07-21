@@ -59,7 +59,7 @@ function renderOutline(outline, progress) {
 function createScrollLayer(definition, bottomY) {
   const {
     width, height, depth, color, edgeColor, outlineColor = edgeColor,
-    metalness = 0.4, roughness = 0.5,
+    metalness = 0.4, opacity = 1, roughness = 0.5,
   } = definition;
   const group = new THREE.Group();
   const geometry = new THREE.BoxGeometry(width, height, depth);
@@ -79,7 +79,7 @@ function createScrollLayer(definition, bottomY) {
     const verticalScale = THREE.MathUtils.lerp(0.001, 1, extrusionProgress);
     group.scale.set(1, verticalScale, 1);
     group.position.y = bottomY + (height * verticalScale) / 2;
-    material.opacity = extrusionProgress;
+    material.opacity = extrusionProgress * opacity;
     edgeMaterial.opacity = extrusionProgress * 0.72;
     renderOutline(outline, outlineProgress);
   };

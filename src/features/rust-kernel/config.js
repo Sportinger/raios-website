@@ -13,6 +13,7 @@ export const RUST_KERNEL_CONFIG = Object.freeze({
     edgeColor: 0x38526f,
     outlineColor: 0x6d9dce,
     metalness: 0.42,
+    opacity: 0.9,
     roughness: 0.5,
   }),
 });

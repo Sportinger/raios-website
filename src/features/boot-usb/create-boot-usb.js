@@ -32,7 +32,7 @@ export function createBootUsb() {
   connector.position.x = -bodyWidth / 2 - BOOT_USB_CONFIG.connectorSize[0] / 2;
   bodyGroup.add(connector);
   const label = createHorizontalLabel(
-    "USB BOOT",
+    "RAIOS BOOT USB",
     "",
     bodyWidth,
     bodyHeight / 0.7,

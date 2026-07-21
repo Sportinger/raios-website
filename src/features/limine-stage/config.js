@@ -1,8 +1,8 @@
 import { SYSTEM_LAYER_SIZE } from "../../objects/layers/system-layer-preset.js";
 
 export const LIMINE_STAGE_CONFIG = Object.freeze({
-  source: Object.freeze([0, 0.66, 0.9]),
-  sourceSize: Object.freeze([0.42, 0.16, 0.26]),
+  source: Object.freeze([-1.85, 0.6, 0.9]),
+  sourceSize: Object.freeze([1.85, 0.28, 0.72]),
   layer: Object.freeze({
     position: Object.freeze([0, 1.25, 0]),
     ...SYSTEM_LAYER_SIZE,

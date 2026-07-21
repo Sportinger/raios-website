@@ -26,14 +26,17 @@ export function createLimineStage() {
     metalness: 0.46,
     roughness: 0.3,
     surfaceOpacity: 0.88,
+    surfaceRenderOrder: 4,
+    depthWrite: true,
+    recenterOnExpansion: true,
     labelWidth: config.layer.width * 0.92,
     labelOptions: {
       panel: false,
       titleFont: "900 270px ui-monospace, SFMono-Regular, Consolas, monospace",
     },
   });
-  const stageGroup = stageLayer.group;
-  group.add(stageGroup);
+  const stageGroup = stageLayer.contentGroup;
+  group.add(stageLayer.group);
 
   const zoneWidth = config.layer.width / config.zones.length;
   const zones = config.zones.map((definition) => {
@@ -116,20 +119,6 @@ export function createLimineStage() {
     return { cell, material: cellMaterial };
   });
 
-  const bootEntry = createDataStream({
-    points: [
-      new THREE.Vector3(...config.source),
-      new THREE.Vector3(0.55, 0.92, 0.72),
-      new THREE.Vector3(0, config.layer.position[1], 0),
-    ],
-    count: 1,
-    blockSize: config.sourceSize,
-    trailLength: 0,
-    color: 0xd5f8ff,
-  });
-  bootEntry.group.name = "bootx64-efi-rising-package";
-  group.add(bootEntry.group);
-
   const handoffImpulse = createDataStream({
     points: [
       new THREE.Vector3(-2.2, config.layer.position[1] + 0.24, 0),
@@ -144,7 +133,6 @@ export function createLimineStage() {
   group.add(handoffImpulse.group);
 
   const setState = ({
-    bootEntryProgress = 0,
     layerProgress = 0,
     configProgress = 0,
     kernelLoaderProgress = 0,
@@ -153,21 +141,22 @@ export function createLimineStage() {
     retreatProgress = 0,
     opacity = 1,
   } = {}) => {
-    const layer = smootherstep(layerProgress);
+    const lift = intervalProgress(layerProgress, 0, 0.48);
+    const expansionProgress = intervalProgress(layerProgress, 0.48, 1);
+    const layerVisibility = intervalProgress(layerProgress, 0, 0.16);
     const configIn = smootherstep(configProgress);
     const loaderIn = smootherstep(kernelLoaderProgress);
     const handoffIn = smootherstep(handoffPrepareProgress);
     const stageState = stageLayer.setState({
-      revealProgress: layerProgress,
-      liftProgress: layerProgress,
-      expansionProgress: intervalProgress(layer, 0.34, 1),
-      labelProgress: intervalProgress(layer, 0.34, 1),
+      revealProgress: layerVisibility,
+      liftProgress: lift,
+      expansionProgress,
+      labelProgress: intervalProgress(expansionProgress, 0.18, 0.72),
       labelOpacity: 1 - configIn,
       retreatProgress,
       opacity,
     });
     const { activeOpacity, expansion } = stageState;
-    bootEntry.setState({ progress: bootEntryProgress, opacity: activeOpacity });
     dividerMaterial.opacity = expansion * activeOpacity * 0.42;
 
     const zoneProgress = [configIn, loaderIn, handoffIn];
@@ -208,7 +197,6 @@ export function createLimineStage() {
     group,
     setState,
     dispose() {
-      bootEntry.dispose();
       handoffImpulse.dispose();
       configToLoader.dispose();
       loaderToHandoff.dispose();

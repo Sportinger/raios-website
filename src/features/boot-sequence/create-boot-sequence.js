@@ -23,7 +23,7 @@ export function createBootSequence() {
     kernel.group,
   );
 
-  const setSceneProgress = (sceneIndex, progress) => {
+  const setSceneProgress = (sceneIndex, progress, animationTime = 0) => {
     const phase = BOOT_SCENES.map((_, index) => {
       if (index < sceneIndex) return 1;
       if (index === sceneIndex) return progress;
@@ -46,10 +46,10 @@ export function createBootSequence() {
       layerProgress: intervalProgress(firmware, 0, 0.78),
       opacityBoostProgress: uefiOpacityBoost,
       usbServiceProgress: intervalProgress(firmware, 0.72, 1),
-      bootManagerProgress: intervalProgress(bootUsb, 0.55, 0.78),
+      bootManagerProgress: intervalProgress(bootUsb, 0.58, 0.76),
       usbPathProgress: intervalProgress(bootUsb, 0.32, 0.66),
-      usbPathRetractionProgress: intervalProgress(bootUsb, 0.78, 0.98),
-      bootEntryProgress: intervalProgress(bootUsb, 0.7, 0.98),
+      bootManagerPathProgress: intervalProgress(bootUsb, 0.58, 0.88),
+      flowPhase: animationTime * 0.42,
       retreatProgress: intervalProgress(controlHandoff, 0.58, 1),
       opacity: 1,
     });
@@ -62,8 +62,7 @@ export function createBootSequence() {
       opacity: 1,
     });
     limine.setState({
-      bootEntryProgress: intervalProgress(limineLoad, 0, 0.28),
-      layerProgress: intervalProgress(limineLoad, 0.16, 0.72),
+      layerProgress: intervalProgress(limineLoad, 0, 0.72),
       configProgress: intervalProgress(limineLoad, 0.64, 1),
       kernelLoaderProgress: intervalProgress(kernelLoad, 0, 0.42),
       handoffPrepareProgress: startInformation,
