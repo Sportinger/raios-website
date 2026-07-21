@@ -5,7 +5,11 @@ import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 const CAP_REST_Y = 0.19;
 const PRESS_DEPTH = 0.17;
 
-export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}) {
+export function createPushButton({
+  accentColor = 0x78c8ff,
+  markGlowColor = 0x63ff92,
+  topMark = null,
+} = {}) {
   const group = new THREE.Group();
   group.name = "push-button";
 
@@ -80,7 +84,7 @@ export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}
 
   const materials = [housingMaterial, rimMaterial, capMaterial];
   const markOffColor = new THREE.Color(0x555d64);
-  const markPowerColor = new THREE.Color(accentColor);
+  const markPowerColor = new THREE.Color(markGlowColor);
   const markHotColor = new THREE.Color(0xffffff);
   let opacity = 1;
   let power = 0;
@@ -103,14 +107,18 @@ export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}
       power = smootherstep(value);
       capMaterial.emissiveIntensity = THREE.MathUtils.lerp(0, 2.8, power);
       rimMaterial.emissiveIntensity = THREE.MathUtils.lerp(0, 1.5, power);
+      renderGlow();
+    },
+
+    setMarkGlowProgress(value) {
+      const markGlow = smootherstep(value);
       if (topMark?.material) {
         topMark.material.color.copy(markOffColor)
-          .lerp(markPowerColor, power)
-          .lerp(markHotColor, power * 0.35);
+          .lerp(markPowerColor, markGlow)
+          .lerp(markHotColor, markGlow * 0.22);
         topMark.material.emissive.copy(markPowerColor);
-        topMark.material.emissiveIntensity = power * 1.8;
+        topMark.material.emissiveIntensity = markGlow * 2.2;
       }
-      renderGlow();
     },
 
     setPressProgress(value) {

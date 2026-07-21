@@ -12,6 +12,7 @@ export function createPowerButton() {
   group.add(presentation);
   const button = createPushButton({
     accentColor: POWER_BUTTON_CONFIG.accentColor,
+    markGlowColor: POWER_BUTTON_CONFIG.symbolGlowColor,
     topMark: createPowerMark(0x555d64),
   });
   presentation.add(button.group);
@@ -22,7 +23,13 @@ export function createPowerButton() {
   return {
     group,
 
-    setState({ revealProgress, pressProgress, powerProgress, exitProgress }) {
+    setState({
+      revealProgress,
+      pressProgress,
+      powerProgress,
+      symbolGlowProgress,
+      exitProgress,
+    }) {
       const exit = smootherstep(exitProgress);
       const opacity = 1 - exit;
 
@@ -30,6 +37,7 @@ export function createPowerButton() {
       button.setOpacity(opacity);
       button.setPressProgress(pressProgress);
       button.setPowerProgress(powerProgress);
+      button.setMarkGlowProgress(symbolGlowProgress);
       orbitingLight.setProgress(revealProgress);
     },
 

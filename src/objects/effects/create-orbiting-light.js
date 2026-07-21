@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { smootherstep } from "../../animation/progress.js";
 
-const ORBIT_ANGLE = THREE.MathUtils.degToRad(240);
+const ORBIT_ANGLE = THREE.MathUtils.degToRad(-240);
 const ORBIT_RADIUS = 2.05;
 const REAR_HOLD = 0.18;
 

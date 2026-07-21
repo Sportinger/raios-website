@@ -148,6 +148,9 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
         revealProgress: intervalProgress(progress, ...POWER_ON_TIMELINE.buttonReveal),
         pressProgress: pressIn * (1 - settle * 0.18),
         powerProgress: intervalProgress(progress, ...POWER_ON_TIMELINE.power),
+        symbolGlowProgress: intervalProgress(
+          progress, ...POWER_ON_TIMELINE.symbolGlow,
+        ),
         exitProgress: 0,
       });
       cable.setRevealProgress(intervalProgress(

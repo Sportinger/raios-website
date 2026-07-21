@@ -1,5 +1,6 @@
 export const POWER_ON_TIMELINE = Object.freeze({
   buttonReveal: Object.freeze([0.01, 0.16]),
+  symbolGlow: Object.freeze([0.085, 0.16]),
   cameraOrbit: Object.freeze([0.17, 0.36]),
   buttonPress: Object.freeze([0.24, 0.36]),
   buttonSettle: Object.freeze([0.36, 0.42]),
