@@ -4,7 +4,7 @@ import { createHorizontalLabel } from "../labels/create-horizontal-label.js";
 import { monospaceFont } from "../labels/typography.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 import { applyBoxTextureScale } from "../materials/apply-box-texture-scale.js";
-import { loadMetal048BTextures } from "../materials/load-metal048b-textures.js";
+import { loadMetal048ATextures } from "../materials/load-metal048a-textures.js";
 
 function createFootprintPoints(width, height, depth, segmentsPerEdge = 16) {
   const y = -height / 2 + 0.004;
@@ -49,14 +49,15 @@ export function createInfoCard({
     depth,
     tileSize: 0.65,
   });
-  const textures = loadMetal048BTextures();
+  const textures = loadMetal048ATextures();
   const material = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
+    color: 0xffd06a,
     depthWrite: false,
-    emissive: edgeColor,
-    emissiveIntensity: 0.08,
+    emissive: 0x000000,
+    emissiveIntensity: 0,
+    envMapIntensity: 0,
     map: textures.map,
-    metalness: 1,
+    metalness: 0.82,
     metalnessMap: textures.metalnessMap,
     normalMap: textures.normalMap,
     normalScale: new THREE.Vector2(0.34, 0.34),
@@ -121,7 +122,6 @@ export function createInfoCard({
   const setState = ({
     progress = 0,
     activationProgress = progress,
-    pulseProgress = 0,
     opacity = 1,
   } = {}) => {
     const outlineProgress = smootherstep(intervalProgress(progress, 0, 0.46));
@@ -129,7 +129,6 @@ export function createInfoCard({
     const faceReveal = smootherstep(intervalProgress(extrusion, 0.03, 0.22));
     const edgeReveal = smootherstep(intervalProgress(extrusion, 0.16, 0.46));
     const activation = smootherstep(activationProgress);
-    const pulse = smootherstep(pulseProgress);
     const labelReveal = smootherstep(intervalProgress(extrusion, 0.58, 1));
     group.visible = opacity > 0.001
       && (outlineProgress > 0.001 || extrusion > 0.001);
@@ -147,8 +146,8 @@ export function createInfoCard({
       1,
       activation,
     );
-    material.emissiveIntensity = 0.025 + activation * 0.58 + pulse * 0.72;
-    edgeMaterial.opacity = edgeReveal * opacity * THREE.MathUtils.lerp(
+    const edgeOutro = 1 - smootherstep(intervalProgress(extrusion, 0.58, 0.94));
+    edgeMaterial.opacity = edgeReveal * edgeOutro * opacity * THREE.MathUtils.lerp(
       0.12,
       0.9,
       activation,

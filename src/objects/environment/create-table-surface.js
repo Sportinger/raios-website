@@ -4,6 +4,7 @@ import { loadMetal030Textures } from "../materials/load-metal030-textures.js";
 
 const TABLE_SIZE = Object.freeze({
   depth: 34,
+  frontZ: 11.08,
   height: 0.5,
   tileSize: 3,
   width: 42,
@@ -34,7 +35,7 @@ export function createTableSurface() {
   table.position.set(
     4,
     TABLE_SURFACE_Y - TABLE_SIZE.height / 2,
-    4,
+    TABLE_SIZE.frontZ - TABLE_SIZE.depth / 2,
   );
   table.receiveShadow = true;
   return table;

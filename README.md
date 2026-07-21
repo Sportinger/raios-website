@@ -32,6 +32,16 @@ weiterhin ausschließlich den dramaturgischen Zustand bestimmt. So können
 laufende Energieeffekte auch ohne Scrollereignis weiterfließen. Bei
 `prefers-reduced-motion` wird die Animationszeit auf null gesetzt.
 
+Ein mittiger Play/Pause-Button bewegt die Seite mit `0.24` Viewporthöhen pro
+Sekunde automatisch durch die Story. Am Ende pausiert er selbstständig; ein
+erneuter Start springt an den Anfang. Bei reduzierter Bewegung ist Autoplay
+deaktiviert.
+
+Der benachbarte `ORBIT`-Toggle löst die Kamera vorübergehend von der
+Scroll-Choreografie. Ziehen auf der Szene orbitet frei um den aktuellen
+Blickpunkt, das Mausrad zoomt hinein und heraus. Autoplay pausiert dabei; beim
+Ausschalten übernimmt wieder exakt die aktuelle Story-Kamerapose.
+
 Der Hintergrund besitzt einen eigenen globalen Reveal und ist nicht an ein
 Kapitel-Keyframe gekoppelt. Bis `SCROLL 0.0281` bleiben CSS-Hintergrund und
 Sternfeld vollständig schwarz beziehungsweise unsichtbar. Zwischen `0.0281`
@@ -72,12 +82,17 @@ objects/
 ```
 
 Alle Chip-Gehäuse aus `objects/cards/` verwenden gemeinsam das goldene
-Metal048B-PBR-Set mit Color-, Metalness-, OpenGL-Normal- und Roughness-Map.
-Die fachlichen Features steuern weiterhin nur Beschriftung, Aktivierung und
-Signalakzente.
+Metal048A-PBR-Set mit Color-, Metalness-, OpenGL-Normal- und Roughness-Map.
+Sie ignorieren die globale HDR-Reflexion und werden von einem warmen gerichteten
+Sonnenlicht modelliert, damit ihr Goldton nicht vom Studiopanorama ausgewaschen
+wird. Cyanfarbene Konturen begleiten nur den Aufbau und verschwinden am Ende
+der Extrusion vollständig. Die Chipkörper besitzen kein Emissive und leuchten
+auch während einer Aktivierung nicht selbst. Die fachlichen Features steuern
+weiterhin nur Beschriftung, Aktivierung und externe Signalakzente.
 
 Zur Umgebung gehört eine `42 × 34` Welteinheiten große Metalltischplatte. Sie
-liegt unter Button, Kabelweg und Systemstapel und verwendet ein eigenes
+beginnt mit ihrer Vorderkante unmittelbar hinter dem Power-Button, läuft unter
+Kabelweg und Systemstapel nach hinten weiter und verwendet ein eigenes
 Metal030-PBR-Set aus Color-, Metalness-, Normal- und Roughness-Map.
 
 Unter `mechanisms/` liegt mit `create-push-button.js` der erste allgemeine Mechanismus. Das Power-Button-Feature konfiguriert ihn, ohne dass der Mechanismus etwas über die Story oder den Einschaltvorgang wissen muss. Das allgemeine Kabel liegt gekapselt unter `objects/connections/cable/`; sein öffentlicher Import läuft nur über die dortige `index.js`.

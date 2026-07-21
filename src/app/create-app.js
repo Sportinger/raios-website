@@ -1,3 +1,5 @@
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { createStory } from "../story/create-story.js";
 import { createCamera } from "../runtime/create-camera.js";
 import { createCameraRig } from "../runtime/create-camera-rig.js";
@@ -8,6 +10,7 @@ import { createViewport } from "../runtime/create-viewport.js";
 import { createWorld } from "../runtime/create-world.js";
 import { createChapterNavigation } from "../ui/chapter-navigation/create-chapter-navigation.js";
 import { createGlassControls } from "../ui/glass-controls/index.js";
+import { createPlaybackControls } from "../ui/playback-controls/index.js";
 import { createScrollDebug } from "../ui/scroll-debug/index.js";
 import { intervalProgress, smootherstep } from "../animation/progress.js";
 
@@ -16,11 +19,13 @@ const BACKGROUND_REVEAL_START = 0.0281;
 const BACKGROUND_REVEAL_END = 0.045;
 const ENVIRONMENT_REVEAL_START = 0.0217;
 const ENVIRONMENT_REVEAL_END = 0.0454;
+const AUTOPLAY_VIEWPORTS_PER_SECOND = 0.24;
 
 export function createApp({
   canvas,
   chapterNavigation: navigationContainer,
   glassControls: glassControlsContainer,
+  playbackControls: playbackControlsContainer,
   scrollDebug: scrollDebugContainer,
   stage,
 }) {
@@ -28,6 +33,7 @@ export function createApp({
     !canvas
     || !navigationContainer
     || !glassControlsContainer
+    || !playbackControlsContainer
     || !scrollDebugContainer
     || !stage
   ) {
@@ -38,6 +44,13 @@ export function createApp({
   const viewportElement = canvas.closest(".viewport");
   const camera = createCamera();
   const cameraRig = createCameraRig(camera);
+  const orbitControls = new OrbitControls(camera, renderer.domElement);
+  orbitControls.enabled = false;
+  orbitControls.enableDamping = true;
+  orbitControls.dampingFactor = 0.08;
+  orbitControls.enablePan = false;
+  orbitControls.minDistance = 1.5;
+  orbitControls.maxDistance = 80;
   const world = createWorld(renderer);
   const story = createStory({
     scene: world.scene,
@@ -48,8 +61,12 @@ export function createApp({
   let chapterNavigation = null;
   let animationFrame = 0;
   let animationStartedAt = null;
+  let previousAnimationTimestamp = null;
   let animationTime = 0;
+  let autoplayPlaying = false;
+  let orbitEnabled = false;
   let currentProgress = 0;
+  let playbackControls = null;
   const scrollDebug = createScrollDebug({
     container: scrollDebugContainer,
     items: story.navigationItems,
@@ -87,6 +104,25 @@ export function createApp({
     renderer.render(world.scene, camera);
   };
 
+  const orbitPosition = new THREE.Vector3();
+  const orbitQuaternion = new THREE.Quaternion();
+  const orbitUp = new THREE.Vector3();
+  const viewDirection = new THREE.Vector3();
+  const updateStory = (storyProgress, time) => {
+    if (orbitEnabled) {
+      orbitPosition.copy(camera.position);
+      orbitQuaternion.copy(camera.quaternion);
+      orbitUp.copy(camera.up);
+    }
+    story.update(storyProgress, time);
+    if (orbitEnabled) {
+      camera.position.copy(orbitPosition);
+      camera.quaternion.copy(orbitQuaternion);
+      camera.up.copy(orbitUp);
+      camera.updateMatrixWorld();
+    }
+  };
+
   const renderAt = (progress) => {
     currentProgress = progress;
     const storyProgress = motionPreference.matches ? reducedMotionProgress : progress;
@@ -106,13 +142,42 @@ export function createApp({
       "--background-reveal",
       backgroundProgress.toFixed(4),
     );
-    story.update(storyProgress, motionPreference.matches ? 0 : animationTime);
+    updateStory(storyProgress, motionPreference.matches ? 0 : animationTime);
     chapterNavigation?.setProgress(storyProgress);
     scrollDebug.setProgress(storyProgress);
     renderScene();
   };
 
   const scrollDriver = createScrollDriver({ stage, onProgress: renderAt });
+  const setAutoplayPlaying = (playing) => {
+    if (motionPreference.matches || orbitEnabled) {
+      autoplayPlaying = false;
+    } else {
+      if (playing && scrollDriver.getProgress() >= 0.9999) {
+        scrollDriver.scrollToProgress(0, "auto");
+      }
+      autoplayPlaying = playing;
+    }
+    playbackControls?.setPlaying(autoplayPlaying);
+  };
+  const setOrbitEnabled = (enabled) => {
+    orbitEnabled = enabled;
+    orbitControls.enabled = enabled;
+    if (enabled) {
+      setAutoplayPlaying(false);
+      camera.getWorldDirection(viewDirection);
+      orbitControls.target.copy(camera.position).addScaledVector(viewDirection, 8);
+      orbitControls.update();
+    }
+    playbackControls?.setOrbitEnabled(enabled);
+    if (!enabled) renderAt(scrollDriver.getProgress());
+  };
+  playbackControls = createPlaybackControls({
+    container: playbackControlsContainer,
+    onOrbitToggle: setOrbitEnabled,
+    onToggle: setAutoplayPlaying,
+  });
+  playbackControls.setDisabled(motionPreference.matches);
   chapterNavigation = createChapterNavigation({
     container: navigationContainer,
     items: story.navigationItems,
@@ -141,6 +206,8 @@ export function createApp({
   };
 
   const unsubscribeMotion = motionPreference.subscribe(() => {
+    setAutoplayPlaying(false);
+    playbackControls.setDisabled(motionPreference.matches);
     reducedMotionProgress = scrollDriver.getProgress();
     updateScrollTravel();
     renderAt(scrollDriver.getProgress());
@@ -151,11 +218,27 @@ export function createApp({
 
   const animate = (timestamp) => {
     animationStartedAt ??= timestamp;
+    previousAnimationTimestamp ??= timestamp;
+    const frameSeconds = Math.min(0.05, (timestamp - previousAnimationTimestamp) / 1000);
+    previousAnimationTimestamp = timestamp;
     animationTime = (timestamp - animationStartedAt) / 1000;
+    if (autoplayPlaying) {
+      const travelEnd = stage.offsetTop + stage.offsetHeight - window.innerHeight;
+      const nextScrollY = Math.min(
+        travelEnd,
+        window.scrollY + window.innerHeight * AUTOPLAY_VIEWPORTS_PER_SECOND
+          * frameSeconds,
+      );
+      window.scrollTo({ top: nextScrollY });
+      if (nextScrollY >= travelEnd - 0.5) {
+        setAutoplayPlaying(false);
+      }
+    }
     const storyProgress = motionPreference.matches
       ? reducedMotionProgress
       : currentProgress;
-    story.update(storyProgress, motionPreference.matches ? 0 : animationTime);
+    updateStory(storyProgress, motionPreference.matches ? 0 : animationTime);
+    if (orbitEnabled) orbitControls.update();
     renderScene();
     animationFrame = window.requestAnimationFrame(animate);
   };
@@ -167,6 +250,8 @@ export function createApp({
       unsubscribeMotion();
       chapterNavigation.dispose();
       glassControls.dispose();
+      playbackControls.dispose();
+      orbitControls.dispose();
       scrollDebug.dispose();
       viewport.dispose();
       scrollDriver.dispose();

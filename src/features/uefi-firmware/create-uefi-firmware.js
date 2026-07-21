@@ -14,10 +14,6 @@ import {
 export function createUefiFirmware({ sourceAnchor }) {
   const group = new THREE.Group();
   group.name = "uefi-firmware";
-  const source = new THREE.Vector3().fromArray(sourceAnchor.position);
-  const sourceLight = new THREE.PointLight(0x55d6ff, 0, 3.2, 2);
-  sourceLight.position.copy(source).setY(source.y + 0.24);
-  group.add(sourceLight);
 
   const stageLayer = createExpandingStageLayer({
     name: "uefi-boot-environment",
@@ -126,7 +122,6 @@ export function createUefiFirmware({ sourceAnchor }) {
   );
 
   const setState = ({
-    patternProgress = 0,
     layerProgress = 0,
     usbServiceProgress = 0,
     bootManagerProgress = 0,
@@ -137,7 +132,6 @@ export function createUefiFirmware({ sourceAnchor }) {
     retreatProgress = 0,
     opacity = 1,
   } = {}) => {
-    const pattern = smootherstep(patternProgress);
     const lift = intervalProgress(layerProgress, 0, 0.48);
     const expansion = intervalProgress(layerProgress, 0.48, 1);
     const layerVisibility = intervalProgress(layerProgress, 0, 0.16);
@@ -148,7 +142,6 @@ export function createUefiFirmware({ sourceAnchor }) {
     const cableRetreat = smootherstep(cableRetreatProgress);
     const retreat = smootherstep(retreatProgress);
     const activeOpacity = (1 - retreat) * opacity;
-    sourceLight.intensity = Math.sin(pattern * Math.PI) * activeOpacity * 2.2;
     const retreatOffsetX = -8 * retreat;
     stageLayer.setState({
       revealProgress: layerVisibility,
