@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { intervalProgress, smootherstep } from "../../animation/progress.js";
+import { BARE_METAL_TOP_DOWN_POSE } from "../shared/camera-poses.js";
 import { POWER_ON_TIMELINE } from "./timeline.js";
 
 export function orientObjectToCamera(group, objectPosition, cameraPosition) {
@@ -21,6 +22,8 @@ function createFlightPath({
   pathStart,
   originalCameraStart,
   buttonPosition,
+  endPosition,
+  endTarget,
 }) {
   const profileSide = pathStart.clone().sub(buttonPosition).setY(0).normalize();
   const originalSide = originalCameraStart.clone()
@@ -37,6 +40,8 @@ function createFlightPath({
 
   return cameraRig.createHomeboundPath({
     easing: smootherstep,
+    endPosition,
+    endTarget,
     positions: [
       pathStart,
       aboveCable(0.12, 3.2, 1, 0.18),
@@ -65,12 +70,20 @@ export function createPowerOnCameraChoreography({
     startPosition: cameraStart,
     angle: Math.PI / 2,
   });
+  const topDownPosition = new THREE.Vector3().fromArray(
+    BARE_METAL_TOP_DOWN_POSE.position,
+  );
+  const topDownTarget = new THREE.Vector3().fromArray(
+    BARE_METAL_TOP_DOWN_POSE.target,
+  );
   const flightPath = createFlightPath({
     cameraRig,
     curve,
     pathStart: orbit.endPosition,
     originalCameraStart: cameraStart,
     buttonPosition,
+    endPosition: topDownPosition,
+    endTarget: topDownTarget,
   });
   const impulseTarget = new THREE.Vector3();
   const cameraTarget = new THREE.Vector3();

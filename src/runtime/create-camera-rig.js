@@ -33,14 +33,20 @@ export function createCameraRig(camera) {
       };
     },
 
-    createHomeboundPath({ positions, targets, easing = smootherstep }) {
+    createHomeboundPath({
+      positions,
+      targets,
+      easing = smootherstep,
+      endPosition = homePosition,
+      endTarget = homeTarget,
+    }) {
       const positionCurve = new THREE.CatmullRomCurve3(
-        [...positions, homePosition.clone()],
+        [...positions, endPosition.clone()],
         false,
         "centripetal",
       );
       const targetCurve = new THREE.CatmullRomCurve3(
-        [...targets, homeTarget.clone()],
+        [...targets, endTarget.clone()],
         false,
         "centripetal",
       );
@@ -61,12 +67,18 @@ export function createCameraRig(camera) {
       };
     },
 
-    createHomeboundPoseTrack({ positions, targets, easing = smootherstep }) {
+    createHomeboundPoseTrack({
+      positions,
+      targets,
+      easing = smootherstep,
+      startPosition = homePosition,
+      startTarget = homeTarget,
+    }) {
       if (positions.length !== targets.length) {
         throw new Error("Camera pose positions and targets must have equal length");
       }
-      const trackPositions = [homePosition, ...positions, homePosition];
-      const trackTargets = [homeTarget, ...targets, homeTarget];
+      const trackPositions = [startPosition, ...positions, homePosition];
+      const trackTargets = [startTarget, ...targets, homeTarget];
 
       return {
         segmentCount: trackPositions.length - 1,
