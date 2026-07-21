@@ -2,7 +2,7 @@
 
 [raios.tech](https://raios.tech) ist die öffentliche Website von raiOS. Dieses Repository enthält außerdem das interaktive UI Lab, in dem die Oberfläche und ihre animierten Abläufe direkt im Browser erlebbar sind.
 
-Dieses eigenständige Repository enthält bewusst nur die Website. Kernel-Quellcode, bootfähiges Betriebssystem und QEMU-Umgebung liegen weiterhin im separaten [`raios`](https://github.com/Sportinger/raios)-Repository. Der Branch `three.js` bewahrt den experimentellen Three.js-Scroll-Prototyp; `main` ist die produktive Website.
+Dieses eigenständige Repository enthält bewusst nur die Website. Kernel-Quellcode, bootfähiges Betriebssystem und QEMU-Umgebung liegen weiterhin im separaten [`raios`](https://github.com/Sportinger/raios)-Repository. Der Branch [`three.js`](https://github.com/Sportinger/raios-website/tree/three.js) bewahrt das experimentelle [Three.js-Scroll-Projekt](https://github.com/Sportinger/raios-website/tree/three.js/ui-lab/site/scroll-cube); `main` ist die produktive Website.
 
 ## Inhalt
 
