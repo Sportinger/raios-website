@@ -1,6 +1,7 @@
 import * as THREE from "three";
-import { smootherstep } from "../../animation/progress.js";
+import { intervalProgress, smootherstep } from "../../animation/progress.js";
 import { createSurfaceCurrent } from "../../objects/effects/surface-current/index.js";
+import { createHorizontalLabel } from "../../objects/labels/create-horizontal-label.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 import { BARE_METAL_CONFIG } from "./config.js";
 
@@ -27,6 +28,20 @@ export function createBareMetalLayer() {
     transparent: true,
   });
   group.add(new THREE.LineSegments(new THREE.EdgesGeometry(geometry), edgeMaterial));
+
+  const label = createHorizontalLabel(
+    BARE_METAL_CONFIG.label.title,
+    "",
+    BARE_METAL_CONFIG.label.width,
+    BARE_METAL_CONFIG.label.height,
+    {
+      panel: false,
+      titleFont: "900 360px ui-monospace, SFMono-Regular, Consolas, monospace",
+    },
+  );
+  label.plane.position.set(0, 0, BARE_METAL_CONFIG.depth / 2 + 0.011);
+  label.plane.rotation.x = 0;
+  group.add(label.plane);
 
   const surfaceCurrent = createSurfaceCurrent({
     width: BARE_METAL_CONFIG.width,
@@ -55,6 +70,11 @@ export function createBareMetalLayer() {
       material.opacity = reveal * opacity;
       material.emissiveIntensity = surge * 0.34;
       edgeMaterial.opacity = reveal * opacity * 0.82;
+      label.material.opacity = smootherstep(intervalProgress(
+        elevation,
+        0.28,
+        0.72,
+      )) * reveal * opacity;
       surfaceCurrent.setState(currentProgress, opacity);
     },
 

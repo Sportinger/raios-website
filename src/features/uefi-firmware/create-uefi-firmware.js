@@ -41,11 +41,11 @@ export function createUefiFirmware() {
   const label = createHorizontalLabel(
     "UEFI BOOT ENVIRONMENT",
     "",
-    UEFI_FIRMWARE_CONFIG.width * 0.88,
-    0.52,
+    UEFI_FIRMWARE_CONFIG.width * 0.96,
+    0.88,
     {
       panel: false,
-      titleFont: "900 96px ui-monospace, SFMono-Regular, Consolas, monospace",
+      titleFont: "900 360px ui-monospace, SFMono-Regular, Consolas, monospace",
     },
   );
   label.plane.position.set(
@@ -77,7 +77,7 @@ export function createUefiFirmware() {
   const usbServicePath = createCircuitTrace({
     points: [
       new THREE.Vector3(...usbService.position),
-      new THREE.Vector3(2.5, 0.16, 1.18),
+      new THREE.Vector3(2.5, 0.44, 1.18),
       new THREE.Vector3(3.1, -0.28, 1.42),
       new THREE.Vector3(3.55, -0.79, 1.55),
     ],
@@ -120,7 +120,7 @@ export function createUefiFirmware() {
     );
     material.opacity = layerVisibility * activeOpacity * 0.28;
     edgeMaterial.opacity = layerVisibility * activeOpacity * 0.9;
-    label.material.opacity = smootherstep(intervalProgress(expansion, 0.55, 1))
+    label.material.opacity = smootherstep(intervalProgress(expansion, 0.18, 0.72))
       * activeOpacity;
     services.forEach(({ service }, index) => service.setState({
       progress: intervalProgress(servicesIn, index * 0.16, 0.68 + index * 0.16),

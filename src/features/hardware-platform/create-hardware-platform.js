@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { intervalProgress, smootherstep } from "../../animation/progress.js";
-import { createHorizontalLabel } from "../../objects/labels/create-horizontal-label.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 import { createBareMetalLayer } from "../bare-metal-layer/index.js";
 import { HARDWARE_PLATFORM_CONFIG } from "./config.js";
@@ -39,21 +38,6 @@ export function createHardwarePlatform() {
   const bareMetal = createBareMetalLayer();
   group.add(bareMetal.group);
 
-  const labelConfig = HARDWARE_PLATFORM_CONFIG.label;
-  const machineLabel = createHorizontalLabel(
-    labelConfig.title,
-    "",
-    labelConfig.size[0],
-    labelConfig.size[1],
-    {
-      panel: false,
-      titleFont: "900 94px ui-monospace, SFMono-Regular, Consolas, monospace",
-    },
-  );
-  machineLabel.plane.position.fromArray(labelConfig.position);
-  machineLabel.plane.rotation.x = 0;
-  group.add(machineLabel.plane);
-
   const spiFlash = createSpiFlash();
   group.add(spiFlash.group);
 
@@ -78,7 +62,6 @@ export function createHardwarePlatform() {
       elevationProgress: 1,
       currentProgress: 1,
     });
-    machineLabel.material.opacity = smootherstep(physicalReveal) * opacity * 0.72;
     spiFlash.setState({
       revealProgress: physicalReveal,
       powerProgress: spiPower,

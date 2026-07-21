@@ -1,8 +1,10 @@
 import { createBootSequence, BOOT_SCENES } from "../../features/boot-sequence/index.js";
 import { createBootCameraChoreography } from "./create-camera-choreography.js";
+import { SYSTEM_STACK_OFFSET_Y } from "../shared/system-stack-layout.js";
 
 export function createBootSequenceChapter({ cameraRig, lightRig }) {
   const sequence = createBootSequence();
+  sequence.group.position.y = SYSTEM_STACK_OFFSET_Y;
   const cameraChoreography = createBootCameraChoreography(cameraRig);
   const sceneLength = 1 / BOOT_SCENES.length;
   const navigationSections = BOOT_SCENES.map((scene, index) => Object.freeze({

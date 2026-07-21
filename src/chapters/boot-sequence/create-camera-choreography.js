@@ -1,6 +1,15 @@
 import * as THREE from "three";
-import { smootherstepWithMomentum } from "../../animation/progress.js";
+import {
+  intervalProgress,
+  smootherstepWithMomentum,
+} from "../../animation/progress.js";
 import { BARE_METAL_BOOT_POSE } from "../shared/camera-poses.js";
+
+const UEFI_ORBIT = Object.freeze({
+  start: 0,
+  end: 0.143,
+  angle: THREE.MathUtils.degToRad(-100),
+});
 
 const BOOT_CAMERA_POSES = Object.freeze([
   Object.freeze({
@@ -50,14 +59,33 @@ export function createBootCameraChoreography(cameraRig) {
   const startUp = new THREE.Vector3().fromArray(
     BARE_METAL_BOOT_POSE.up,
   );
+  const uefiOrbit = cameraRig.createOrbit({
+    center: startTarget,
+    startPosition,
+    angle: UEFI_ORBIT.angle,
+    easing: (progress) => smootherstepWithMomentum(progress, 0.14),
+  });
+  const orbitRadius = uefiOrbit.endPosition.clone().sub(startTarget);
+  const orbitTangent = new THREE.Vector3(
+    orbitRadius.z,
+    0,
+    -orbitRadius.x,
+  ).normalize().multiplyScalar(Math.sign(UEFI_ORBIT.angle));
+  const orbitExitPosition = uefiOrbit.endPosition.clone()
+    .addScaledVector(orbitTangent, 1.15)
+    .add(new THREE.Vector3(0, 0.18, 0));
   const path = cameraRig.createHomeboundPath({
-    positions: [startPosition, ...BOOT_CAMERA_POSES.map(({ position }) => (
+    positions: [
+      uefiOrbit.endPosition,
+      orbitExitPosition,
+      ...BOOT_CAMERA_POSES.map(({ position }) => (
       new THREE.Vector3().fromArray(position)
-    ))],
-    targets: [startTarget, ...BOOT_CAMERA_POSES.map(({ target }) => (
+      )),
+    ],
+    targets: [startTarget, startTarget, ...BOOT_CAMERA_POSES.map(({ target }) => (
       new THREE.Vector3().fromArray(target)
     ))],
-    ups: [startUp, ...BOOT_CAMERA_POSES.map(({ up }) => (
+    ups: [startUp, startUp, ...BOOT_CAMERA_POSES.map(({ up }) => (
       new THREE.Vector3().fromArray(up)
     ))],
     easing: (progress) => smootherstepWithMomentum(progress, 0.18),
@@ -65,7 +93,15 @@ export function createBootCameraChoreography(cameraRig) {
 
   return {
     update(progress) {
-      path.update(progress);
+      if (progress <= UEFI_ORBIT.end) {
+        uefiOrbit.update(intervalProgress(
+          progress,
+          UEFI_ORBIT.start,
+          UEFI_ORBIT.end,
+        ));
+        return;
+      }
+      path.update(intervalProgress(progress, UEFI_ORBIT.end, 1));
     },
   };
 }

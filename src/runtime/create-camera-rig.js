@@ -17,12 +17,18 @@ export function createCameraRig(camera) {
   };
 
   return {
-    createOrbit({ center, startPosition, angle, axis = new THREE.Vector3(0, 1, 0) }) {
+    createOrbit({
+      center,
+      startPosition,
+      angle,
+      axis = new THREE.Vector3(0, 1, 0),
+      easing = smootherstep,
+    }) {
       const offset = startPosition.clone().sub(center);
       const endPosition = offset.clone().applyAxisAngle(axis, angle).add(center);
       const getPositionAt = (progress, targetPosition) => (
         targetPosition.copy(offset)
-          .applyAxisAngle(axis, angle * smootherstep(progress))
+          .applyAxisAngle(axis, angle * easing(progress))
           .add(center)
       );
 

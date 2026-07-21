@@ -15,6 +15,11 @@ export function createSpiFlash() {
     depth: config.size[2],
     color: 0x0a1119,
     edgeColor: 0x5bd8ff,
+    labelPlacement: "front",
+    labelOptions: {
+      panel: false,
+      titleFont: "900 330px ui-monospace, SFMono-Regular, Consolas, monospace",
+    },
   });
   group.add(card.group);
 

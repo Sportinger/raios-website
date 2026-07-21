@@ -8,6 +8,7 @@ import {
   createPowerOnCameraChoreography,
   orientObjectToCamera,
 } from "./create-camera-choreography.js";
+import { SYSTEM_STACK_OFFSET_Y } from "../shared/system-stack-layout.js";
 import { createPowerOnCableRoute } from "./create-cable-route.js";
 import { POWER_ON_LAYOUT } from "./layout.js";
 import { POWER_ON_TIMELINE } from "./timeline.js";
@@ -32,13 +33,17 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
   });
   const bareMetal = createBareMetalLayer();
   const spiFlash = createSpiFlash();
+  const systemStack = new THREE.Group();
+  systemStack.name = "powered-system-stack";
+  systemStack.position.y = SYSTEM_STACK_OFFSET_Y;
+  systemStack.add(bareMetal.group, spiFlash.group);
   const cameraChoreography = createPowerOnCameraChoreography({
     cameraRig,
     curve: powerLink.curve,
     cameraStart,
     buttonPosition,
   });
-  group.add(powerButton.group, powerLink.group, bareMetal.group, spiFlash.group);
+  group.add(powerButton.group, powerLink.group, systemStack);
 
   return {
     id: "power-on",
