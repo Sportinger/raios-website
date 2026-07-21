@@ -19,21 +19,42 @@ const TEXTURE_URLS = Object.freeze({
   ).href,
 });
 
-function configureTexture(texture, colorSpace = THREE.NoColorSpace) {
+function configureTexture(
+  texture,
+  colorSpace = THREE.NoColorSpace,
+  repeat = [1, 1],
+) {
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.fromArray(repeat);
   texture.anisotropy = 8;
   texture.colorSpace = colorSpace;
   return texture;
 }
 
-export function loadMetal054ATextures() {
+export function loadMetal054ATextures({ repeat = [1, 1] } = {}) {
   const loader = new THREE.TextureLoader();
   return {
-    map: configureTexture(loader.load(TEXTURE_URLS.map), THREE.SRGBColorSpace),
-    metalnessMap: configureTexture(loader.load(TEXTURE_URLS.metalnessMap)),
-    normalMap: configureTexture(loader.load(TEXTURE_URLS.normalMap)),
-    roughnessMap: configureTexture(loader.load(TEXTURE_URLS.roughnessMap)),
+    map: configureTexture(
+      loader.load(TEXTURE_URLS.map),
+      THREE.SRGBColorSpace,
+      repeat,
+    ),
+    metalnessMap: configureTexture(
+      loader.load(TEXTURE_URLS.metalnessMap),
+      THREE.NoColorSpace,
+      repeat,
+    ),
+    normalMap: configureTexture(
+      loader.load(TEXTURE_URLS.normalMap),
+      THREE.NoColorSpace,
+      repeat,
+    ),
+    roughnessMap: configureTexture(
+      loader.load(TEXTURE_URLS.roughnessMap),
+      THREE.NoColorSpace,
+      repeat,
+    ),
   };
 }
 

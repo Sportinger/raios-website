@@ -6,7 +6,7 @@ import { createStarField } from "../objects/environment/create-star-field.js";
 import { disposeObject3D } from "../shared/dispose-object-3d.js";
 
 const STUDIO_ENVIRONMENT_URL = new URL(
-  "../assets/environment/ferndale_studio_12_2k.hdr",
+  "../assets/environment/monochrome_studio_04_2k.hdr",
   import.meta.url,
 ).href;
 

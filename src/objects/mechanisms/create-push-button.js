@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { smootherstep } from "../../animation/progress.js";
+import { loadMetal054ATextures } from "../materials/load-metal054a-textures.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 
 const CAP_REST_Y = 0.19;
@@ -14,10 +15,20 @@ export function createPushButton({
   const group = new THREE.Group();
   group.name = "push-button";
 
+  const metalTextures = loadMetal054ATextures({ repeat: [1.35, 1.35] });
+  const metalSurface = {
+    map: metalTextures.map,
+    metalness: 1,
+    metalnessMap: metalTextures.metalnessMap,
+    normalMap: metalTextures.normalMap,
+    normalScale: new THREE.Vector2(0.22, 0.22),
+    roughness: 1,
+    roughnessMap: metalTextures.roughnessMap,
+  };
+
   const housingMaterial = new THREE.MeshStandardMaterial({
-    color: 0x171a1e,
-    metalness: 0.72,
-    roughness: 0.28,
+    ...metalSurface,
+    color: 0x8c949c,
   });
   const housing = new THREE.Mesh(
     new THREE.CylinderGeometry(1.06, 1.2, HOUSING_HEIGHT, 64),
@@ -29,11 +40,10 @@ export function createPushButton({
   group.add(housing);
 
   const rimMaterial = new THREE.MeshStandardMaterial({
-    color: 0x3b4147,
+    ...metalSurface,
+    color: 0xbcc3c9,
     emissive: accentColor,
     emissiveIntensity: 0,
-    metalness: 0.64,
-    roughness: 0.24,
   });
   const rim = new THREE.Mesh(new THREE.TorusGeometry(0.75, 0.105, 20, 72), rimMaterial);
   rim.rotation.x = -Math.PI / 2;
@@ -43,11 +53,10 @@ export function createPushButton({
   group.add(rim);
 
   const capMaterial = new THREE.MeshStandardMaterial({
-    color: 0x292e33,
+    ...metalSurface,
+    color: 0x9da6ae,
     emissive: accentColor,
     emissiveIntensity: 0,
-    metalness: 0.52,
-    roughness: 0.32,
   });
   const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.67, 0.7, 0.3, 64), capMaterial);
   cap.position.y = CAP_REST_Y;
