@@ -17,6 +17,8 @@ Das Projekt besteht aus statischem HTML, CSS und JavaScript und lädt Three.js a
 pwsh ./scripts/start-threejs-codex.ps1
 ```
 
+Der Launcher wechselt auf den Branch `three.js`, beendet vorherige Devserver dieses Projekts, startet einen frischen Server und öffnet Codex im YOLO-Modus.
+
 Alternativ kann ein beliebiger statischer Webserver im Repository gestartet werden:
 
 ```powershell

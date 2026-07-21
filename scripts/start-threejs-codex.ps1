@@ -19,31 +19,48 @@ if ($currentBranch -ne "three.js") {
 }
 
 $python = (Get-Command python -ErrorAction Stop).Source
-$powershell = Join-Path $PSHOME "powershell.exe"
 $serverProcess = $null
 $serverUrl = $null
+$projectPattern = "raiOS.+Scroll Layers"
 
 foreach ($port in 8091..8100) {
     $candidateUrl = "http://localhost:$port/"
 
+    $response = $null
+
     try {
         $response = Invoke-WebRequest -UseBasicParsing -Uri $candidateUrl -TimeoutSec 1
-        if ($response.StatusCode -eq 200 -and $response.Content -match "raiOS.+Scroll Layers") {
-            $serverUrl = $candidateUrl
-            break
-        }
     }
     catch {
-        # The port is either unused or serves something other than this project.
+        # The port is unused or does not serve an HTTP page.
+        continue
     }
 
+    if ($response.StatusCode -ne 200 -or $response.Content -notmatch $projectPattern) {
+        continue
+    }
+
+    $processIds = @(
+        Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue |
+            Select-Object -ExpandProperty OwningProcess -Unique
+    )
+    foreach ($processId in $processIds) {
+        Stop-Process -Id $processId -Force -ErrorAction Stop
+        Write-Host "Vorherigen Three.js-Devserver auf Port $port beendet." -ForegroundColor DarkGray
+    }
+}
+
+Start-Sleep -Milliseconds 250
+
+foreach ($port in 8091..8100) {
+    $candidateUrl = "http://localhost:$port/"
     $listener = Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue
     if (-not $listener) {
-        $serverCommand = "& '$python' -m http.server $port"
         $serverProcess = Start-Process `
-            -FilePath $powershell `
-            -ArgumentList @("-NoExit", "-NoProfile", "-Command", $serverCommand) `
+            -FilePath $python `
+            -ArgumentList @("-m", "http.server", "$port") `
             -WorkingDirectory $repoRoot `
+            -WindowStyle Hidden `
             -PassThru
         $serverUrl = $candidateUrl
         break
@@ -59,7 +76,7 @@ if ($serverProcess) {
     foreach ($attempt in 1..20) {
         try {
             $response = Invoke-WebRequest -UseBasicParsing -Uri $serverUrl -TimeoutSec 1
-            if ($response.StatusCode -eq 200) {
+            if ($response.StatusCode -eq 200 -and $response.Content -match $projectPattern) {
                 $serverReady = $true
                 break
             }
