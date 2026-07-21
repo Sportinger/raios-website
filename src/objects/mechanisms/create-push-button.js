@@ -59,7 +59,7 @@ export function createPushButton({
   group.add(cap);
   if (topMark) {
     topMark.group.traverse((object) => {
-      if (object.isMesh && object.material !== topMark.glowMaterial) {
+      if (object.isMesh) {
         object.castShadow = true;
         object.receiveShadow = true;
       }
@@ -93,11 +93,8 @@ export function createPushButton({
 
   const renderGlow = () => {
     underglowMaterial.opacity = 0.5 * power * opacity;
-    if (topMark?.glowMaterial) {
-      topMark.glowMaterial.opacity = 0.3 * markGlow * opacity;
-    }
     if (topMark?.light) {
-      topMark.light.intensity = 2.2 * markGlow * opacity;
+      topMark.light.intensity = 0.8 * markGlow * opacity;
     }
   };
 

@@ -9,17 +9,9 @@ export function createPowerMark(color) {
     roughness: 0.34,
     transparent: true,
   });
-  const glowMaterial = new THREE.MeshBasicMaterial({
-    color,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-    opacity: 0,
-    transparent: true,
-    toneMapped: false,
-  });
   const group = new THREE.Group();
-  const light = new THREE.PointLight(color, 0, 3.2, 2);
-  light.position.y = 0.14;
+  const light = new THREE.PointLight(color, 0, 4, 2);
+  light.position.y = 0.65;
   group.add(light);
 
   const arcPoints = [];
@@ -37,26 +29,12 @@ export function createPowerMark(color) {
     material,
   );
   group.add(arc);
-  const arcGlow = new THREE.Mesh(
-    new THREE.TubeGeometry(arcCurve, 42, 0.068, 8, false),
-    glowMaterial,
-  );
-  arcGlow.renderOrder = 7;
-  group.add(arcGlow);
 
   const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.033, 0.033, 0.34, 12), material);
   stem.rotation.x = Math.PI / 2;
   stem.position.z = -0.16;
   group.add(stem);
-  const stemGlow = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.068, 0.068, 0.34, 12),
-    glowMaterial,
-  );
-  stemGlow.rotation.copy(stem.rotation);
-  stemGlow.position.copy(stem.position);
-  stemGlow.renderOrder = 7;
-  group.add(stemGlow);
 
   group.position.y = 0.158;
-  return { glowMaterial, group, light, material };
+  return { group, light, material };
 }

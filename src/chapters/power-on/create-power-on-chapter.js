@@ -140,17 +140,20 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
       const pressIn = smootherstep(intervalProgress(
         progress, ...POWER_ON_TIMELINE.buttonPress,
       ));
-      const settle = smootherstep(intervalProgress(
-        progress, ...POWER_ON_TIMELINE.buttonSettle,
+      const release = smootherstep(intervalProgress(
+        progress, ...POWER_ON_TIMELINE.buttonRelease,
       ));
+      const buttonEnergy = 1 - release;
 
       powerButton.setState({
         revealProgress: intervalProgress(progress, ...POWER_ON_TIMELINE.buttonReveal),
-        pressProgress: pressIn * (1 - settle * 0.18),
-        powerProgress: intervalProgress(progress, ...POWER_ON_TIMELINE.power),
+        pressProgress: pressIn * buttonEnergy,
+        powerProgress: intervalProgress(
+          progress, ...POWER_ON_TIMELINE.power,
+        ) * buttonEnergy,
         symbolGlowProgress: intervalProgress(
           progress, ...POWER_ON_TIMELINE.symbolGlow,
-        ),
+        ) * buttonEnergy,
         exitProgress: 0,
       });
       cable.setRevealProgress(1);
