@@ -4,6 +4,6 @@ export const KERNEL_PLATFORM_CONFIG = Object.freeze({
   depth: 5.2,
   hoverY: 2.35,
   landedY: -0.4,
-  columns: 4,
-  rows: 3,
+  columns: 3,
+  rows: 2,
 });

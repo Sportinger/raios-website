@@ -89,10 +89,11 @@ export function createKernelPlatform() {
       landing,
     );
     blocks.forEach(({ mesh, joinedPosition }, index) => {
+      const blockDelay = (index / Math.max(1, blocks.length - 1)) * 0.385;
       const blockProgress = smootherstep(intervalProgress(
         assembly,
-        index * 0.035,
-        0.42 + index * 0.035,
+        blockDelay,
+        0.42 + blockDelay,
       ));
       mesh.visible = blockProgress > 0.001;
       mesh.position.copy(joinedPosition);
