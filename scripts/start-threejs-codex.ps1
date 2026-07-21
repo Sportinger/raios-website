@@ -18,10 +18,18 @@ if ($currentBranch -ne "three.js") {
     }
 }
 
-$python = (Get-Command python -ErrorAction Stop).Source
+$npm = (Get-Command npm.cmd -ErrorAction Stop).Source
 $serverProcess = $null
 $serverUrl = $null
 $projectPattern = "raiOS.+Scroll Layers"
+
+if (-not (Test-Path -LiteralPath (Join-Path $repoRoot "node_modules/.bin/vite.cmd"))) {
+    Write-Host "Installiere Abhängigkeiten für den HMR-Devserver ..." -ForegroundColor DarkGray
+    & $npm install
+    if ($LASTEXITCODE -ne 0) {
+        throw "Die Abhängigkeiten für den HMR-Devserver konnten nicht installiert werden."
+    }
+}
 
 foreach ($port in 8091..8100) {
     $candidateUrl = "http://localhost:$port/"
@@ -57,8 +65,8 @@ foreach ($port in 8091..8100) {
     $listener = Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue
     if (-not $listener) {
         $serverProcess = Start-Process `
-            -FilePath $python `
-            -ArgumentList @("-m", "http.server", "$port") `
+            -FilePath $npm `
+            -ArgumentList @("run", "dev", "--", "--port", "$port", "--strictPort") `
             -WorkingDirectory $repoRoot `
             -WindowStyle Hidden `
             -PassThru
@@ -88,7 +96,7 @@ if ($serverProcess) {
 
     if (-not $serverReady) {
         Stop-Process -Id $serverProcess.Id -ErrorAction SilentlyContinue
-        throw "Der lokale Three.js-Webserver konnte nicht gestartet werden."
+        throw "Der lokale Three.js-HMR-Devserver konnte nicht gestartet werden."
     }
 }
 

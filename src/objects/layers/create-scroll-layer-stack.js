@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { clamp, intervalProgress, smootherstep } from "../../animation/progress.js";
 
 const DEFAULT_PHASES = Object.freeze({
   outlineStart: 0.03,
@@ -6,19 +7,6 @@ const DEFAULT_PHASES = Object.freeze({
   extrusionStart: 0.54,
   extrusionEnd: 0.96,
 });
-
-function clamp(value, minimum, maximum) {
-  return Math.min(maximum, Math.max(minimum, value));
-}
-
-function intervalProgress(value, start, end) {
-  return clamp((value - start) / Math.max(0.0001, end - start), 0, 1);
-}
-
-function smootherstep(value) {
-  const progress = clamp(value, 0, 1);
-  return progress * progress * progress * (progress * (progress * 6 - 15) + 10);
-}
 
 function createTopOutline(width, height, depth, color) {
   const corners = [
@@ -35,12 +23,7 @@ function createTopOutline(width, height, depth, color) {
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   geometry.setDrawRange(0, 0);
-
-  const material = new THREE.LineBasicMaterial({
-    color,
-    transparent: true,
-    opacity: 0,
-  });
+  const material = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0 });
 
   return {
     corners,
@@ -61,11 +44,8 @@ function renderOutline(outline, progress) {
   outline.corners[0].toArray(outline.positions, 0);
   for (let index = 0; index < outline.edgeLengths.length && remaining > 0; index += 1) {
     const edgeLength = outline.edgeLengths[index];
-    const edgeProgress = clamp(remaining / edgeLength, 0, 1);
-    outline.cursor.copy(outline.corners[index]).lerp(
-      outline.corners[index + 1],
-      edgeProgress,
-    );
+    const edgeProgress = clamp(remaining / edgeLength);
+    outline.cursor.copy(outline.corners[index]).lerp(outline.corners[index + 1], edgeProgress);
     outline.cursor.toArray(outline.positions, vertexCount * 3);
     vertexCount += 1;
     remaining -= edgeLength;
@@ -78,34 +58,20 @@ function renderOutline(outline, progress) {
 
 function createScrollLayer(definition, bottomY) {
   const {
-    width,
-    height,
-    depth,
-    color,
-    edgeColor,
-    outlineColor = edgeColor,
-    metalness = 0.4,
-    roughness = 0.5,
+    width, height, depth, color, edgeColor, outlineColor = edgeColor,
+    metalness = 0.4, roughness = 0.5,
   } = definition;
-
   const group = new THREE.Group();
   const geometry = new THREE.BoxGeometry(width, height, depth);
   const material = new THREE.MeshStandardMaterial({
-    color,
-    metalness,
-    roughness,
-    transparent: true,
-    opacity: 0,
+    color, metalness, roughness, transparent: true, opacity: 0,
   });
   group.add(new THREE.Mesh(geometry, material));
 
   const edgeMaterial = new THREE.LineBasicMaterial({
-    color: edgeColor,
-    transparent: true,
-    opacity: 0,
+    color: edgeColor, transparent: true, opacity: 0,
   });
   group.add(new THREE.LineSegments(new THREE.EdgesGeometry(geometry), edgeMaterial));
-
   const outline = createTopOutline(width, height, depth, outlineColor);
   group.add(outline.line);
 
@@ -136,17 +102,13 @@ export function createScrollLayerStack(definitions, options = {}) {
 
   const render = (totalProgress) => {
     layers.forEach((layer, index) => {
-      const layerProgress = clamp(totalProgress * layers.length - index, 0, 1);
+      const layerProgress = clamp(totalProgress * layers.length - index);
       layer.render({
         outlineProgress: smootherstep(intervalProgress(
-          layerProgress,
-          phases.outlineStart,
-          phases.outlineEnd,
+          layerProgress, phases.outlineStart, phases.outlineEnd,
         )),
         extrusionProgress: smootherstep(intervalProgress(
-          layerProgress,
-          phases.extrusionStart,
-          phases.extrusionEnd,
+          layerProgress, phases.extrusionStart, phases.extrusionEnd,
         )),
       });
     });

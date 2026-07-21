@@ -1,0 +1,12 @@
+{
+  "name": "raios-threejs-scroll-experiment",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1"
+  },
+  "devDependencies": {
+    "three": "0.184.0",
+    "vite": "8.1.5"
+  }
+}
