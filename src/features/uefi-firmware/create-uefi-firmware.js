@@ -125,6 +125,7 @@ export function createUefiFirmware() {
   const setState = ({
     patternProgress = 0,
     layerProgress = 0,
+    opacityBoostProgress = 0,
     usbServiceProgress = 0,
     bootManagerProgress = 0,
     usbPathProgress = 0,
@@ -148,6 +149,11 @@ export function createUefiFirmware() {
       liftProgress: lift,
       expansionProgress: expansion,
       labelProgress: intervalProgress(expansion, 0.18, 0.72),
+      surfaceOpacityScale: THREE.MathUtils.lerp(
+        1,
+        2,
+        smootherstep(opacityBoostProgress),
+      ),
       retreatProgress,
       opacity,
     });

@@ -84,7 +84,9 @@ Ein wiederverwendbares Objekt:
 
 UEFI und Limine verwenden beide `objects/layers/expanding-stage-layer/`. Dieses
 Objekt kapselt Geometrie, Kanten, Seitentitel sowie Aufsteigen, Expansion und
-Rückzug. Die Features liefern nur Quelle, Zielhöhe, Material und eigene Inhalte.
+Rückzug. Eine zustandsbasierte `surfaceOpacityScale` erlaubt zusätzlich eine
+langsame Verdichtung nach der Entfaltung. Die Features liefern nur Quelle,
+Zielhöhe, Material und eigene Inhalte.
 `objects/layers/system-layer-preset.js` hält zusätzlich die identischen Maße von
 Bare Metal, UEFI, Limine und Rust-Kernel fest. Dadurch bleiben alle vollständigen
 Schichten deckungsgleich, ohne dieselben Zahlen oder Transformationsabläufe in

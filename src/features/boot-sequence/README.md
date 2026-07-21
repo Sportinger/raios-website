@@ -30,6 +30,12 @@ Manager und USB Boot Service sind Objekte. Der Stick dockt ausschließlich am
 physischen Port an. UEFI und Limine ziehen sich erst nach dem Handoff gemeinsam
 zurück, während der SPI-Flash als inaktive Hardware bestehen bleibt.
 
+Die UEFI-Fläche startet nach ihrer Entfaltung mit `0.28` Materialdeckkraft. Ab
+dem Ende der Expansion wird die allgemeine `surfaceOpacityScale` über mehrere
+Scrollabschnitte weich von `1` auf `2` gefahren. Die Schicht erreicht damit erst
+im frühen USB-Abschnitt ihre endgültige Deckkraft `0.56`, ohne Kanten oder Titel
+zusätzlich aufzuhellen.
+
 Der Datenfluss besitzt eine feste Leserichtung von rechts nach links:
 
 ```text

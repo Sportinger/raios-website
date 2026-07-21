@@ -31,6 +31,9 @@ export function createBootSequence() {
     });
     const [firmware, bootUsb, limineLoad, kernelLoad,
       startInformation, controlHandoff, kernelLanding] = phase;
+    const uefiOpacityBoost = firmware < 1
+      ? intervalProgress(firmware, 0.78, 1) * 0.3
+      : 0.3 + intervalProgress(bootUsb, 0, 0.5) * 0.7;
     hardware.setState({
       hardwareProgress: 1,
       initializationProgress: firmware,
@@ -41,6 +44,7 @@ export function createBootSequence() {
     uefi.setState({
       patternProgress: intervalProgress(firmware, 0, 0.62),
       layerProgress: intervalProgress(firmware, 0, 0.78),
+      opacityBoostProgress: uefiOpacityBoost,
       usbServiceProgress: intervalProgress(firmware, 0.72, 1),
       bootManagerProgress: intervalProgress(bootUsb, 0.55, 0.78),
       usbPathProgress: intervalProgress(bootUsb, 0.32, 0.66),

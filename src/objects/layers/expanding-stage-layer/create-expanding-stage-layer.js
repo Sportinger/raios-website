@@ -68,6 +68,7 @@ export function createExpandingStageLayer({
     expansionProgress = 0,
     labelProgress = expansionProgress,
     labelOpacity = 1,
+    surfaceOpacityScale = 1,
     retreatProgress = 0,
     opacity = 1,
   } = {}) => {
@@ -83,7 +84,10 @@ export function createExpandingStageLayer({
       THREE.MathUtils.lerp(collapsedScale.y, 1, expansion),
       THREE.MathUtils.lerp(collapsedScale.z, 1, expansion),
     );
-    material.opacity = reveal * activeOpacity * surfaceOpacity;
+    material.opacity = Math.min(
+      1,
+      reveal * activeOpacity * surfaceOpacity * surfaceOpacityScale,
+    );
     edgeMaterial.opacity = reveal * activeOpacity * edgeOpacity;
     label.material.opacity = smootherstep(labelProgress) * labelOpacity * activeOpacity;
     return { activeOpacity, expansion, exit, lift, reveal };
