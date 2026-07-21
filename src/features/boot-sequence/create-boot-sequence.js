@@ -30,7 +30,7 @@ export function createBootSequence() {
       return 0;
     });
     const [firmware, bootUsb, limineLoad, kernelLoad,
-      , controlHandoff, kernelLanding] = phase;
+      controlHandoff, kernelLanding] = phase;
     const uefiOpacityBoost = firmware < 1
       ? intervalProgress(firmware, 0.78, 1) * 0.3
       : 0.3 + intervalProgress(bootUsb, 0, 0.5) * 0.7;

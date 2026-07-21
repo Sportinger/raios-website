@@ -1,5 +1,4 @@
 import { createBootSequenceChapter } from "../chapters/boot-sequence/index.js";
-import { createKernelChapter } from "../chapters/kernel/index.js";
 import { createPowerOnChapter } from "../chapters/power-on/index.js";
 
 export const STORY_MAP = Object.freeze([
@@ -12,13 +11,7 @@ export const STORY_MAP = Object.freeze([
   Object.freeze({
     id: "boot-sequence",
     label: "Boot sequence",
-    weight: 6.65,
+    weight: 5.7,
     create: createBootSequenceChapter,
-  }),
-  Object.freeze({
-    id: "kernel",
-    label: "Rust Kernel",
-    weight: 1,
-    create: createKernelChapter,
   }),
 ]);

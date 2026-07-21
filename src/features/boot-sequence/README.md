@@ -1,7 +1,7 @@
 # Boot Sequence
 
 Die Boot-Sequenz ist ein einziger langlebiger 3D-Objektgraph für die sichtbaren
-Szenen 2 bis 8. Das Kapitel übersetzt seinen lokalen Scrollwert in `sceneIndex`
+sechs Boot-Szenen. Das Kapitel übersetzt seinen lokalen Scrollwert in `sceneIndex`
 und `progress`; das Feature setzt daraus sämtliche vorherigen Phasen auf `1`,
 die aktuelle Phase auf `progress` und alle späteren Phasen auf `0`.
 
@@ -12,7 +12,9 @@ Kapitelnummern. Neue Phasen werden in `config.js` registriert und in
 
 Das frühere reine Bare-Metal-Unterkapitel existiert nicht mehr. Kapitel 1 stellt
 die physische Plattform bereits fertig her; die erste Boot-Phase beginnt deshalb
-direkt mit UEFI und wird in der Navigation als Kapitel 2 veröffentlicht.
+direkt mit UEFI und wird in der Navigation als Kapitel 2 veröffentlicht. Eine
+separate Phase „Handoff vorbereiten“ gibt es nicht mehr: Nach dem Kernel-Aufbau
+beginnt unmittelbar der Kontrollwechsel.
 
 Die Kamera bleibt Kapitelverantwortung. `chapters/boot-sequence/` beendet zuerst
 den UEFI-Reveal-Orbit und den USB-Rückorbit. Danach läuft sie nur noch weich bis
