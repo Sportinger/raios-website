@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { smootherstep } from "../../animation/progress.js";
-import { createLightSweep } from "../../objects/effects/create-light-sweep.js";
+import { createOrbitingLight } from "../../objects/effects/create-orbiting-light.js";
 import { createPushButton } from "../../objects/mechanisms/create-push-button.js";
 import { POWER_BUTTON_CONFIG } from "./config.js";
 import { createPowerMark } from "./create-power-mark.js";
@@ -15,8 +15,8 @@ export function createPowerButton() {
     topMark: createPowerMark(POWER_BUTTON_CONFIG.accentColor),
   });
   presentation.add(button.group);
-  const lightSweep = createLightSweep();
-  presentation.add(lightSweep.group);
+  const orbitingLight = createOrbitingLight();
+  presentation.add(orbitingLight.group);
   presentation.scale.setScalar(POWER_BUTTON_CONFIG.scale);
 
   return {
@@ -31,11 +31,11 @@ export function createPowerButton() {
       button.setOpacity(opacity);
       button.setPressProgress(pressProgress);
       button.setPowerProgress(powerProgress);
-      lightSweep.setProgress(revealProgress);
+      orbitingLight.setProgress(revealProgress);
     },
 
     dispose() {
-      lightSweep.dispose();
+      orbitingLight.dispose();
       button.dispose();
       group.removeFromParent();
     },
