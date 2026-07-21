@@ -78,16 +78,11 @@ export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}
   underglow.renderOrder = 3;
   group.add(underglow);
 
-  const powerLight = new THREE.PointLight(accentColor, 0, 5.5, 2);
-  powerLight.position.y = 0.75;
-  group.add(powerLight);
-
   const materials = [housingMaterial, rimMaterial, capMaterial];
   let opacity = 1;
   let power = 0;
 
-  const renderLight = () => {
-    powerLight.intensity = 3.8 * power * opacity;
+  const renderGlow = () => {
     underglowMaterial.opacity = 0.5 * power * opacity;
   };
 
@@ -98,7 +93,7 @@ export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}
       opacity = value;
       materials.forEach((material) => { material.opacity = opacity; });
       if (topMark?.material) topMark.material.opacity = opacity;
-      renderLight();
+      renderGlow();
     },
 
     setPowerProgress(value) {
@@ -108,7 +103,7 @@ export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}
       if (topMark?.material) {
         topMark.material.color.setHex(accentColor).lerp(new THREE.Color(0xffffff), power * 0.45);
       }
-      renderLight();
+      renderGlow();
     },
 
     setPressProgress(value) {

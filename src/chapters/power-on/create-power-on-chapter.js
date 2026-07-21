@@ -102,7 +102,7 @@ function createCameraPath(
   });
 }
 
-export function createPowerOnChapter({ cameraRig }) {
+export function createPowerOnChapter({ cameraRig, lightRig }) {
   const group = new THREE.Group();
   group.name = "power-on-sequence";
   const cameraStart = new THREE.Vector3().fromArray(POWER_ON_LAYOUT.cameraStart);
@@ -163,6 +163,9 @@ export function createPowerOnChapter({ cameraRig }) {
       );
       cable.setOpacity(1);
       bareMetal.setState({ revealProgress: 1, labelProgress: 1, opacity: 1 });
+      lightRig.setIntensity(intervalProgress(
+        progress, ...POWER_ON_TIMELINE.environmentLight,
+      ));
       if (progress < POWER_ON_TIMELINE.cameraFlight[0]) {
         cameraOrbit.update(intervalProgress(
           progress, ...POWER_ON_TIMELINE.cameraOrbit,

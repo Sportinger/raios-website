@@ -8,8 +8,9 @@ export function createWorld() {
 
   const environment = new THREE.Group();
   environment.name = "environment";
-  environment.add(createLightRig(), createStarField(170));
+  const lightRig = createLightRig();
+  environment.add(lightRig.group, createStarField(170));
   scene.add(environment);
 
-  return { environment, scene };
+  return { environment, lightRig, scene };
 }

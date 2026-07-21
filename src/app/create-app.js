@@ -19,7 +19,10 @@ export function createApp({ canvas, stage }) {
   const camera = createCamera();
   const cameraRig = createCameraRig(camera);
   const world = createWorld();
-  const story = createStory({ scene: world.scene, context: { cameraRig } });
+  const story = createStory({
+    scene: world.scene,
+    context: { cameraRig, lightRig: world.lightRig },
+  });
   const motionPreference = createMotionPreference();
 
   const renderAt = (progress) => {
