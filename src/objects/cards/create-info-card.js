@@ -41,7 +41,8 @@ export function createInfoCard({
     labelDepth,
     labelOptions ?? (labelPlacement === "front" ? {
       panel: false,
-      titleFont: "900 220px ui-monospace, SFMono-Regular, Consolas, monospace",
+      titleColor: "#ffffff",
+      titleFont: "900 320px ui-monospace, SFMono-Regular, Consolas, monospace",
       descriptionFont: "600 72px ui-monospace, SFMono-Regular, Consolas, monospace",
     } : undefined),
   );
@@ -81,6 +82,7 @@ export function createInfoCard({
 
   return {
     group,
+    label,
     setState,
     dispose() {
       disposeObject3D(group);

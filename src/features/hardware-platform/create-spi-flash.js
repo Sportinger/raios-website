@@ -19,7 +19,8 @@ export function createSpiFlash() {
     labelPlacement: "front",
     labelOptions: {
       panel: false,
-      titleFont: "900 250px ui-monospace, SFMono-Regular, Consolas, monospace",
+      titleColor: "#ffffff",
+      titleFont: "900 340px ui-monospace, SFMono-Regular, Consolas, monospace",
       descriptionFont: "600 76px ui-monospace, SFMono-Regular, Consolas, monospace",
     },
   });

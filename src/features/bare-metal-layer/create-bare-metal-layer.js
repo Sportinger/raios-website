@@ -66,6 +66,7 @@ export function createBareMetalLayer() {
       const surge = Math.sin(elevation * Math.PI);
       group.visible = opacity > 0.001 && reveal > 0.001;
       group.scale.set(1, verticalScale, 1);
+      label.setScaleCompensation(1, verticalScale, verticalScale);
       group.position.y = BARE_METAL_CONFIG.bottomY
         + (BARE_METAL_CONFIG.height * reveal) / 2;
       material.opacity = reveal * opacity;

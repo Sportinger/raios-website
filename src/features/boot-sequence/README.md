@@ -78,12 +78,27 @@ Manager auf, ohne seitlich zu wandern. Danach expandiert er über einen einmalig
 aus Quellposition, Quellgröße und Zielgröße berechneten Skalier-Pivot. Dadurch
 liegt die fertige Vollschicht bei Skalierung `1` automatisch exakt auf der
 gemeinsamen X/Z-Achse des Systemstapels; eine nachträgliche Positionsanimation
-ist nicht erforderlich.
+ist nicht erforderlich. Kanten und Flächen besitzen getrennte Reveal-Werte:
+Limine steigt zunächst als reiner Wireframe auf und beginnt seine Expansion
+ebenfalls ohne Fläche. Erst im späteren Teil der Expansion wird das Material
+langsam bis zur endgültigen Deckkraft eingeblendet.
 
-Beschriftungen liegen ausschließlich auf der zur Startkamera gerichteten
-Seitenfläche. Sichtbar ist nur der große, fette weiße Hauptbegriff; graue
-Erklärungszeilen werden nicht gerendert. Oberseiten bleiben für Lichtmuster,
-Teilungslinien und einfache Symbole frei.
+Schichttitel liegen ausschließlich auf der zur Startkamera gerichteten
+Seitenfläche. Dort ist nur der große, fette weiße Hauptbegriff sichtbar;
+graue Erklärungszeilen werden nicht gerendert. Funktionale Karten dürfen eine
+kleinere fachliche Unterzeile besitzen. Label-Canvas und Label-Geometrie teilen
+immer dasselbe Seitenverhältnis; Text wird durch Font-Fitting statt durch
+`fillText(..., maxWidth)` eingepasst. Expandierende Schichten kompensieren ihre
+nicht-uniforme Elternskalierung für alle registrierten Labels, sodass Glyphen
+weder während des Aufbaus noch im Endzustand gestaucht werden.
+
+Die Limine-Schicht besitzt exakt drei Funktionsobjekte: `CONFIG · SELECT BOOT
+ENTRY`, `KERNEL LOADER · LOAD ELF IMAGE` und `HANDOFF · BOOT INFO · ENTRY`.
+`limine.conf` und `kernel.elf` verwenden das allgemeine beschriftete
+`objects/effects/labeled-data-packet`; die ausgewählten Konfigurationswerte und
+die sechs Boot-Info-Karten bleiben in eigenen Limine-Untermodulen. Beim Handoff
+dimmen CONFIG und Loader, während nur HANDOFF, die einmalige Tür und der letzte
+Kontrollimpuls aktiv bleiben.
 
 Sprechertexte, Sound und Untertitel gehören später in eine eigene Medien- bzw.
 Narrationsebene und werden nicht in 3D-Features hinterlegt.

@@ -86,9 +86,11 @@ export function createExpandingStageLayer({
   label.plane.position.z = size[2] / 2 + 0.012;
   label.plane.rotation.x = 0;
   contentGroup.add(label.plane);
+  const scalingLabels = [label];
 
   const setState = ({
     revealProgress = 0,
+    surfaceProgress = revealProgress,
     liftProgress = 0,
     expansionProgress = 0,
     alignmentProgress = liftProgress,
@@ -99,6 +101,7 @@ export function createExpandingStageLayer({
     opacity = 1,
   } = {}) => {
     const reveal = smootherstep(revealProgress);
+    const surfaceReveal = smootherstep(surfaceProgress);
     const lift = smootherstep(liftProgress);
     const expansion = smootherstep(expansionProgress);
     const alignment = smootherstep(alignmentProgress);
@@ -114,14 +117,17 @@ export function createExpandingStageLayer({
         ? target.z
         : THREE.MathUtils.lerp(source.z, target.z, alignment),
     ).addScaledVector(retreat, exit);
-    scalePivot.scale.set(
-      THREE.MathUtils.lerp(collapsedScale.x, 1, expansion),
-      THREE.MathUtils.lerp(collapsedScale.y, 1, expansion),
-      THREE.MathUtils.lerp(collapsedScale.z, 1, expansion),
-    );
+    const scaleX = THREE.MathUtils.lerp(collapsedScale.x, 1, expansion);
+    const scaleY = THREE.MathUtils.lerp(collapsedScale.y, 1, expansion);
+    const scaleZ = THREE.MathUtils.lerp(collapsedScale.z, 1, expansion);
+    scalePivot.scale.set(scaleX, scaleY, scaleZ);
+    const uniformLabelScale = Math.min(scaleX, scaleY);
+    scalingLabels.forEach((scalingLabel) => {
+      scalingLabel.setScaleCompensation(scaleX, scaleY, uniformLabelScale);
+    });
     material.opacity = Math.min(
       1,
-      reveal * activeOpacity * surfaceOpacity * surfaceOpacityScale,
+      surfaceReveal * activeOpacity * surfaceOpacity * surfaceOpacityScale,
     );
     edgeMaterial.opacity = reveal * activeOpacity * edgeOpacity;
     label.material.opacity = smootherstep(labelProgress) * labelOpacity * activeOpacity;
@@ -132,6 +138,9 @@ export function createExpandingStageLayer({
   return {
     contentGroup,
     group,
+    registerScalingLabel(scalingLabel) {
+      scalingLabels.push(scalingLabel);
+    },
     setState,
     dispose() {
       disposeObject3D(group);

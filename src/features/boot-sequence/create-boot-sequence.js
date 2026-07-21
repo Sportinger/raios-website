@@ -63,7 +63,7 @@ export function createBootSequence() {
     });
     limine.setState({
       layerProgress: intervalProgress(limineLoad, 0, 0.72),
-      configProgress: intervalProgress(limineLoad, 0.64, 1),
+      configProgress: intervalProgress(limineLoad, 0.72, 1),
       kernelLoaderProgress: intervalProgress(kernelLoad, 0, 0.42),
       handoffPrepareProgress: startInformation,
       handoffProgress: intervalProgress(controlHandoff, 0.28, 0.72),
