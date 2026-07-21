@@ -6,23 +6,43 @@ import { createCable } from "../../objects/connections/create-cable.js";
 import { POWER_ON_LAYOUT } from "./layout.js";
 import { POWER_ON_TIMELINE } from "./timeline.js";
 
-function createCablePoints(buttonPosition, layerContact) {
-  const towardLayer = layerContact.clone().sub(buttonPosition).normalize();
-  const sideways = new THREE.Vector3(-towardLayer.z, 0, towardLayer.x).normalize();
-  const start = buttonPosition.clone().addScaledVector(towardLayer, 0.72);
-  const pointAt = (progress, sideOffset, verticalOffset) => (
-    start.clone()
-      .lerp(layerContact, progress)
+function createCablePoints(buttonPosition, layerContact, cameraPosition) {
+  const buttonNormal = cameraPosition.clone().sub(buttonPosition).normalize();
+  const behindButton = buttonNormal.clone().negate();
+  const behindOnLevel = behindButton.clone().setY(0).normalize();
+  const socket = buttonPosition.clone().addScaledVector(
+    behindButton,
+    POWER_ON_LAYOUT.buttonSocketDepth,
+  );
+  const rearRun = socket.clone().addScaledVector(
+    behindOnLevel,
+    POWER_ON_LAYOUT.buttonRearRun,
+  );
+
+  const floorEntry = rearRun.clone()
+    .lerp(layerContact, 0.08)
+    .setY(POWER_ON_LAYOUT.cableFloorY);
+  const towardButton = buttonPosition.clone().sub(layerContact).setY(0).normalize();
+  const floorEnd = layerContact.clone()
+    .addScaledVector(towardButton, 0.62)
+    .setY(POWER_ON_LAYOUT.cableFloorY);
+  const floorDirection = floorEnd.clone().sub(floorEntry).normalize();
+  const sideways = new THREE.Vector3(-floorDirection.z, 0, floorDirection.x);
+  const floorPointAt = (progress, sideOffset) => (
+    floorEntry.clone()
+      .lerp(floorEnd, progress)
       .addScaledVector(sideways, sideOffset)
-      .add(new THREE.Vector3(0, verticalOffset, 0))
   );
 
   return [
-    start,
-    pointAt(0.18, 0.62, -0.12),
-    pointAt(0.38, -0.78, -0.3),
-    pointAt(0.58, 0.56, -0.2),
-    pointAt(0.78, -0.32, -0.1),
+    socket,
+    rearRun,
+    floorEntry,
+    floorPointAt(0.2, 0.62),
+    floorPointAt(0.42, -0.78),
+    floorPointAt(0.64, 0.56),
+    floorPointAt(0.84, -0.3),
+    floorEnd,
     layerContact,
   ];
 }
@@ -76,7 +96,9 @@ export function createPowerOnChapter({ cameraRig }) {
   powerButton.group.position.copy(buttonPosition);
   orientButtonToCamera(powerButton.group, buttonPosition, cameraStart);
 
-  const cable = createCable({ points: createCablePoints(buttonPosition, layerContact) });
+  const cable = createCable({
+    points: createCablePoints(buttonPosition, layerContact, cameraStart),
+  });
   const bareMetal = createBareMetalLayer();
   const cameraPath = createCameraPath(
     cameraRig,
