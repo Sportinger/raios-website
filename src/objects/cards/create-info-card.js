@@ -47,6 +47,9 @@ export function createInfoCard({
     emissiveIntensity: 0.08,
     metalness: 0.45,
     opacity: 0,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1,
     roughness: 0.34,
     transparent: true,
   });
@@ -55,6 +58,7 @@ export function createInfoCard({
   contentGroup.add(body);
   const edgeMaterial = new THREE.LineBasicMaterial({
     color: edgeColor,
+    depthWrite: false,
     opacity: 0,
     transparent: true,
   });
@@ -69,6 +73,8 @@ export function createInfoCard({
   outlineGeometry.setDrawRange(0, 0);
   const outlineMaterial = new THREE.LineBasicMaterial({
     color: edgeColor,
+    depthTest: false,
+    depthWrite: false,
     opacity: 0,
     transparent: true,
   });
@@ -94,6 +100,7 @@ export function createInfoCard({
   } else {
     label.plane.position.y = height / 2 + 0.008;
   }
+  label.plane.renderOrder = 7;
   group.add(label.plane);
 
   const setState = ({
@@ -103,7 +110,9 @@ export function createInfoCard({
     opacity = 1,
   } = {}) => {
     const outlineProgress = smootherstep(intervalProgress(progress, 0, 0.46));
-    const extrusion = smootherstep(intervalProgress(progress, 0.38, 1));
+    const extrusion = smootherstep(intervalProgress(progress, 0.5, 1));
+    const faceReveal = smootherstep(intervalProgress(extrusion, 0.03, 0.22));
+    const edgeReveal = smootherstep(intervalProgress(extrusion, 0.16, 0.46));
     const activation = smootherstep(activationProgress);
     const pulse = smootherstep(pulseProgress);
     const labelReveal = smootherstep(intervalProgress(extrusion, 0.58, 1));
@@ -116,10 +125,16 @@ export function createInfoCard({
       0,
       Math.ceil(outlineProgress * footprintPoints.length),
     );
-    outlineMaterial.opacity = outlineProgress * opacity * (1 - extrusion);
-    material.opacity = extrusion * opacity * THREE.MathUtils.lerp(0.3, 1, activation);
+    outlineMaterial.opacity = outlineProgress * opacity * (
+      1 - smootherstep(intervalProgress(extrusion, 0.08, 0.36))
+    );
+    material.opacity = faceReveal * opacity * THREE.MathUtils.lerp(
+      0.3,
+      1,
+      activation,
+    );
     material.emissiveIntensity = 0.025 + activation * 0.58 + pulse * 0.72;
-    edgeMaterial.opacity = extrusion * opacity * THREE.MathUtils.lerp(
+    edgeMaterial.opacity = edgeReveal * opacity * THREE.MathUtils.lerp(
       0.12,
       0.9,
       activation,
