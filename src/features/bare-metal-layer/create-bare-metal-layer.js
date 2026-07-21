@@ -3,10 +3,8 @@ import { intervalProgress, smootherstep } from "../../animation/progress.js";
 import { createSurfaceCurrent } from "../../objects/effects/surface-current/index.js";
 import { createHorizontalLabel } from "../../objects/labels/create-horizontal-label.js";
 import { monospaceFont } from "../../objects/labels/typography.js";
-import {
-  applyBoxTextureScale,
-  loadMetal054ATextures,
-} from "../../objects/materials/load-metal054a-textures.js";
+import { applyBoxTextureScale } from "../../objects/materials/apply-box-texture-scale.js";
+import { loadMetal054ATextures } from "../../objects/materials/load-metal054a-textures.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 import { BARE_METAL_CONFIG } from "./config.js";
 

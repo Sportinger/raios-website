@@ -13,6 +13,8 @@ import { intervalProgress, smootherstep } from "../animation/progress.js";
 const SCROLL_VIEWPORTS_PER_WEIGHT = 620;
 const BACKGROUND_REVEAL_START = 0.0281;
 const BACKGROUND_REVEAL_END = 0.045;
+const ENVIRONMENT_REVEAL_START = 0.0217;
+const ENVIRONMENT_REVEAL_END = 0.0454;
 
 export function createApp({
   canvas,
@@ -53,7 +55,13 @@ export function createApp({
       BACKGROUND_REVEAL_START,
       BACKGROUND_REVEAL_END,
     ));
+    const environmentProgress = smootherstep(intervalProgress(
+      storyProgress,
+      ENVIRONMENT_REVEAL_START,
+      ENVIRONMENT_REVEAL_END,
+    ));
     world.setBackgroundProgress(backgroundProgress);
+    world.setEnvironmentProgress(environmentProgress);
     viewportElement?.style.setProperty(
       "--background-reveal",
       backgroundProgress.toFixed(4),

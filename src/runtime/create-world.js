@@ -3,12 +3,14 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { createLightRig } from "../objects/environment/create-light-rig.js";
 import { createStarField } from "../objects/environment/create-star-field.js";
+import { createTableSurface } from "../objects/environment/create-table-surface.js";
 import { disposeObject3D } from "../shared/dispose-object-3d.js";
 
 const STUDIO_ENVIRONMENT_URL = new URL(
   "../assets/environment/monochrome_studio_04_2k.hdr",
   import.meta.url,
 ).href;
+const STUDIO_ENVIRONMENT_INTENSITY = 0.78;
 
 export function createWorld(renderer) {
   const scene = new THREE.Scene();
@@ -20,7 +22,7 @@ export function createWorld(renderer) {
   let disposed = false;
   roomEnvironment.dispose();
   scene.environment = environmentMap;
-  scene.environmentIntensity = 0.78;
+  scene.environmentIntensity = 0;
   scene.environmentRotation.y = Math.PI * 0.22;
   pmremGenerator.compileEquirectangularShader();
   new RGBELoader().load(
@@ -52,8 +54,9 @@ export function createWorld(renderer) {
   environment.name = "environment";
   const lightRig = createLightRig();
   const starField = createStarField(170);
+  const tableSurface = createTableSurface();
   starField.setOpacity(0);
-  environment.add(lightRig.group, starField.group);
+  environment.add(lightRig.group, starField.group, tableSurface);
   scene.add(environment);
 
   return {
@@ -61,6 +64,10 @@ export function createWorld(renderer) {
     scene,
     setBackgroundProgress(progress) {
       starField.setOpacity(progress);
+    },
+    setEnvironmentProgress(progress) {
+      scene.environmentIntensity = STUDIO_ENVIRONMENT_INTENSITY
+        * THREE.MathUtils.clamp(progress, 0, 1);
     },
     dispose() {
       disposed = true;

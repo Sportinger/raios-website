@@ -8,6 +8,8 @@ export function createRenderer(canvas) {
     powerPreference: "high-performance",
   });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.9;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.BasicShadowMap;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));

@@ -36,7 +36,9 @@ Der Hintergrund besitzt einen eigenen globalen Reveal und ist nicht an ein
 Kapitel-Keyframe gekoppelt. Bis `SCROLL 0.0281` bleiben CSS-Hintergrund und
 Sternfeld vollständig schwarz beziehungsweise unsichtbar. Zwischen `0.0281`
 und `0.0450` blenden beide gemeinsam per Smootherstep auf den normalen
-dunkelblauen Radialhintergrund ein. Szenenlichter bleiben davon unabhängig.
+dunkelblauen Radialhintergrund ein. Die unsichtbare HDR-Reflexionsumgebung
+bleibt bis `SCROLL 0.0217` schwarz und blendet separat bis `0.0454` weich auf
+ihre Studiointensität ein. Szenenlichter bleiben davon unabhängig.
 
 ### Story und Kapitel
 
@@ -68,6 +70,10 @@ objects/
 ├── connections/   Kabel, Leitungen, Ports und Datenflüsse
 └── mechanisms/    Türen, Klappen, Schalter und Verriegelungen
 ```
+
+Zur Umgebung gehört eine `42 × 34` Welteinheiten große Metalltischplatte. Sie
+liegt unter Button, Kabelweg und Systemstapel und verwendet ein eigenes
+Metal030-PBR-Set aus Color-, Metalness-, Normal- und Roughness-Map.
 
 Unter `mechanisms/` liegt mit `create-push-button.js` der erste allgemeine Mechanismus. Das Power-Button-Feature konfiguriert ihn, ohne dass der Mechanismus etwas über die Story oder den Einschaltvorgang wissen muss. Das allgemeine Kabel liegt gekapselt unter `objects/connections/cable/`; sein öffentlicher Import läuft nur über die dortige `index.js`.
 
@@ -118,8 +124,9 @@ SPI Flash → UEFI → Boot Manager → Limine → Kernel Loader → Rust Kernel
 automatisch aus dem neuen Footprint.
 
 Die Softwareschichten besitzen eine feste Renderreihenfolge. UEFI verwendet
-reines physikalisches Volumenglas mit vollständiger Transmission, Brechung und
-blauer Absorption über die Materialtiefe; es schreibt bewusst keine Tiefe.
+reines physikalisches Volumenglas mit vollständiger Transmission, Brechung,
+leichter Dispersion und blauer Absorption über die Materialtiefe; es schreibt
+bewusst keine Tiefe.
 Limine und Kernel bleiben alpha-basierte, tiefenschreibende Schichten mit
 eigenen dunkleren Transparenzwerten, damit der Stapel unterscheidbar bleibt.
 
