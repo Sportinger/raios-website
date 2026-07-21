@@ -13,15 +13,66 @@ function indexCountAt(geometry, progress) {
   return triangleCount * 3;
 }
 
-function setCableMaterialProgress(geometry, revealProgress, signalProgress) {
-  const visibleCount = indexCountAt(geometry, revealProgress);
-  const poweredCount = Math.min(visibleCount, indexCountAt(geometry, signalProgress));
-  geometry.clearGroups();
-  if (poweredCount > 0) geometry.addGroup(0, poweredCount, 1);
-  if (visibleCount > poweredCount) {
-    geometry.addGroup(poweredCount, visibleCount - poweredCount, 0);
-  }
-  geometry.setDrawRange(0, visibleCount);
+function setCableMaterialProgress(geometry, revealProgress) {
+  geometry.setDrawRange(0, indexCountAt(geometry, revealProgress));
+}
+
+// Ein einziges Standardmaterial, das idle und powered entlang der
+// Kabellänge (uv.x) weich mischt. Die Signalkante wandert dadurch
+// kontinuierlich statt dreiecksweise zu springen.
+function createCableMaterial(accentColor) {
+  const uniforms = {
+    uSignal: { value: 0 },
+    uFade: { value: 0.035 },
+    uIdleColor: { value: new THREE.Color(0x59636c) },
+    uPoweredColor: { value: new THREE.Color(accentColor) },
+    uPoweredEmissive: { value: new THREE.Color(accentColor).multiplyScalar(0.82) },
+    uIdleRoughness: { value: 0.2 },
+    uPoweredRoughness: { value: 0.24 },
+    uIdleMetalness: { value: 0.82 },
+    uPoweredMetalness: { value: 0.52 },
+  };
+  const material = new THREE.MeshStandardMaterial({ transparent: true });
+  material.defines = { USE_UV: "" };
+  material.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, uniforms);
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "#include <common>",
+        `#include <common>
+        uniform float uSignal;
+        uniform float uFade;
+        uniform vec3 uIdleColor;
+        uniform vec3 uPoweredColor;
+        uniform vec3 uPoweredEmissive;
+        uniform float uIdleRoughness;
+        uniform float uPoweredRoughness;
+        uniform float uIdleMetalness;
+        uniform float uPoweredMetalness;`,
+      )
+      .replace(
+        "#include <color_fragment>",
+        `#include <color_fragment>
+        float poweredMix = 1.0 - smoothstep(uSignal - uFade, uSignal, vUv.x);
+        diffuseColor.rgb = mix(uIdleColor, uPoweredColor, poweredMix);`,
+      )
+      .replace(
+        "#include <roughnessmap_fragment>",
+        `#include <roughnessmap_fragment>
+        roughnessFactor = mix(uIdleRoughness, uPoweredRoughness, poweredMix);`,
+      )
+      .replace(
+        "#include <metalnessmap_fragment>",
+        `#include <metalnessmap_fragment>
+        metalnessFactor = mix(uIdleMetalness, uPoweredMetalness, poweredMix);`,
+      )
+      .replace(
+        "#include <emissivemap_fragment>",
+        `#include <emissivemap_fragment>
+        totalEmissiveRadiance = uPoweredEmissive * poweredMix;`,
+      );
+  };
+  return { material, uniforms };
 }
 
 export function createCable({ points, accentColor = 0x69c7ff }) {
@@ -31,21 +82,8 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
   const flowTangent = new THREE.Vector3();
 
   const cableGeometry = new THREE.TubeGeometry(curve, 128, 0.075, 10, false);
-  const idleMaterial = new THREE.MeshStandardMaterial({
-    color: 0x59636c,
-    metalness: 0.82,
-    roughness: 0.2,
-    transparent: true,
-  });
-  const poweredMaterial = new THREE.MeshStandardMaterial({
-    color: accentColor,
-    emissive: accentColor,
-    emissiveIntensity: 0.82,
-    metalness: 0.52,
-    roughness: 0.24,
-    transparent: true,
-  });
-  group.add(new THREE.Mesh(cableGeometry, [idleMaterial, poweredMaterial]));
+  const { material: cableMaterial, uniforms: cableUniforms } = createCableMaterial(accentColor);
+  group.add(new THREE.Mesh(cableGeometry, cableMaterial));
 
   const flowDashGeometry = new THREE.TorusGeometry(0.079, 0.012, 6, 18);
   const flowDashMaterial = new THREE.MeshBasicMaterial({
@@ -112,10 +150,10 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
     const easedReveal = smootherstep(reveal);
     const signalProgress = smootherstep(signal);
     group.visible = opacity > 0.001 && easedReveal > 0.001;
-    idleMaterial.opacity = opacity;
-    poweredMaterial.opacity = opacity;
+    cableMaterial.opacity = opacity;
     flowDashMaterial.opacity = opacity * 0.56;
-    setCableMaterialProgress(cableGeometry, easedReveal, signalProgress);
+    setCableMaterialProgress(cableGeometry, easedReveal);
+    cableUniforms.uSignal.value = Math.min(signalProgress, easedReveal);
 
     flowDashes.forEach((dash, index) => {
       const dashProgress = (flow + index / FLOW_DASH_COUNT) % 1;
