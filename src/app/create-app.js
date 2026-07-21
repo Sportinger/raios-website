@@ -1,4 +1,3 @@
-import { disposeObject3D } from "../shared/dispose-object-3d.js";
 import { createStory } from "../story/create-story.js";
 import { createCamera } from "../runtime/create-camera.js";
 import { createCameraRig } from "../runtime/create-camera-rig.js";
@@ -123,7 +122,7 @@ export function createApp({
       viewport.dispose();
       scrollDriver.dispose();
       story.dispose();
-      disposeObject3D(world.environment);
+      world.dispose();
       renderer.dispose();
     },
   };

@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { monospaceFont } from "./typography.js";
 
 function wrapLines(context, copy, maximumWidth) {
   const words = copy.split(/\s+/);
@@ -39,8 +40,8 @@ function fitSingleLine(context, copy, font, maximumWidth, maximumHeight) {
 
 function createLabelTexture(title, description = "", {
   panel = true,
-  titleFont = "700 62px ui-monospace, SFMono-Regular, Consolas, monospace",
-  descriptionFont = "500 34px ui-monospace, SFMono-Regular, Consolas, monospace",
+  titleFont = monospaceFont(700, 62),
+  descriptionFont = monospaceFont(500, 34),
   titleColor = "#ffffff",
   descriptionColor = "#c1d2e5",
 } = {}, aspectRatio = 2) {

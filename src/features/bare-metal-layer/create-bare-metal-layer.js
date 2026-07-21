@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { intervalProgress, smootherstep } from "../../animation/progress.js";
 import { createSurfaceCurrent } from "../../objects/effects/surface-current/index.js";
 import { createHorizontalLabel } from "../../objects/labels/create-horizontal-label.js";
+import { monospaceFont } from "../../objects/labels/typography.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 import { BARE_METAL_CONFIG } from "./config.js";
 
@@ -36,8 +37,7 @@ export function createBareMetalLayer() {
     BARE_METAL_CONFIG.label.height,
     {
       panel: false,
-      titleFont: "900 310px ui-monospace, SFMono-Regular, Consolas, monospace",
-      descriptionFont: "600 86px ui-monospace, SFMono-Regular, Consolas, monospace",
+      titleFont: monospaceFont(900, 310),
     },
   );
   label.plane.position.set(0, 0, BARE_METAL_CONFIG.depth / 2 + 0.011);

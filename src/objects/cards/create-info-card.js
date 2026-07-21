@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { intervalProgress, smootherstep } from "../../animation/progress.js";
 import { createHorizontalLabel } from "../labels/create-horizontal-label.js";
+import { monospaceFont } from "../labels/typography.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 
 function createFootprintPoints(width, height, depth, segmentsPerEdge = 16) {
@@ -90,8 +91,8 @@ export function createInfoCard({
     labelOptions ?? (labelPlacement === "front" ? {
       panel: false,
       titleColor: "#ffffff",
-      titleFont: "900 320px ui-monospace, SFMono-Regular, Consolas, monospace",
-      descriptionFont: "600 72px ui-monospace, SFMono-Regular, Consolas, monospace",
+      titleFont: monospaceFont(900, 320),
+      descriptionFont: monospaceFont(600, 72),
     } : undefined),
   );
   if (labelPlacement === "front") {
@@ -118,7 +119,6 @@ export function createInfoCard({
     const labelReveal = smootherstep(intervalProgress(extrusion, 0.58, 1));
     group.visible = opacity > 0.001
       && (outlineProgress > 0.001 || extrusion > 0.001);
-    group.scale.setScalar(1);
     contentGroup.scale.set(1, Math.max(extrusion, 0.001), 1);
     contentGroup.position.y = -height * 0.5 * (1 - extrusion);
     outlineGeometry.setDrawRange(
@@ -149,7 +149,6 @@ export function createInfoCard({
 
   return {
     group,
-    contentGroup,
     label,
     setState,
     dispose() {

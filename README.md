@@ -85,7 +85,7 @@ objects/effects/energy-flow/         Bewegte Energieringe auf einer Kurve
 objects/effects/plasma-pulse/        Plasma-Sprites und lokales Impulslicht
 ```
 
-Alle drei allgemeinen Objekte nehmen ihre Form- und Materialwerte über `config` entgegen. Sie kennen weder den Power-Button noch das Kapitel. `features/power-link/` verbindet sie über dieselbe Kurve und stellt dem Kapitel nur `group`, `curve`, `setState()` und `dispose()` bereit. So kann ein anderes Feature ausschließlich das Kabel verwenden, Kabel plus Datenfluss anders kombinieren oder das komplette Power-Link-Preset übernehmen.
+Alle drei allgemeinen Objekte nehmen ihre Form- und Materialwerte über `config` entgegen. Sie kennen weder den Power-Button noch das Kapitel. `objects/connections/transient-signal-cable/` komponiert sie einmalig auf derselben Kurve; Power-Link und UEFI konfigurieren nur noch unterschiedliche Looks, Routen und semantische Zustände. `features/power-link/` stellt dem Kapitel weiterhin ausschließlich `group`, `curve`, `setState()` und `dispose()` bereit.
 
 Ein wiederverwendbares Objekt:
 
@@ -95,7 +95,7 @@ Ein wiederverwendbares Objekt:
 - erzeugt bei `update()` keine neuen Geometrien oder Materialien und
 - bietet `dispose()` an, sobald es eigene GPU-Ressourcen besitzt.
 
-UEFI und Limine verwenden beide `objects/layers/expanding-stage-layer/`. Dieses
+UEFI, Limine und Rust-Kernel verwenden gemeinsam `objects/layers/expanding-stage-layer/`. Dieses
 Objekt kapselt Geometrie, Kanten, Seitentitel sowie Aufsteigen, Expansion und
 Rückzug. Eine zustandsbasierte `surfaceOpacityScale` erlaubt zusätzlich eine
 langsame Verdichtung nach der Entfaltung. Die Features liefern nur Quelle,
@@ -104,6 +104,17 @@ Zielhöhe, Material und eigene Inhalte.
 Bare Metal, UEFI, Limine und Rust-Kernel fest. Dadurch bleiben alle vollständigen
 Schichten deckungsgleich, ohne dieselben Zahlen oder Transformationsabläufe in
 mehreren Features zu duplizieren.
+
+Die Entstehungsorte werden nicht mehrfach als Koordinaten gepflegt. Jede
+Quellkomponente veröffentlicht einen unveränderlichen Layer-Anchor aus Position
+und Größe; die Boot-Komposition reicht ihn an die nächste Stufe weiter:
+
+```text
+SPI Flash → UEFI → Boot Manager → Limine → Kernel Loader → Rust Kernel
+```
+
+Ändert sich ein Chipmaß oder eine Position, wächst die abhängige Schicht damit
+automatisch aus dem neuen Footprint.
 
 Transparente Softwareschichten schreiben bewusst Tiefe und besitzen eine feste
 Renderreihenfolge. So werden Verbindungen hinter einer Schicht von deren Farbe
@@ -143,15 +154,15 @@ Für eine andere Route wird daher kein Kabel- oder Shader-Code geändert. Für e
 features/
 ├── hardware-platform/   Bare Metal, mittiger SPI-Flash und eingelassener USB-Port
 ├── uefi-firmware/       UEFI-Bootumgebung, Boot Manager und USB Boot Service
-├── boot-usb/            Mechanischer Stick, ESP und BOOTX64.EFI
+├── boot-usb/            Mechanischer Stick, Einstecken und Leseaktivität
 ├── limine-stage/        Temporäre Vollschicht mit Config und Loader
 ├── kernel-platform/     Einzellayer, Aufbau, Landung und Laufpuls
 └── boot-sequence/       Deterministische Komposition aller Phasen
 ```
 
-Die wiederverwendbaren Grundbausteine `objects/cards/`, `objects/connections/cable/`, `objects/connections/transient-signal-cable/`, `objects/effects/energy-flow/` und `objects/effects/data-stream/` kennen diese Fachbegriffe nicht. `createInfoCard()` kapselt zusätzlich den gemeinsamen Chip-Aufbau: Zuerst wird nur der flache Footprint auf der Trägerschicht umrissen, danach wächst die Geometrie bodenverankert nach oben und zuletzt erscheint das unverzerrte Label. SPI, UEFI und Limine bauen dafür keine eigenen Positionsanimationen. Beide UEFI-Pfade verwenden dieselbe Signalkabel-Komposition aus Kabel, Energieringen und Lichtkopf; nur ihre Routen liegen im UEFI-Feature. Das erste Kabel beginnt innerhalb des Sticks, läuft kurz durch Bare Metal, steigt über enge abgerundete Ecken nach oben und dockt seitlich an USB Boot an. Das zweite verbindet USB Boot mit dem symmetrisch gegenüberliegenden Boot Manager. Die Lichtköpfe laufen nacheinander durch beide Kabel, die anschließend vollständig verlegt und blau bestehen bleiben. Danach steigt Limine direkt aus dessen Footprint und expandiert wie UEFI erst auf Zielhöhe. Auf der fertigen Schicht stehen ausschließlich `CONFIG` und `KERNEL LOADER`; zwischen beiden läuft der einzige interne Signalpfad. Von unten steigen keine Signale oder Datenpakete zu ihnen auf. Sprechertexte und Audio sind bewusst nicht Bestandteil der aktuellen Implementierung.
+Die wiederverwendbaren Grundbausteine `objects/cards/`, `objects/connections/cable/`, `objects/connections/transient-signal-cable/`, `objects/effects/energy-flow/` und `objects/effects/plasma-pulse/` kennen diese Fachbegriffe nicht. `createInfoCard()` kapselt zusätzlich den gemeinsamen Chip-Aufbau: Zuerst wird nur der flache Footprint auf der Trägerschicht umrissen, danach wächst die Geometrie bodenverankert nach oben und zuletzt erscheint das unverzerrte Label. SPI, UEFI und Limine bauen dafür keine eigenen Positionsanimationen. Power-on und beide UEFI-Pfade verwenden dieselbe Signalkabel-Komposition aus Kabel, Energieringen und Lichtkopf; nur Presets und Routen liegen in ihren Features. Das erste UEFI-Kabel beginnt innerhalb des Sticks, läuft kurz durch Bare Metal, steigt über enge abgerundete Ecken nach oben und dockt seitlich an USB Boot an. Das zweite verbindet USB Boot mit dem symmetrisch gegenüberliegenden Boot Manager. Die Lichtköpfe laufen nacheinander durch beide Kabel, die anschließend vollständig verlegt und blau bestehen bleiben. Danach steigt Limine direkt aus dessen veröffentlichtem Anchor und expandiert wie UEFI erst auf Zielhöhe. Auf der fertigen Schicht stehen ausschließlich `CONFIG` und `KERNEL LOADER`; zwischen beiden läuft der einzige interne Signalpfad. Sprechertexte und Audio sind bewusst nicht Bestandteil der aktuellen Implementierung.
 
-`chapters/boot-sequence/create-camera-choreography.js` enthält den 70-Grad-UEFI-Reveal-Orbit gegen den Uhrzeigersinn und anschließend im globalen Scrollfenster `0.2272–0.2625` den 80-Grad-Rückorbit im Uhrzeigersinn auf die USB-Seite. Danach läuft die Kamera nur noch wenige Zentimeter weich bis zur bei global `SCROLL 0.2738` gespeicherten Endpose aus. Alle späteren Kamera-Keyframes wurden entfernt; Limine, Kernel, Handoff und Landung laufen mit unveränderter Kamera. Die frühen Boot-Posen bleiben bewusst perspektivisch: Platte, schwebende UEFI-Ebene und der in den physischen Port eingesteckte USB-Stick sind dadurch gleichzeitig räumlich lesbar.
+`chapters/boot-sequence/create-camera-choreography.js` enthält den 70-Grad-UEFI-Reveal-Orbit gegen den Uhrzeigersinn und anschließend den 80-Grad-Rückorbit im Uhrzeigersinn auf die USB-Seite. Alle Werte sind lokal zum Boot-Kapitel definiert und bleiben deshalb von späteren Änderungen der Story-Gewichte unberührt. Danach läuft die Kamera nur noch wenige Zentimeter weich in ihre gespeicherte Endpose aus. Alle späteren Kamera-Keyframes wurden entfernt; Limine, Kernel, Handoff und Landung laufen mit unveränderter Kamera.
 
 ## Kapitel ergänzen
 
@@ -161,7 +172,7 @@ Für Reduced Motion setzt die Runtime den Storyfortschritt auf den fertigen Zust
 
 ### Aktuelle Story
 
-1. `chapters/power-on/` richtet den Power-Button frontal zur Startkamera aus, drückt ihn automatisch und blendet ihn nach dem Einschalten aus.
+1. `chapters/power-on/` richtet den Power-Button frontal zur Startkamera aus, drückt ihn automatisch und lässt ihn anschließend wieder in seine mechanische Ruheposition fahren.
 2. Ein von Anfang an vollständig sichtbares, grau-metallisches Kabel beginnt mittig an der Rückseite des Buttons, läuft zunächst gerade aus dem Gehäuse, sinkt auf eine unsichtbare Bodenhöhe ab und schlängelt sich erst dort bis an die Seitenkante des weit entfernten `BARE METAL`-Layers. Eine kompakte organische Plasmawolke startet synchron mit dem Beginn des Button-Presses und seines blauen Power-Glows. Der Kern besteht vollständig aus einer dichten, unregelmäßigen Plasma-Sprite; eine schneidende 3D-Kerngeometrie wird nicht mehr verwendet. Direkt hinter dem Button und vor dem Ziel-Layer respektiert sie den Szenen-Depth-Test. Auf der freien Kabelstrecke rendert nur diese dichte Kernschicht vor dem Kabel und verdeckt es dadurch aus jedem Kamerawinkel ohne harte ovale Schnittkanten. Die äußeren Layer bleiben tiefengeprüft und lösen die Wolke über rotierende Plasmafilamente und einen kurzen Nachschweif weich auf. Ein zurückhaltendes mitwanderndes Punktlicht beleuchtet nur ihre unmittelbare Umgebung. Die einzige Kabeloberfläche mischt ein einziges Standardmaterial per Fragment-Shader entlang der Kabellänge weich von Grau auf elektrisch leuchtendes Blau; die wandernde Signalkante fadet dadurch kontinuierlich statt dreiecksweise zu springen, und es werden weiterhin keine übereinanderliegenden Kabelröhren gezeichnet. Schmale blaue Energieringe fließen anschließend in Impulsrichtung über den bereits aktivierten Abschnitt. Button und Layer liegen auf derselben Welt-Höhe; der Layer ist von Anfang an räumlich vorhanden und wird nicht eingeblendet.
 3. Der Button bleibt während seiner Einführung räumlich vollständig statisch und von Anfang an opak; nur reales Licht macht ihn sichtbar. Eine unsichtbare neutralweiße Punktlichtquelle hält zunächst eindeutig hinter seiner Rückseite und orbitiert anschließend auf einer horizontalen 240-Grad-Kreisbahn im Uhrzeigersinn nach vorne. Das orbitierende Point Light erzeugt über eine `BasicShadowMap` bewusst harte wandernde Schatten. Das Power-Symbol verwendet zunächst ein graues `MeshStandardMaterial` und blendet in der zweiten Hälfte des Lichtorbits unabhängig auf raiOS-blaues Emissive ein. Eine schwache, mit Abstand über der Symbolfläche sitzende blaue Punktlichtquelle beleuchtet Kappe, Rand und nahe Objekte tatsächlich. Der größere Abstand verhindert den harten zentralen Lichtreflex; eine zweite additive Symbolkontur wird nicht mehr gezeichnet. Ab exakt diesem Zeitpunkt fahren Hemisphere- und Key-Light langsam per Smootherstep hinzu, sodass Gehäuse und Rand zunehmend lesbarer werden, ohne den wandernden Lichtakzent abrupt zu überdecken. Danach beginnt der Camera-Rig seinen vollständigen 90-Grad-Orbit um den Button. Gleich zu Beginn des Eindrückens starten der blaue Button-Power-Glow und die Plasmawolke gemeinsam. Während der Orbit positionsseitig ungekürzt weiterläuft, mischt sich der Kamerafokus langsam vom Button auf die Wolke. Am Orbit-Ende übernimmt die Flugbahn aus derselben Position und mit demselben Blickziel. Nach dem vollständig gedrückten Zustand fährt die Kappe weich in ihre Ruheposition zurück; Symbollicht, Emissive und Button-Underglow erlöschen synchron. Der Plasmakern bleibt anschließend als Kameraziel im Bildzentrum, während der Follow kontinuierlich an Höhe und Abstand gewinnt und auf die ursprüngliche Kameraseite zurückorbitiert.
 
@@ -169,7 +180,7 @@ Der schwarze Housing-Sockel besitzt nur ein Fünftel seiner ursprünglichen Tief
 4. `chapters/boot-sequence/` übernimmt anschließend als zusammenhängender Objektgraph und veröffentlicht sechs navigierbare Abschnitte. Das separate Kapitel „Handoff vorbereiten“ entfällt vollständig; auf „Kernel laden“ folgt ohne sichtbare Leerlaufstrecke direkt der Kontrollwechsel. Das frühere reine Bare-Metal-Kapitel entfällt ebenfalls: Der in Kapitel 1 erreichte Zustand bleibt als vollständige physische Grundschicht stehen und direkt danach startet Kapitel 2 mit UEFI. Die Bare-Metal-Seitenbeschriftung gehört direkt zum wiederverwendbaren Layer-Feature, blendet bereits während seines Hochfahrens am Ende von Kapitel 1 ein und wird in der Boot-Sequenz nicht dupliziert. Bare Metal, UEFI, Limine und Rust-Kernel beziehen identische Breite, Tiefe und Materialstärke aus einem einzigen Preset; sie liegen im fertigen Zustand exakt auf derselben X/Z-Achse und unterscheiden sich im Stapel nur durch ihre Höhe. Ihre extra-fetten weißen Titel sitzen auf den Seitenflächen, füllen deren Höhe nahezu aus und werden vor der transparenten Oberfläche gerendert. Ein gemeinsamer `SYSTEM_STACK_OFFSET_Y` hebt den vollständigen Systemstapel in Power-on, Boot-Sequenz und Kernel identisch an. Der mittige SPI-Flash bleibt physische Hardware. UEFI wächst aus seinem Footprint, der Stick dockt rechts am Bare Metal an und zwei Signalkabel führen über `USB BOOT` zum `BOOT MANAGER`. Aus dessen Footprint wächst `LIMINE BOOT ENVIRONMENT` mit den beiden einzeiligen Chips `CONFIG` und `KERNEL LOADER`. Sobald der Loader vollständig steht, steigt direkt aus seinem Footprint eine einzige ungeteilte `RUST KERNEL`-Ebene hoch und expandiert ohne fliegende Fragmente oder Übergabeplatten auf das vollständige Systemmaß. Gleich zu Beginn des anschließenden Kontrollwechsels ziehen sich die weiterhin leuchtenden UEFI-Kabel sichtbar zurück; danach folgt Limine und UEFI leicht versetzt. Der SPI-Flash bleibt bestehen und der Kernel dockt direkt auf Bare Metal an.
 Die Story endet mit der Landung des vollständigen Rust-Kernel-Layers. Eine separate anschließende Kernel-Innenansicht und ihre frühere 3×2-Aufteilung existieren nicht mehr.
 
-Die Zeitfenster und das räumliche Layout des Einschaltvorgangs liegen getrennt in `chapters/power-on/timeline.js` und `chapters/power-on/layout.js`. Form und Material des Buttons, Kabels und Layers gehören zu ihren Features beziehungsweise allgemeinen Objekten und enthalten keine Story-Zeitwerte.
+Die Zeitfenster und das räumliche Layout des Einschaltvorgangs liegen getrennt in `chapters/power-on/timeline.js` und `chapters/power-on/layout.js`. Die semantischen Boot-Zeitfenster liegen entsprechend in `features/boot-sequence/timeline.js`; der Orchestrator enthält keine anonymen Timing-Zahlen mehr. Form und Material des Buttons, Kabels und Layers gehören zu ihren Features beziehungsweise allgemeinen Objekten und enthalten keine Story-Zeitwerte.
 
 ## Lokal entwickeln mit HMR
 
@@ -197,19 +208,19 @@ pwsh ./scripts/start-threejs-codex.ps1
 
 ## Produktions-Build
 
-Alle JavaScript-Dateien prüfen:
+Syntax, lokalen Modulgraph und Produktions-Build gemeinsam prüfen:
 
 ```powershell
-Get-ChildItem src -Recurse -Filter *.js | ForEach-Object { node --check $_.FullName }
+npm run check
 ```
 
-Anschließend immer den statischen Produktions-Build ausführen:
+Nur den statischen Produktions-Build ausführen:
 
 ```powershell
-pwsh ./scripts/build-pages-site.ps1
+npm run build
 ```
 
-Der Build kopiert ausschließlich das Scroll-Projekt nach `pages-dist/` und prüft lokale Datei-Referenzen sowie die Cloudflare-Dateigrößenbegrenzung. `pages-dist/` enthält generierte Dateien und wird nicht committed.
+`npm run check` führt `node --check` für alle JavaScript-Dateien aus, validiert alle lokalen Imports, meldet von `src/main.js` unerreichbare Module als Dead Code und startet anschließend den Build. Der Build kopiert ausschließlich das Scroll-Projekt nach `pages-dist/` und prüft lokale Datei-Referenzen sowie die Cloudflare-Dateigrößenbegrenzung. `pages-dist/` enthält generierte Dateien und wird nicht committed.
 
 ## Lizenz
 

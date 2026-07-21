@@ -2,6 +2,9 @@ import { createBootSequence, BOOT_SCENES } from "../../features/boot-sequence/in
 import { createBootCameraChoreography } from "./create-camera-choreography.js";
 import { SYSTEM_STACK_OFFSET_Y } from "../shared/system-stack-layout.js";
 
+const BOOT_SCENE_WEIGHT = 0.95;
+export const BOOT_SEQUENCE_WEIGHT = BOOT_SCENES.length * BOOT_SCENE_WEIGHT;
+
 export function createBootSequenceChapter({ cameraRig, lightRig }) {
   const sequence = createBootSequence();
   sequence.group.position.y = SYSTEM_STACK_OFFSET_Y;

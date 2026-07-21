@@ -12,14 +12,14 @@ const UEFI_REVEAL_ORBIT = Object.freeze({
 });
 
 const USB_RETURN_ORBIT = Object.freeze({
-  // Corresponds to global scroll 0.2272 -> 0.2625 with the current story weights.
+  // Stored in local boot progress so story weight changes do not retime the orbit.
   start: 0.12772330827067677,
   end: 0.17443609022556397,
   angle: THREE.MathUtils.degToRad(80),
 });
 
 const CAMERA_FREEZE = Object.freeze({
-  // Local boot progress corresponding to global SCROLL 0.2738.
+  // Final local boot pose; all later boot phases keep this camera state.
   progress: 0.18938947368421058,
   position: Object.freeze([
     10.181333473174197,

@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { createLightRig } from "../objects/environment/create-light-rig.js";
 import { createStarField } from "../objects/environment/create-star-field.js";
+import { disposeObject3D } from "../shared/dispose-object-3d.js";
 
 export function createWorld() {
   const scene = new THREE.Scene();
@@ -15,11 +16,14 @@ export function createWorld() {
   scene.add(environment);
 
   return {
-    environment,
     lightRig,
     scene,
     setBackgroundProgress(progress) {
       starField.setOpacity(progress);
+    },
+    dispose() {
+      disposeObject3D(environment);
+      environment.removeFromParent();
     },
   };
 }

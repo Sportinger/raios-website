@@ -78,7 +78,6 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
           progress,
           ...POWER_ON_TIMELINE.symbolGlow,
         ) * buttonEnergy,
-        exitProgress: 0,
       });
       powerLink.setState({
         revealProgress: 1,
@@ -90,7 +89,6 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
           POWER_ON_TIMELINE.signalTravel[0],
           1,
         ),
-        opacity: 1,
       });
       const activationProgress = intervalProgress(
         progress,
@@ -102,7 +100,6 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
       );
       bareMetal.setState({
         revealProgress: 1,
-        opacity: 1,
         elevationProgress: activationProgress,
         currentProgress,
       });
@@ -111,7 +108,6 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
           progress,
           ...POWER_ON_TIMELINE.spiFlashReveal,
         ),
-        opacity: 1,
       });
       lightRig.setIntensity(smootherstep(intervalProgress(
         progress,

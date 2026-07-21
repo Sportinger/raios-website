@@ -31,7 +31,6 @@ export function createCircuitTrace({
   setState();
 
   return {
-    curve,
     group,
     setState,
     dispose() {

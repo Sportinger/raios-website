@@ -1,9 +1,10 @@
 import * as THREE from "three";
 import { intervalProgress, smootherstep } from "../../animation/progress.js";
 import { createExpandingStageLayer } from "../../objects/layers/expanding-stage-layer/index.js";
+import { monospaceFont } from "../../objects/labels/typography.js";
 import { KERNEL_PLATFORM_CONFIG } from "./config.js";
 
-export function createKernelPlatform() {
+export function createKernelPlatform({ sourceAnchor }) {
   const config = KERNEL_PLATFORM_CONFIG;
   const group = new THREE.Group();
   group.name = "kernel-platform";
@@ -11,9 +12,9 @@ export function createKernelPlatform() {
   const kernelLayer = createExpandingStageLayer({
     name: "rust-kernel-layer",
     title: "RUST KERNEL",
-    sourcePosition: config.source,
+    sourcePosition: sourceAnchor.position,
     targetPosition: [0, config.hoverY, 0],
-    sourceSize: config.sourceSize,
+    sourceSize: sourceAnchor.size,
     size: [config.width, config.height, config.depth],
     color: config.color,
     edgeColor: 0x65cfff,
@@ -29,7 +30,7 @@ export function createKernelPlatform() {
     labelOptions: {
       panel: false,
       titleColor: "#ffffff",
-      titleFont: "900 320px ui-monospace, SFMono-Regular, Consolas, monospace",
+      titleFont: monospaceFont(900, 320),
     },
   });
   group.add(kernelLayer.group);
@@ -60,7 +61,6 @@ export function createKernelPlatform() {
 
   return {
     group,
-    platformGroup: kernelLayer.group,
     setState,
     dispose() {
       kernelLayer.dispose();

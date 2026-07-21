@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { intervalProgress, smootherstep } from "../../animation/progress.js";
 import { createHorizontalLabel } from "../../objects/labels/create-horizontal-label.js";
+import { monospaceFont } from "../../objects/labels/typography.js";
 import { disposeObject3D } from "../../shared/dispose-object-3d.js";
 import { BOOT_USB_CONFIG } from "./config.js";
 
@@ -38,8 +39,7 @@ export function createBootUsb() {
     bodyHeight / 0.7,
     {
       panel: false,
-      titleFont: "900 230px ui-monospace, SFMono-Regular, Consolas, monospace",
-      descriptionFont: "600 66px ui-monospace, SFMono-Regular, Consolas, monospace",
+      titleFont: monospaceFont(900, 230),
     },
   );
   label.plane.position.z = bodyDepth / 2 + 0.012;
@@ -53,8 +53,6 @@ export function createBootUsb() {
   const setState = ({
     insertProgress = 0,
     searchProgress = 0,
-    partitionProgress = 0,
-    fileProgress = 0,
     dimProgress = 0,
     opacity = 1,
   } = {}) => {

@@ -38,6 +38,7 @@ export function createOrbitingLight({ color = 0xffffff } = {}) {
     },
 
     dispose() {
+      light.dispose();
       group.removeFromParent();
     },
   };

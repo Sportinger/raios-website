@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { smootherstep } from "../../animation/progress.js";
 import { createOrbitingLight } from "../../objects/effects/create-orbiting-light.js";
 import { createPushButton } from "../../objects/mechanisms/create-push-button.js";
 import { POWER_BUTTON_CONFIG } from "./config.js";
@@ -28,13 +27,7 @@ export function createPowerButton() {
       pressProgress,
       powerProgress,
       symbolGlowProgress,
-      exitProgress,
     }) {
-      const exit = smootherstep(exitProgress);
-      const opacity = 1 - exit;
-
-      group.visible = opacity > 0.001;
-      button.setOpacity(opacity);
       button.setPressProgress(pressProgress);
       button.setPowerProgress(powerProgress);
       button.setMarkGlowProgress(symbolGlowProgress);

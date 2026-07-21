@@ -1,8 +1,5 @@
-import * as THREE from "three";
 import { smootherstep } from "../../animation/progress.js";
-import { createCable } from "../../objects/connections/cable/index.js";
-import { createEnergyFlow } from "../../objects/effects/energy-flow/index.js";
-import { createPlasmaPulse } from "../../objects/effects/plasma-pulse/index.js";
+import { createTransientSignalCable } from "../../objects/connections/transient-signal-cable/index.js";
 import { POWER_LINK_DEFAULTS } from "./config.js";
 
 export function createPowerLink({ points, config: overrides = {} }) {
@@ -19,26 +16,14 @@ export function createPowerLink({ points, config: overrides = {} }) {
       ...overrides.plasmaPulse,
     },
   };
-  const group = new THREE.Group();
-  group.name = "power-link";
-
-  const cable = createCable({
+  const signalCable = createTransientSignalCable({
+    name: "power-link",
     points,
-    config: {
-      ...config.cable,
-      poweredColor: config.cable.poweredColor ?? config.accentColor,
-    },
-  });
-  const energyFlow = createEnergyFlow({
-    curve: cable.curve,
-    config: config.energyFlow,
-  });
-  const plasmaPulse = createPlasmaPulse({
-    curve: cable.curve,
     accentColor: config.accentColor,
-    config: config.plasmaPulse,
+    cable: config.cable,
+    energyFlow: config.energyFlow,
+    head: config.plasmaPulse,
   });
-  group.add(cable.group, energyFlow.group, plasmaPulse.group);
 
   const setState = ({
     revealProgress = 1,
@@ -48,36 +33,25 @@ export function createPowerLink({ points, config: overrides = {} }) {
     opacity = 1,
   } = {}) => {
     const easedSignalProgress = smootherstep(signalProgress);
-    cable.setState({
+    signalCable.setState({
       revealProgress,
-      energizedProgress: signalProgress,
-      opacity,
-    });
-    energyFlow.setState({
-      energizedProgress: signalProgress,
-      phase: flowProgress * config.flowCycles,
-      opacity,
-    });
-    plasmaPulse.setState({
-      progress: signalProgress,
-      active: signalActive,
-      opacity,
-      occludeCore: easedSignalProgress < config.coreOcclusionStart
+      signalProgress,
+      flowPhase: flowProgress * config.flowCycles,
+      pulseActive: signalActive,
+      pulseOccludeCore: easedSignalProgress < config.coreOcclusionStart
         || easedSignalProgress > config.coreOcclusionEnd,
+      opacity,
     });
   };
 
   setState();
 
   return {
-    curve: cable.curve,
-    group,
+    curve: signalCable.curve,
+    group: signalCable.group,
     setState,
     dispose() {
-      cable.dispose();
-      energyFlow.dispose();
-      plasmaPulse.dispose();
-      group.removeFromParent();
+      signalCable.dispose();
     },
   };
 }

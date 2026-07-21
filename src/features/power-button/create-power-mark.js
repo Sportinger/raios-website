@@ -7,7 +7,6 @@ export function createPowerMark(color) {
     emissiveIntensity: 0,
     metalness: 0.32,
     roughness: 0.34,
-    transparent: true,
   });
   const group = new THREE.Group();
   const light = new THREE.PointLight(color, 0, 4, 2);

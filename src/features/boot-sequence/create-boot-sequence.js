@@ -5,16 +5,34 @@ import { createHardwarePlatform } from "../hardware-platform/index.js";
 import { createKernelPlatform } from "../kernel-platform/index.js";
 import { createLimineStage } from "../limine-stage/index.js";
 import { createUefiFirmware } from "../uefi-firmware/index.js";
-import { BOOT_SCENES } from "./config.js";
+import { BOOT_PHASES } from "./config.js";
+import { BOOT_TIMELINE } from "./timeline.js";
+
+const BOOT_PHASE_NAMES = Object.freeze(Object.keys(BOOT_PHASES));
+
+function createPhaseState(sceneIndex, progress) {
+  return Object.fromEntries(
+    BOOT_PHASE_NAMES.map((phase, index) => [
+      phase,
+      index < sceneIndex ? 1 : index === sceneIndex ? progress : 0,
+    ]),
+  );
+}
 
 export function createBootSequence() {
   const group = new THREE.Group();
   group.name = "boot-sequence";
   const hardware = createHardwarePlatform();
-  const uefi = createUefiFirmware();
+  const uefi = createUefiFirmware({
+    sourceAnchor: hardware.anchors.spiFlash,
+  });
   const usb = createBootUsb();
-  const limine = createLimineStage();
-  const kernel = createKernelPlatform();
+  const limine = createLimineStage({
+    sourceAnchor: uefi.anchors.bootManager,
+  });
+  const kernel = createKernelPlatform({
+    sourceAnchor: limine.anchors.kernelLoader,
+  });
   group.add(
     hardware.group,
     uefi.group,
@@ -24,60 +42,66 @@ export function createBootSequence() {
   );
 
   const setSceneProgress = (sceneIndex, progress, animationTime = 0) => {
-    const phase = BOOT_SCENES.map((_, index) => {
-      if (index < sceneIndex) return 1;
-      if (index === sceneIndex) return progress;
-      return 0;
-    });
-    const [firmware, bootUsb, limineLoad, kernelLoad,
-      controlHandoff, kernelLanding] = phase;
+    const {
+      firmware,
+      bootUsb,
+      limineLoad,
+      kernelLoad,
+      controlHandoff,
+      kernelLanding,
+    } = createPhaseState(sceneIndex, progress);
+    const timing = BOOT_TIMELINE;
     const uefiOpacityBoost = firmware < 1
-      ? intervalProgress(firmware, 0.78, 1) * 0.3
-      : 0.3 + intervalProgress(bootUsb, 0, 0.5) * 0.7;
+      ? intervalProgress(firmware, ...timing.uefi.initialOpacityBoost) * 0.3
+      : 0.3 + intervalProgress(bootUsb, ...timing.uefi.opacityBoost) * 0.7;
     hardware.setState({
-      hardwareProgress: 1,
       initializationProgress: firmware,
       usbProgress: bootUsb,
-      firmwareRetiredProgress: intervalProgress(controlHandoff, 0.55, 1),
-      opacity: 1,
+      firmwareRetiredProgress: intervalProgress(
+        controlHandoff,
+        ...timing.hardware.firmwareRetired,
+      ),
     });
     uefi.setState({
-      patternProgress: intervalProgress(firmware, 0, 0.62),
-      layerProgress: intervalProgress(firmware, 0, 0.78),
+      patternProgress: intervalProgress(firmware, ...timing.uefi.pattern),
+      layerProgress: intervalProgress(firmware, ...timing.uefi.layer),
       opacityBoostProgress: uefiOpacityBoost,
-      usbServiceProgress: intervalProgress(firmware, 0.72, 1),
-      bootManagerProgress: intervalProgress(bootUsb, 0.58, 0.76),
-      usbPathProgress: intervalProgress(bootUsb, 0.32, 0.66),
-      bootManagerPathProgress: intervalProgress(bootUsb, 0.58, 0.88),
+      usbServiceProgress: intervalProgress(firmware, ...timing.uefi.usbService),
+      bootManagerProgress: intervalProgress(bootUsb, ...timing.uefi.bootManager),
+      usbPathProgress: intervalProgress(bootUsb, ...timing.uefi.usbPath),
+      bootManagerPathProgress: intervalProgress(
+        bootUsb,
+        ...timing.uefi.bootManagerPath,
+      ),
       flowPhase: animationTime * 0.42,
-      cableRetreatProgress: intervalProgress(controlHandoff, 0, 0.2),
-      retreatProgress: intervalProgress(controlHandoff, 0.4, 1),
-      opacity: 1,
+      cableRetreatProgress: intervalProgress(
+        controlHandoff,
+        ...timing.uefi.cableRetreat,
+      ),
+      retreatProgress: intervalProgress(controlHandoff, ...timing.uefi.retreat),
     });
     usb.setState({
-      insertProgress: intervalProgress(bootUsb, 0, 0.42),
-      searchProgress: intervalProgress(bootUsb, 0.32, 0.66),
-      partitionProgress: intervalProgress(bootUsb, 0.62, 0.86),
-      fileProgress: intervalProgress(bootUsb, 0.82, 1),
+      insertProgress: intervalProgress(bootUsb, ...timing.usb.insert),
+      searchProgress: intervalProgress(bootUsb, ...timing.usb.search),
       dimProgress: kernelLanding,
-      opacity: 1,
     });
     limine.setState({
-      layerProgress: intervalProgress(limineLoad, 0, 0.72),
-      configProgress: intervalProgress(limineLoad, 0.72, 1),
-      kernelLoaderProgress: intervalProgress(kernelLoad, 0, 0.28),
-      handoffProgress: intervalProgress(controlHandoff, 0, 0.32),
-      retreatProgress: intervalProgress(controlHandoff, 0.2, 0.72),
-      opacity: 1,
+      layerProgress: intervalProgress(limineLoad, ...timing.limine.layer),
+      configProgress: intervalProgress(limineLoad, ...timing.limine.config),
+      kernelLoaderProgress: intervalProgress(
+        kernelLoad,
+        ...timing.limine.kernelLoader,
+      ),
+      handoffProgress: intervalProgress(controlHandoff, ...timing.limine.handoff),
+      retreatProgress: intervalProgress(controlHandoff, ...timing.limine.retreat),
     });
     kernel.setState({
-      assemblyProgress: intervalProgress(kernelLoad, 0.32, 1),
-      landingProgress: intervalProgress(kernelLanding, 0.12, 0.82),
+      assemblyProgress: intervalProgress(kernelLoad, ...timing.kernel.assembly),
+      landingProgress: intervalProgress(kernelLanding, ...timing.kernel.landing),
       runningProgress: Math.max(
-        intervalProgress(controlHandoff, 0, 0.4),
-        intervalProgress(kernelLanding, 0.72, 1),
+        intervalProgress(controlHandoff, ...timing.kernel.handoffRunning),
+        intervalProgress(kernelLanding, ...timing.kernel.landedRunning),
       ),
-      opacity: 1,
     });
   };
   setSceneProgress(0, 0);

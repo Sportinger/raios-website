@@ -1,11 +1,8 @@
 import * as THREE from "three";
 import { smootherstep } from "../animation/progress.js";
-import { CAMERA_HOME } from "./camera-config.js";
 
 export function createCameraRig(camera) {
-  const homePosition = new THREE.Vector3().fromArray(CAMERA_HOME.position);
-  const homeTarget = new THREE.Vector3().fromArray(CAMERA_HOME.target);
-  const homeUp = camera.up?.clone() ?? new THREE.Vector3(0, 1, 0);
+  const defaultUp = camera.up?.clone() ?? new THREE.Vector3(0, 1, 0);
   const position = new THREE.Vector3();
   const target = new THREE.Vector3();
   const up = new THREE.Vector3();
@@ -37,96 +34,7 @@ export function createCameraRig(camera) {
 
         update(progress, targetOverride = null) {
           getPositionAt(progress, position);
-          setPose(position, targetOverride ?? center, homeUp);
-        },
-      };
-    },
-
-    createHomeboundPath({
-      positions,
-      targets,
-      easing = smootherstep,
-      endPosition = homePosition,
-      endTarget = homeTarget,
-      endUp = homeUp,
-      ups = null,
-    }) {
-      const pathUps = ups ?? positions.map(() => homeUp.clone());
-      if (positions.length !== targets.length || positions.length !== pathUps.length) {
-        throw new Error("Camera path positions, targets, and up vectors must match");
-      }
-      const positionCurve = new THREE.CatmullRomCurve3(
-        [...positions, endPosition.clone()],
-        false,
-        "centripetal",
-      );
-      const targetCurve = new THREE.CatmullRomCurve3(
-        [...targets, endTarget.clone()],
-        false,
-        "centripetal",
-      );
-      const upCurve = new THREE.CatmullRomCurve3(
-        [...pathUps, endUp.clone()],
-        false,
-        "centripetal",
-      );
-
-      return {
-        update(progress, targetOverride = null, targetOverrideWeight = 1) {
-          const easedProgress = easing(progress);
-          positionCurve.getPointAt(easedProgress, position);
-          targetCurve.getPointAt(easedProgress, target);
-          upCurve.getPointAt(easedProgress, up).normalize();
-          if (targetOverride) {
-            target.lerp(
-              targetOverride,
-              THREE.MathUtils.clamp(targetOverrideWeight, 0, 1),
-            );
-          }
-          setPose(position, target, up);
-        },
-      };
-    },
-
-    createHomeboundPoseTrack({
-      positions,
-      targets,
-      easing = smootherstep,
-      startPosition = homePosition,
-      startTarget = homeTarget,
-      startUp = homeUp,
-      ups = null,
-    }) {
-      const poseUps = ups ?? positions.map(() => homeUp.clone());
-      if (positions.length !== targets.length || positions.length !== poseUps.length) {
-        throw new Error("Camera pose positions, targets, and up vectors must match");
-      }
-      const trackPositions = [startPosition, ...positions, homePosition];
-      const trackTargets = [startTarget, ...targets, homeTarget];
-      const trackUps = [startUp, ...poseUps, homeUp];
-
-      return {
-        segmentCount: trackPositions.length - 1,
-
-        update(segmentIndex, progress) {
-          const index = THREE.MathUtils.clamp(
-            Math.floor(segmentIndex),
-            0,
-            trackPositions.length - 2,
-          );
-          const easedProgress = easing(progress);
-          position.lerpVectors(
-            trackPositions[index],
-            trackPositions[index + 1],
-            easedProgress,
-          );
-          target.lerpVectors(
-            trackTargets[index],
-            trackTargets[index + 1],
-            easedProgress,
-          );
-          up.lerpVectors(trackUps[index], trackUps[index + 1], easedProgress).normalize();
-          setPose(position, target, up);
+          setPose(position, targetOverride ?? center, defaultUp);
         },
       };
     },
@@ -136,8 +44,8 @@ export function createCameraRig(camera) {
       startTarget,
       endPosition,
       endTarget,
-      startUp = homeUp,
-      endUp = homeUp,
+      startUp = defaultUp,
+      endUp = defaultUp,
       easing = smootherstep,
     }) {
       return {
@@ -157,15 +65,5 @@ export function createCameraRig(camera) {
       };
     },
 
-    reset() {
-      setPose(homePosition, homeTarget, homeUp);
-    },
-
-    transitionFrom(startPosition, startTarget, progress) {
-      const easedProgress = smootherstep(progress);
-      position.lerpVectors(startPosition, homePosition, easedProgress);
-      target.lerpVectors(startTarget, homeTarget, easedProgress);
-      setPose(position, target, homeUp);
-    },
   };
 }

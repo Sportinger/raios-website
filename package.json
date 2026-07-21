@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/build-pages-site.ps1",
+    "check": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/check-experiment.ps1",
     "dev": "vite --host 127.0.0.1"
   },
   "devDependencies": {

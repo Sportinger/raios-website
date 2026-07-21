@@ -1,7 +1,8 @@
 # Power Link
 
-`power-link` komponiert drei kapitelunabhängige Objekte entlang derselben
-`CatmullRomCurve3`:
+`power-link` konfiguriert die wiederverwendbare Komposition
+`connections/transient-signal-cable` entlang einer `CatmullRomCurve3`. Darin
+leben gemeinsam:
 
 - `connections/cable`: graue Leitung und fortschreitende Aktivierung
 - `effects/energy-flow`: laufende Ringe im bereits aktivierten Abschnitt
@@ -21,5 +22,6 @@ powerLink.setState({
 ```
 
 Form, Farbe, Geschwindigkeit und Effektwerte werden beim Erstellen über
-`config` überschrieben. Kapitel importieren das Feature ausschließlich über
+`config` überschrieben. Kabel-, Ring- und Plasma-Lifecycle werden nicht mehr im
+Feature dupliziert. Kapitel importieren das Feature ausschließlich über
 `features/power-link/index.js`.

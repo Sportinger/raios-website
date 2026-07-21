@@ -7,8 +7,9 @@ die aktuelle Phase auf `progress` und alle späteren Phasen auf `0`.
 
 Dieser Vertrag macht Direktansprünge, Rückwärtsscrollen, Reduced Motion und HMR
 deterministisch. Die einzelnen Darsteller kennen weder Scrollpositionen noch
-Kapitelnummern. Neue Phasen werden in `config.js` registriert und in
-`create-boot-sequence.js` auf semantische Feature-Zustände abgebildet.
+Kapitelnummern. Neue Phasen werden benannt in `config.js` registriert, ihre
+Zeitfenster liegen ausschließlich in `timeline.js`, und
+`create-boot-sequence.js` bildet beides auf semantische Feature-Zustände ab.
 
 Das frühere reine Bare-Metal-Unterkapitel existiert nicht mehr. Kapitel 1 stellt
 die physische Plattform bereits fertig her; die erste Boot-Phase beginnt deshalb
@@ -18,8 +19,8 @@ beginnt unmittelbar der Kontrollwechsel.
 
 Die Kamera bleibt Kapitelverantwortung. `chapters/boot-sequence/` beendet zuerst
 den UEFI-Reveal-Orbit und den USB-Rückorbit. Danach läuft sie nur noch weich bis
-zur bei global `SCROLL 0.2738` festgelegten Endpose aus. Ab diesem Wert existieren
-im Boot-Kapitel keine weiteren Kamera-Keyframes; die Pose bleibt für alle
+zur lokal im Boot-Kapitel festgelegten Endpose aus. Ab dieser Pose existieren
+keine weiteren Kamera-Keyframes; die Kamera bleibt für alle
 folgenden Boot-Phasen konstant. UEFI und USB bleiben dadurch perspektivisch und
 wechseln nicht in eine Draufsicht.
 
@@ -57,19 +58,21 @@ USB Boot Service und Boot Manager sitzen mit großem Abstand symmetrisch rechts
 und links der Schichtmitte. Aus dem Footprint des Boot Managers steigt die
 vollständige Limine-Schicht kompakt auf und expandiert erst auf Zielhöhe;
 auf ihr läuft der einzige interne Pfad von `CONFIG` nach `KERNEL LOADER`.
-Der spätere Handoff ist ein Übergabeereignis und kein dritter Chip. Der physische
-USB-Pfad verwendet dasselbe wiederverwendbare
-`connections/cable` wie der Power-on-Link. Die wiederverwendbare Komposition
-`transient-signal-cable` verbindet Kabel, Energieringe und Lichtkopf. Die erste
+Der spätere Handoff ist ein Übergabeereignis und kein dritter Chip. Power-on und
+die physischen USB-Pfade verwenden dieselbe wiederverwendbare Komposition
+`transient-signal-cable` aus Kabel, Energieringen und Lichtkopf. Die erste
 feature-spezifische Route beginnt innerhalb des eingesteckten Sticks, läuft kurz
 horizontal durch Bare Metal, steigt mit engen abgerundeten Ecken nach oben und
 dockt seitlich an USB Boot an. Eine zweite Instanz verbindet USB Boot mit dem
 Boot Manager. Die Lichtköpfe laufen nacheinander durch beide Verbindungen; danach bleiben die
-vollständig verlegten blauen Kabel bestehen. Jeder Übergang besitzt
-einen eigenen Zustand: Der physische USB-Pfad dimmt vor dem einzelnen
-`BOOTX64.EFI`-Paket, dessen Pfad dimmt vor der
-Limine-Entfaltung, und anschließend bleibt nur der aktuelle Kernel-Datenpfad
-aktiv. Einen rückwärts laufenden Suchstrom oder kreuzende Leitungen gibt es nicht.
+vollständig verlegten blauen Kabel bestehen. Beim Kontrollwechsel ziehen sich
+beide noch aktiven Leitungen geordnet zurück. Einen rückwärts laufenden
+Suchstrom, fliegende Dateipakete oder kreuzende Leitungen gibt es nicht.
+
+Die Quellmaße werden als unveränderliche Anchors weitergereicht. Hardware
+veröffentlicht den SPI-Flash, UEFI den Boot Manager und Limine den Kernel Loader.
+Keine nachfolgende Schicht dupliziert deren Position oder Größe in ihrer eigenen
+Konfiguration.
 
 Nach dem Verlegen ist die Energiephase nicht an den Scrollwert gekoppelt. Der
 globale Render-Tick liefert eine fortlaufende Zeitphase an beide Kabel, sodass

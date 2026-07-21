@@ -7,7 +7,6 @@ export const BARE_METAL_CONFIG = Object.freeze({
   edgeColor: 0x5e9bcb,
   label: Object.freeze({
     title: "BARE METAL",
-    description: "PHYSICAL MACHINE",
     width: 7,
     height: 0.88,
   }),

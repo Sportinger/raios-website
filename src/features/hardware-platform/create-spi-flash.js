@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { smootherstep } from "../../animation/progress.js";
 import { createInfoCard } from "../../objects/cards/index.js";
+import { monospaceFont } from "../../objects/labels/typography.js";
 import { HARDWARE_PLATFORM_CONFIG } from "./config.js";
 
 export function createSpiFlash() {
@@ -10,7 +11,6 @@ export function createSpiFlash() {
   group.position.set(config.position[0], config.position[1], config.position[2]);
   const card = createInfoCard({
     title: config.title,
-    description: "",
     width: config.size[0],
     height: config.size[1],
     depth: config.size[2],
@@ -20,8 +20,7 @@ export function createSpiFlash() {
     labelOptions: {
       panel: false,
       titleColor: "#ffffff",
-      titleFont: "900 340px ui-monospace, SFMono-Regular, Consolas, monospace",
-      descriptionFont: "600 76px ui-monospace, SFMono-Regular, Consolas, monospace",
+      titleFont: monospaceFont(900, 340),
     },
   });
   group.add(card.group);

@@ -18,7 +18,6 @@ export function createPushButton({
     color: 0x171a1e,
     metalness: 0.72,
     roughness: 0.28,
-    transparent: true,
   });
   const housing = new THREE.Mesh(
     new THREE.CylinderGeometry(1.06, 1.2, HOUSING_HEIGHT, 64),
@@ -35,7 +34,6 @@ export function createPushButton({
     emissiveIntensity: 0,
     metalness: 0.64,
     roughness: 0.24,
-    transparent: true,
   });
   const rim = new THREE.Mesh(new THREE.TorusGeometry(0.75, 0.105, 20, 72), rimMaterial);
   rim.rotation.x = -Math.PI / 2;
@@ -50,7 +48,6 @@ export function createPushButton({
     emissiveIntensity: 0,
     metalness: 0.52,
     roughness: 0.32,
-    transparent: true,
   });
   const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.67, 0.7, 0.3, 64), capMaterial);
   cap.position.y = CAP_REST_Y;
@@ -83,30 +80,21 @@ export function createPushButton({
   underglow.renderOrder = 3;
   group.add(underglow);
 
-  const materials = [housingMaterial, rimMaterial, capMaterial];
   const markOffColor = new THREE.Color(0x555d64);
   const markPowerColor = new THREE.Color(markGlowColor);
   const markHotColor = new THREE.Color(0xffffff);
-  let opacity = 1;
   let power = 0;
   let markGlow = 0;
 
   const renderGlow = () => {
-    underglowMaterial.opacity = 0.5 * power * opacity;
+    underglowMaterial.opacity = 0.5 * power;
     if (topMark?.light) {
-      topMark.light.intensity = 0.8 * markGlow * opacity;
+      topMark.light.intensity = 0.8 * markGlow;
     }
   };
 
   return {
     group,
-
-    setOpacity(value) {
-      opacity = value;
-      materials.forEach((material) => { material.opacity = opacity; });
-      if (topMark?.material) topMark.material.opacity = opacity;
-      renderGlow();
-    },
 
     setPowerProgress(value) {
       power = smootherstep(value);
