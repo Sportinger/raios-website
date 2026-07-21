@@ -79,6 +79,9 @@ export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}
   group.add(underglow);
 
   const materials = [housingMaterial, rimMaterial, capMaterial];
+  const markOffColor = new THREE.Color(0x555d64);
+  const markPowerColor = new THREE.Color(accentColor);
+  const markHotColor = new THREE.Color(0xffffff);
   let opacity = 1;
   let power = 0;
 
@@ -101,7 +104,11 @@ export function createPushButton({ accentColor = 0x78c8ff, topMark = null } = {}
       capMaterial.emissiveIntensity = THREE.MathUtils.lerp(0, 2.8, power);
       rimMaterial.emissiveIntensity = THREE.MathUtils.lerp(0, 1.5, power);
       if (topMark?.material) {
-        topMark.material.color.setHex(accentColor).lerp(new THREE.Color(0xffffff), power * 0.45);
+        topMark.material.color.copy(markOffColor)
+          .lerp(markPowerColor, power)
+          .lerp(markHotColor, power * 0.35);
+        topMark.material.emissive.copy(markPowerColor);
+        topMark.material.emissiveIntensity = power * 1.8;
       }
       renderGlow();
     },

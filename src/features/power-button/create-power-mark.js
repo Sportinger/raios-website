@@ -1,7 +1,14 @@
 import * as THREE from "three";
 
 export function createPowerMark(color) {
-  const material = new THREE.MeshBasicMaterial({ color, transparent: true });
+  const material = new THREE.MeshStandardMaterial({
+    color,
+    emissive: color,
+    emissiveIntensity: 0,
+    metalness: 0.32,
+    roughness: 0.34,
+    transparent: true,
+  });
   const group = new THREE.Group();
 
   const arcPoints = [];

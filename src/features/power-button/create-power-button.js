@@ -12,7 +12,7 @@ export function createPowerButton() {
   group.add(presentation);
   const button = createPushButton({
     accentColor: POWER_BUTTON_CONFIG.accentColor,
-    topMark: createPowerMark(POWER_BUTTON_CONFIG.accentColor),
+    topMark: createPowerMark(0x555d64),
   });
   presentation.add(button.group);
   const orbitingLight = createOrbitingLight();
@@ -23,9 +23,8 @@ export function createPowerButton() {
     group,
 
     setState({ revealProgress, pressProgress, powerProgress, exitProgress }) {
-      const reveal = smootherstep(revealProgress);
       const exit = smootherstep(exitProgress);
-      const opacity = THREE.MathUtils.lerp(0.015, 1, reveal) * (1 - exit);
+      const opacity = 1 - exit;
 
       group.visible = opacity > 0.001;
       button.setOpacity(opacity);
