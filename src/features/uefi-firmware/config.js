@@ -2,7 +2,7 @@ import { SYSTEM_LAYER_SIZE } from "../../objects/layers/system-layer-preset.js";
 
 export const UEFI_FIRMWARE_CONFIG = Object.freeze({
   color: 0x159ed8,
-  glassColor: 0xffffff,
+  glassColor: 0xe4f6ff,
   layerY: 0.12,
   ...SYSTEM_LAYER_SIZE,
   signalCable: Object.freeze({

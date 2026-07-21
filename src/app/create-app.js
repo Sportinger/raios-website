@@ -58,6 +58,7 @@ export function createApp({
     container: glassControlsContainer,
     onChange: ({
       backThickness,
+      chromaticAberration,
       environmentRotation,
       frontThickness,
       ior,
@@ -66,6 +67,7 @@ export function createApp({
     }) => {
       story.setUefiGlassOptics({
         backThickness,
+        chromaticAberration,
         frontThickness,
         ior,
         surfaceRandomness,

@@ -128,11 +128,17 @@ export function createMeshTransmissionSurface({
       ior,
       frontThickness,
       backThickness,
+      chromaticAberration: chromaticShift = material.chromaticAberration,
       surfaceRandomness: randomness = currentSurfaceRandomness,
       surfaceVariation: variation = material.normalScale.x,
     }) {
       material.ior = THREE.MathUtils.clamp(ior, 1, 2.33);
       material.thickness = Math.max(0, frontThickness);
+      material.chromaticAberration = THREE.MathUtils.clamp(
+        chromaticShift,
+        0,
+        0.2,
+      );
       currentBacksideThickness = Math.max(0, backThickness);
       if (proceduralNormalMap) {
         material.normalScale.setScalar(THREE.MathUtils.clamp(variation, 0, 0.5));

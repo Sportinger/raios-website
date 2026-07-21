@@ -129,7 +129,8 @@ ohne die Glasoberfläche vollständig in einen Half-Float-Buffer gerendert, den 
 IOR, Materialtiefe, chromatischer Aberration und blauer Absorption gebrochen
 abtastet. Der abgestimmte Ausgangszustand verwendet IOR `1.04`, eine Vorder-
 und Rückseitendicke von `3.5` beziehungsweise `0.5` sowie eine HDR-Rotation
-von `66°`.
+von `66°`. Die prozedurale Oberfläche startet mit Stärke `0.41` und Zufallsanteil
+`0.55`; eine dezente eisblaue Materialfarbe und Volumenabsorption tönen das Glas.
 Eine schwache niedrigfrequente Variation der optischen Flächennormale bricht die
 planparallele Gleichförmigkeit auf. Helle Absorption und reduzierte
 Umgebungsreflexion halten das vollständige Glasvolumen zugleich durchsichtig.
@@ -138,6 +139,8 @@ Rotation der HDR-Umgebung, ohne die Szene neu aufzubauen. Eine deterministisch
 erzeugte, nahtlos kachelbare Normalenstruktur variiert Reflexion und Brechung
 organisch. `Oberfläche` steuert ihre Stärke; `Zufall` mischt die regelmäßigen
 Grundwellen stufenlos mit vier Oktaven deterministischen Fractal Noise.
+`Chromatik` regelt die RGB-Aufspaltung der Brechung live von `0` bis `0.2` und
+startet beim zurückhaltenden Wert `0.025`.
 Der physische SPI-Flash bleibt unter dem Glas und damit Bestandteil der
 gebrochenen Szene. UEFI-Seitentitel, Boot Manager und USB Boot stehen dagegen
 auf dem Glas: Sie werden aus beiden Transmission-Buffern ausgeschlossen und

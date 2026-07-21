@@ -41,7 +41,7 @@ const CONTROL_DEFINITIONS = Object.freeze([
     min: 0,
     max: 0.5,
     step: 0.01,
-    value: 0.14,
+    value: 0.41,
     format: (value) => value.toFixed(2),
   }),
   Object.freeze({
@@ -50,8 +50,17 @@ const CONTROL_DEFINITIONS = Object.freeze([
     min: 0,
     max: 1,
     step: 0.01,
-    value: 0.72,
+    value: 0.55,
     format: (value) => value.toFixed(2),
+  }),
+  Object.freeze({
+    id: "chromaticAberration",
+    label: "Chromatik",
+    min: 0,
+    max: 0.2,
+    step: 0.005,
+    value: 0.025,
+    format: (value) => value.toFixed(3),
   }),
 ]);
 
