@@ -14,12 +14,14 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
   const curve = new THREE.CatmullRomCurve3(points, false, "centripetal");
 
   const sheathGeometry = new THREE.TubeGeometry(curve, 128, 0.075, 10, false);
+  const sheathIdleColor = new THREE.Color(0x59636c);
+  const sheathPoweredColor = new THREE.Color(0x073257);
   const sheathMaterial = new THREE.MeshStandardMaterial({
-    color: 0x073257,
+    color: sheathIdleColor,
     emissive: accentColor,
-    emissiveIntensity: 0.72,
-    metalness: 0.48,
-    roughness: 0.28,
+    emissiveIntensity: 0,
+    metalness: 0.82,
+    roughness: 0.2,
     transparent: true,
   });
   group.add(new THREE.Mesh(sheathGeometry, sheathMaterial));
@@ -68,15 +70,19 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
 
   let opacity = 1;
   let reveal = 0;
+  let power = 0;
   let signal = 0;
   let signalActive = false;
 
   const render = () => {
     const easedReveal = smootherstep(reveal);
+    const easedPower = smootherstep(power);
     group.visible = opacity > 0.001 && easedReveal > 0.001;
+    sheathMaterial.color.copy(sheathIdleColor).lerp(sheathPoweredColor, easedPower);
+    sheathMaterial.emissiveIntensity = 0.72 * easedPower;
     sheathMaterial.opacity = opacity;
-    signalMaterial.opacity = opacity * 0.9;
-    glowMaterial.opacity = opacity * 0.14;
+    signalMaterial.opacity = opacity * 0.9 * easedPower;
+    glowMaterial.opacity = opacity * 0.14 * easedPower;
     setGeometryProgress(sheathGeometry, easedReveal);
     setGeometryProgress(signalGeometry, easedReveal);
     setGeometryProgress(glowGeometry, easedReveal);
@@ -103,6 +109,11 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
 
     setRevealProgress(value) {
       reveal = value;
+      render();
+    },
+
+    setPowerProgress(value) {
+      power = value;
       render();
     },
 
