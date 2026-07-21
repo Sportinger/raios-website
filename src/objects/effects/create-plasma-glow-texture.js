@@ -20,7 +20,7 @@ export function createPlasmaGlowTexture(size = 96) {
       );
       const alpha = Math.max(
         Math.pow(density, 1.75) * filaments,
-        Math.pow(denseCore, 0.42),
+        Math.pow(denseCore, 0.22),
       );
       const offset = (y * size + x) * 4;
       data[offset] = 255;

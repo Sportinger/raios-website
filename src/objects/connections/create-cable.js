@@ -67,17 +67,6 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
   const pulse = new THREE.Group();
   pulse.name = "power-impulse";
   pulse.scale.setScalar(PULSE_SCALE);
-  const pulseMaterial = new THREE.MeshBasicMaterial({
-    color: 0xe5f8ff,
-    depthWrite: true,
-    toneMapped: false,
-  });
-  const pulseCore = new THREE.Mesh(
-    new THREE.SphereGeometry(0.22, 24, 18),
-    pulseMaterial,
-  );
-  pulseCore.scale.set(1.15, 1.15, 2.65);
-  pulse.add(pulseCore);
 
   const plasmaTexture = createPlasmaGlowTexture();
   const plasmaLayerSpecs = [
@@ -148,6 +137,8 @@ export function createCable({ points, accentColor = 0x69c7ff }) {
       curve.getTangentAt(signalProgress, flowTangent).normalize(),
     );
     pulse.visible = group.visible && signalEnvelope > 0.001;
+    plasmaLayers[0].material.depthTest = signalProgress < 0.06
+      || signalProgress > 0.9;
     plasmaLayers.forEach(({ material, spec, sprite }, index) => {
       const turbulence = 1 + Math.sin(signalProgress * 24 + index * 1.7) * 0.08;
       material.opacity = opacity * signalEnvelope * spec.opacity;
