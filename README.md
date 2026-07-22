@@ -261,6 +261,11 @@ Die SVG-Kamera des Referenzfilms war ein 2D-Pan/Zoom mit `scale`, `focusX` und
 mit einer räumlichen isometrischen Blickrichtung. Referenzformat, Widescreen-
 Korrektur, vertikaler Bias, die 18 Original-Keyframes, fünf zusätzliche
 Shadow-VM-Keyframes und deren Smoothstep-Interpolation bleiben erhalten.
+Bis Playback `00:13.00` steht die Kamera auf der vertikalen Mitte des
+Rust-Kernel-Layers und ist horizontal um `45°` gegen den Uhrzeigersinn aus der
+isometrischen Achse gedreht. Dadurch entsteht eine orthografische
+2D-Seitenansicht. Zwischen `00:13.00` und `00:15.30` fährt sie weich in die
+kanonische Filmkamera zurück.
 `FREE ORBIT` aktiviert Drehen, Zoomen und Verschieben mit Maus oder Touch, ohne
 Playback oder Sprecher zu unterbrechen. Die Welt animiert weiter, während die
 frei gewählte Kamerapose erhalten bleibt. `EXIT ORBIT` oder ein Kapitelsprung
