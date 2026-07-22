@@ -122,10 +122,11 @@ Ein wiederverwendbares Objekt:
 - bietet `dispose()` an, sobald es eigene GPU-Ressourcen besitzt.
 
 UEFI, Limine und Rust-Kernel verwenden gemeinsam `objects/layers/expanding-stage-layer/`. Dieses
-Objekt kapselt Geometrie, Kanten, Seitentitel sowie Aufsteigen, Expansion und
-Rückzug. Alpha-basierte Schichten können ihre Oberflächendichte steuern;
-Transmission-Materialien bleiben davon getrennt und werden nicht über
-`material.opacity` simuliert. Die Features liefern nur Quelle, Zielhöhe,
+Objekt kapselt Geometrie, Kanten, Seitentitel sowie Entstehung und Rückzug. Bei
+der Entstehung zeichnet es zuerst den Footprint auf der Oberseite des Quellchips,
+lässt daraus den vollständigen Layer als Wireframe nach oben wachsen und hebt
+ihn ab. Erst während der anschließenden Expansion blendet die Oberfläche ein,
+während das Wireframe verschwindet. Die Features liefern nur Quelle, Zielhöhe,
 Material und eigene Inhalte.
 `objects/layers/system-layer-preset.js` hält zusätzlich die identischen Maße von
 Bare Metal, UEFI, Limine und Rust-Kernel fest. Dadurch bleiben alle vollständigen
@@ -172,8 +173,8 @@ Alle Beschriftungsflächen rendern nur ihre Vorderseite, sodass bei einem freien
 Orbit unter den Layern keine spiegelverkehrten Rückseiten sichtbar werden.
 Das Material schreibt bewusst keine Tiefe. Eine segmentierte Fase
 ersetzt die harte Boxkante, damit Reflexion und Brechung an den Rändern
-räumlich lesbar sind. Beim UEFI-Glas entsteht diese Kante ausschließlich aus
-dem Volumenmaterial; ein zusätzliches `EdgesGeometry`-Wireframe wird nicht erzeugt.
+räumlich lesbar sind. Das zusätzliche `EdgesGeometry`-Wireframe begleitet nur
+die Entstehung und ist nach dem Einblenden des Volumenmaterials unsichtbar.
 Limine und Kernel verwenden denselben vollständigen Vorder-/Rückseiten-
 Transmission-Pass mit eigenen Presets. Limine ist kühl blau-violett getönt;
 der Rust-Kernel bleibt farbneutral und wird über eine geringe

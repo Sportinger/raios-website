@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { intervalProgress, smootherstep } from "../../animation/progress.js";
+import { smootherstep } from "../../animation/progress.js";
 import { createInfoCard } from "../../objects/cards/index.js";
 import { createCircuitTrace } from "../../objects/connections/circuit-trace/index.js";
 import { createLayerAnchor } from "../../objects/layers/create-layer-anchor.js";
@@ -51,7 +51,7 @@ export function createLimineStage({ sourceAnchor }) {
     depthWrite: false,
     bevelRadius: 0.09,
     bevelSegments: 5,
-    edgeOpacity: 0,
+    edgeOpacity: 1,
     recenterOnExpansion: true,
     labelWidth: config.layer.width * 0.92,
     labelOptions: {
@@ -125,18 +125,11 @@ export function createLimineStage({ sourceAnchor }) {
     retreatProgress = 0,
     opacity = 1,
   } = {}) => {
-    const lift = intervalProgress(layerProgress, 0, 0.48);
-    const expansionProgress = intervalProgress(layerProgress, 0.48, 1);
-    const layerVisibility = intervalProgress(layerProgress, 0, 0.16);
     const configIn = smootherstep(configProgress);
     const loaderIn = smootherstep(kernelLoaderProgress);
     const control = smootherstep(handoffProgress);
     const stageState = stageLayer.setState({
-      revealProgress: layerVisibility,
-      surfaceProgress: layerVisibility,
-      liftProgress: lift,
-      expansionProgress,
-      labelProgress: intervalProgress(expansionProgress, 0.18, 0.72),
+      formationProgress: layerProgress,
       retreatProgress,
       opacity,
     });

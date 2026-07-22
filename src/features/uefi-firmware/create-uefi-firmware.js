@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { intervalProgress, smootherstep } from "../../animation/progress.js";
+import { smootherstep } from "../../animation/progress.js";
 import { createInfoCard } from "../../objects/cards/index.js";
 import { createTransientSignalCable } from "../../objects/connections/transient-signal-cable/index.js";
 import { createLayerAnchor } from "../../objects/layers/create-layer-anchor.js";
@@ -59,7 +59,7 @@ export function createUefiFirmware({ sourceAnchor }) {
     bevelRadius: 0.09,
     bevelSegments: 5,
     edgeColor: 0x83e5ff,
-    edgeOpacity: 0,
+    edgeOpacity: 1,
     labelWidth: UEFI_FIRMWARE_CONFIG.width * 0.96,
     labelOptions: {
       panel: false,
@@ -132,9 +132,6 @@ export function createUefiFirmware({ sourceAnchor }) {
     retreatProgress = 0,
     opacity = 1,
   } = {}) => {
-    const lift = intervalProgress(layerProgress, 0, 0.48);
-    const expansion = intervalProgress(layerProgress, 0.48, 1);
-    const layerVisibility = intervalProgress(layerProgress, 0, 0.16);
     const usbServiceIn = smootherstep(usbServiceProgress);
     const bootManagerIn = smootherstep(bootManagerProgress);
     const usbPath = smootherstep(usbPathProgress);
@@ -144,10 +141,7 @@ export function createUefiFirmware({ sourceAnchor }) {
     const activeOpacity = (1 - retreat) * opacity;
     const retreatOffsetX = -8 * retreat;
     stageLayer.setState({
-      revealProgress: layerVisibility,
-      liftProgress: lift,
-      expansionProgress: expansion,
-      labelProgress: intervalProgress(expansion, 0.18, 0.72),
+      formationProgress: layerProgress,
       retreatProgress,
       opacity,
     });

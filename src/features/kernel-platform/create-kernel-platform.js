@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { intervalProgress, smootherstep } from "../../animation/progress.js";
+import { smootherstep } from "../../animation/progress.js";
 import { createExpandingStageLayer } from "../../objects/layers/expanding-stage-layer/index.js";
 import { monospaceFont } from "../../objects/labels/typography.js";
 import { KERNEL_PLATFORM_CONFIG } from "./config.js";
@@ -49,7 +49,7 @@ export function createKernelPlatform({ sourceAnchor }) {
     depthWrite: false,
     bevelRadius: 0.09,
     bevelSegments: 5,
-    edgeOpacity: 0,
+    edgeOpacity: 1,
     recenterOnExpansion: true,
     labelWidth: config.width * 0.92,
     labelOptions: {
@@ -70,11 +70,7 @@ export function createKernelPlatform({ sourceAnchor }) {
     const landing = smootherstep(landingProgress);
     const running = smootherstep(runningProgress);
     kernelLayer.setState({
-      revealProgress: intervalProgress(assembly, 0, 0.12),
-      surfaceProgress: intervalProgress(assembly, 0, 0.12),
-      liftProgress: intervalProgress(assembly, 0, 0.46),
-      expansionProgress: intervalProgress(assembly, 0.42, 1),
-      labelProgress: intervalProgress(assembly, 0.7, 1),
+      formationProgress: assembly,
       emissiveIntensityScale: THREE.MathUtils.lerp(1, 3.5, running),
       opacity,
     });
