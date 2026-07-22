@@ -77,6 +77,7 @@ export function createFilmApp({
   let animationTime = 0;
   let playing = false;
   let orbitEnabled = false;
+  let active = true;
   let frame = 0;
   let previousTimestamp = performance.now();
   let scrollFrame = 0;
@@ -212,6 +213,10 @@ export function createFilmApp({
   const animate = (timestamp) => {
     const delta = Math.min(0.05, (timestamp - previousTimestamp) / 1000);
     previousTimestamp = timestamp;
+    if (!active) {
+      frame = requestAnimationFrame(animate);
+      return;
+    }
     if (playing) {
       setTime(playbackTime + delta * AUTOPLAY_SECONDS_PER_SECOND, true, "play");
       if (playbackTime >= FILM_PLAYBACK_DURATION) {
@@ -242,6 +247,13 @@ export function createFilmApp({
     },
     setOrbitEnabled,
     setPlaying,
+    setActive(nextActive) {
+      const enabled = Boolean(nextActive);
+      if (enabled === active) return;
+      active = enabled;
+      if (!active) setPlaying(false);
+      else render();
+    },
     dispose() {
       cancelAnimationFrame(frame);
       if (scrollFrame) cancelAnimationFrame(scrollFrame);
