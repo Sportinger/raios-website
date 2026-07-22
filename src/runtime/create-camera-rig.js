@@ -6,14 +6,29 @@ export function createCameraRig(camera) {
   const position = new THREE.Vector3();
   const target = new THREE.Vector3();
   const up = new THREE.Vector3();
+  const currentPosition = camera.position.clone();
+  const currentTarget = new THREE.Vector3();
+  const currentUp = defaultUp.clone();
 
-  const setPose = (nextPosition, nextTarget, nextUp = homeUp) => {
+  const setPose = (nextPosition, nextTarget, nextUp = defaultUp) => {
+    currentPosition.copy(nextPosition);
+    currentTarget.copy(nextTarget);
+    currentUp.copy(nextUp).normalize();
     camera.position.copy(nextPosition);
-    camera.up.copy(nextUp).normalize();
+    camera.up.copy(currentUp);
     camera.lookAt(nextTarget);
   };
 
   return {
+    getPose() {
+      return {
+        fov: camera.fov,
+        position: currentPosition.toArray(),
+        target: currentTarget.toArray(),
+        up: currentUp.toArray(),
+      };
+    },
+
     createOrbit({
       center,
       startPosition,

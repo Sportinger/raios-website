@@ -9,11 +9,12 @@ const PLAYBACK_PROGRESS_PER_SECOND = 0.06;
 export function createCameraDirector({
   camera,
   canvas,
+  initialKeyframes,
   navigationItems,
   onEditingChange,
   onSeek,
 }) {
-  const store = createCameraDirectorStore();
+  const store = createCameraDirectorStore(initialKeyframes);
   const listeners = new Set();
   const direction = new THREE.Vector3();
   const target = new THREE.Vector3();

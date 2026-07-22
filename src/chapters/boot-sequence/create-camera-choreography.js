@@ -33,6 +33,14 @@ const CAMERA_FREEZE = Object.freeze({
   ]),
 });
 
+export const BOOT_CAMERA_KEYFRAMES = Object.freeze([
+  Object.freeze({ label: "UEFI orbit", progress: UEFI_REVEAL_ORBIT.start }),
+  Object.freeze({ label: "USB return", progress: UEFI_REVEAL_ORBIT.end }),
+  Object.freeze({ label: "Camera settle", progress: USB_RETURN_ORBIT.end }),
+  Object.freeze({ label: "Camera freeze", progress: CAMERA_FREEZE.progress }),
+  Object.freeze({ label: "Story end", progress: 1 }),
+]);
+
 export function createBootCameraChoreography(cameraRig) {
   const startPosition = new THREE.Vector3().fromArray(
     BARE_METAL_BOOT_POSE.position,

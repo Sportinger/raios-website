@@ -188,9 +188,19 @@ export function createApp({
     window.location.hostname,
   ) || new URLSearchParams(window.location.search).get("camera-editor") === "1";
   if (cameraDirectorEnabled) {
+    const initialKeyframes = story.cameraKeyframes.map(({ label, progress }) => {
+      updateStory(progress, 0);
+      return {
+        ...cameraRig.getPose(),
+        easing: "smooth",
+        label,
+        progress,
+      };
+    });
     cameraDirector = createCameraDirector({
       camera,
       canvas,
+      initialKeyframes,
       navigationItems: story.navigationItems,
       onEditingChange: (editing) => {
         if (editing) {

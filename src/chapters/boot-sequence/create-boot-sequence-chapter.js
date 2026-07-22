@@ -1,5 +1,8 @@
 import { createBootSequence, BOOT_SCENES } from "../../features/boot-sequence/index.js";
-import { createBootCameraChoreography } from "./create-camera-choreography.js";
+import {
+  BOOT_CAMERA_KEYFRAMES,
+  createBootCameraChoreography,
+} from "./create-camera-choreography.js";
 import { SYSTEM_STACK_OFFSET_Y } from "../shared/system-stack-layout.js";
 
 const BOOT_SCENE_WEIGHT = 0.95;
@@ -19,6 +22,7 @@ export function createBootSequenceChapter({ cameraRig, lightRig }) {
   return {
     id: "boot-sequence",
     group: sequence.group,
+    cameraKeyframes: BOOT_CAMERA_KEYFRAMES,
     navigationSections,
 
     prepareRender(renderer, scene, camera) {

@@ -274,7 +274,9 @@ Kamera. Nach einem Klick auf die Szene steuern Maus, `WASD`, `Q`/`E`, `Shift`
 und das Mausrad die Kamera. Keyframes speichern Position, Blickziel, Up-Vektor,
 Sichtfeld und Easing im lokalen Browser und lassen sich als JSON importieren
 oder exportieren. Auf der produktiven Website wird ohne den Query-Parameter kein
-Editor erzeugt.
+Editor erzeugt. Beim ersten Start übernimmt der Director die semantischen
+Kamera-Anker der vorhandenen Story als editierbaren Basistrack. `STORY RESET`
+stellt diesen Ausgangsstand wieder her und bleibt per Undo rückgängig machbar.
 
 ## Produktions-Build
 

@@ -20,6 +20,7 @@ export function normalizeKeyframe(keyframe) {
     easing: keyframe.easing === "linear" ? "linear" : "smooth",
     fov: THREE.MathUtils.clamp(Number(keyframe.fov) || 32, 1, 160),
     id: String(keyframe.id || crypto.randomUUID()),
+    label: String(keyframe.label || "Keyframe"),
     position: copyTuple(keyframe.position, [0, 0, 5]),
     progress: clampProgress(keyframe.progress),
     target: copyTuple(keyframe.target, [0, 0, 0]),

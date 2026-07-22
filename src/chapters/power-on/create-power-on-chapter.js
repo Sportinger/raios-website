@@ -48,6 +48,14 @@ export function createPowerOnChapter({ cameraRig, lightRig }) {
   return {
     id: "power-on",
     group,
+    cameraKeyframes: Object.freeze([
+      Object.freeze({ label: "Start", progress: 0 }),
+      Object.freeze({ label: "Orbit start", progress: POWER_ON_TIMELINE.cameraOrbit[0] }),
+      Object.freeze({ label: "Flight start", progress: POWER_ON_TIMELINE.cameraFlight[0] }),
+      Object.freeze({ label: "Drift start", progress: POWER_ON_TIMELINE.cameraDrift[0] }),
+      Object.freeze({ label: "Boot overview", progress: POWER_ON_TIMELINE.cameraBootOverview[0] }),
+      Object.freeze({ label: "Power on end", progress: 1 }),
+    ]),
 
     update(progress) {
       const pressIn = smootherstep(intervalProgress(

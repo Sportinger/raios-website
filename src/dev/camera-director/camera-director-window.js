@@ -9,38 +9,38 @@ const popupMarkup = `<!doctype html>
   <style>
     :root { color-scheme: dark; font-family: "SFMono-Regular", Consolas, monospace; background: #05090e; color: #dff5ff; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-width: 680px; background: radial-gradient(circle at 50% -20%, #153248, #05090e 48%); }
+    body { margin: 0; min-width: 720px; overflow: hidden; background: radial-gradient(circle at 50% -20%, #153248, #05090e 48%); }
     button, input, select { font: inherit; }
     button, select, input[type="number"] { border: 1px solid #315269; border-radius: 6px; color: #dff5ff; background: #0b1721; }
     button { padding: 7px 10px; cursor: pointer; }
     button:hover, button:focus-visible, button[aria-pressed="true"] { border-color: #76d8ff; background: #14354b; outline: none; }
     button:disabled { opacity: .35; cursor: default; }
-    .shell { display: grid; grid-template-rows: auto auto 1fr auto; min-height: 100vh; }
-    .bar { display: flex; align-items: center; gap: 7px; padding: 10px 12px; border-bottom: 1px solid #1c3444; background: rgba(5, 12, 18, .9); }
+    .shell { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; height: 100vh; overflow: hidden; }
+    .bar { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-bottom: 1px solid #1c3444; background: rgba(5, 12, 18, .9); }
     .bar__title { margin-right: auto; color: #7bdcff; font-weight: 800; letter-spacing: .08em; }
     .readout { min-width: 78px; color: #8ee3ff; text-align: right; font-variant-numeric: tabular-nums; }
-    .timeline-wrap { padding: 12px; border-bottom: 1px solid #1c3444; }
-    .sections { position: relative; height: 24px; margin: 0 7px 5px; overflow: hidden; border-radius: 4px; background: #08131b; }
-    .section { position: absolute; inset-block: 0; overflow: hidden; padding: 5px 6px; border-right: 1px solid #2b536b; color: #7598aa; font-size: 10px; white-space: nowrap; }
-    .timeline { position: relative; height: 52px; }
+    .timeline-wrap { padding: 8px 10px 5px; border-bottom: 1px solid #1c3444; }
+    .sections { position: relative; height: 20px; margin: 0 7px 2px; overflow: hidden; border-radius: 4px; background: #08131b; }
+    .section { position: absolute; inset-block: 0; overflow: hidden; padding: 4px 5px; border-right: 1px solid #2b536b; color: #7598aa; font-size: 9px; white-space: nowrap; }
+    .timeline { position: relative; height: 36px; }
     .timeline input { position: absolute; z-index: 1; inset: 0; width: 100%; margin: 0; accent-color: #65d4ff; }
     .markers { position: absolute; z-index: 2; inset: 0 7px; pointer-events: none; }
-    .marker { position: absolute; top: 5px; width: 13px; min-width: 0; height: 28px; padding: 0; border-color: #65d4ff; border-radius: 2px 8px 8px 8px; background: #1486b8; transform: translateX(-50%) rotate(45deg); pointer-events: auto; }
+    .marker { position: absolute; top: 6px; width: 11px; min-width: 0; height: 22px; padding: 0; border-color: #65d4ff; border-radius: 2px 7px 7px 7px; background: #1486b8; transform: translateX(-50%) rotate(45deg); pointer-events: auto; }
     .marker[aria-current="true"] { background: #d9f7ff; box-shadow: 0 0 14px #5ad4ff; }
-    .content { display: grid; grid-template-columns: minmax(220px, .8fr) minmax(390px, 1.5fr); min-height: 340px; }
+    .content { display: grid; grid-template-columns: 280px minmax(440px, 1fr); min-height: 0; overflow: hidden; }
     .list { overflow: auto; border-right: 1px solid #1c3444; }
-    .keyframe { display: grid; grid-template-columns: 52px 1fr; gap: 4px 9px; width: 100%; padding: 10px 12px; border: 0; border-bottom: 1px solid #142936; border-radius: 0; text-align: left; }
+    .keyframe { display: grid; grid-template-columns: 36px 1fr; gap: 3px 8px; width: 100%; padding: 8px 10px; border: 0; border-bottom: 1px solid #142936; border-radius: 0; text-align: left; }
     .keyframe strong { color: #76dcff; }
     .keyframe span { overflow: hidden; color: #7897a8; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
     .keyframe[aria-current="true"] { background: #123248; box-shadow: inset 3px 0 #66d7ff; }
     .empty { padding: 30px 16px; color: #6f8c9c; text-align: center; }
-    .inspector { padding: 14px; }
-    fieldset { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 12px; padding: 11px; border: 1px solid #244151; border-radius: 8px; }
+    .inspector { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-content: start; overflow: auto; padding: 10px; }
+    fieldset { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 0; padding: 8px; border: 1px solid #244151; border-radius: 7px; }
     legend { padding: 0 6px; color: #76d9ff; font-size: 11px; letter-spacing: .08em; }
     label { display: grid; gap: 4px; color: #7897a8; font-size: 10px; }
-    input[type="number"], select { width: 100%; padding: 7px; }
+    input[type="number"], select { width: 100%; padding: 5px 6px; }
     .wide { grid-column: 1 / -1; }
-    .footer { display: flex; gap: 7px; padding: 10px 12px; border-top: 1px solid #1c3444; }
+    .footer { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px; border-top: 1px solid #1c3444; background: #071018; }
     .status { margin-left: auto; align-self: center; color: #7190a1; font-size: 11px; }
     .danger { color: #ffafaf; }
   </style>
@@ -93,6 +93,7 @@ const popupMarkup = `<!doctype html>
       <button class="danger" data-action="delete">DELETE</button>
       <button data-action="undo">UNDO</button>
       <button data-action="redo">REDO</button>
+      <button data-action="story">STORY RESET</button>
       <button data-action="export">EXPORT</button>
       <button data-action="import">IMPORT</button>
       <input data-import type="file" accept="application/json,.json" hidden>
@@ -176,7 +177,14 @@ export function openCameraDirectorWindow({ controller, navigationItems, store })
         const button = doc.createElement("button");
         button.className = "keyframe";
         button.setAttribute("aria-current", String(keyframe.id === snapshot.selectedId));
-        button.innerHTML = `<strong>${String(index + 1).padStart(2, "0")}</strong><span>${keyframe.progress.toFixed(4)}</span><span></span><span>${formatTuple(keyframe.position)}</span>`;
+        const number = doc.createElement("strong");
+        const name = doc.createElement("span");
+        const spacer = doc.createElement("span");
+        const details = doc.createElement("span");
+        number.textContent = String(index + 1).padStart(2, "0");
+        name.textContent = keyframe.label;
+        details.textContent = `${keyframe.progress.toFixed(4)} · ${formatTuple(keyframe.position)}`;
+        button.append(number, name, spacer, details);
         button.addEventListener("click", () => {
           store.select(keyframe.id);
           controller.seek(keyframe.progress);
@@ -220,6 +228,7 @@ export function openCameraDirectorWindow({ controller, navigationItems, store })
   doc.querySelector("[data-action='delete']").addEventListener("click", store.deleteSelected);
   doc.querySelector("[data-action='undo']").addEventListener("click", store.undo);
   doc.querySelector("[data-action='redo']").addEventListener("click", store.redo);
+  doc.querySelector("[data-action='story']").addEventListener("click", store.resetToInitial);
   doc.querySelector("[data-action='export']").addEventListener("click", () => {
     const blob = new Blob([JSON.stringify(store.exportState(), null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);

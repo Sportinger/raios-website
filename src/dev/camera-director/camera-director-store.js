@@ -8,17 +8,25 @@ const cloneState = (state) => JSON.parse(JSON.stringify(state));
 const readStoredState = () => {
   try {
     const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY));
+    const keyframes = sortKeyframes(Array.isArray(parsed?.keyframes) ? parsed.keyframes : []);
     return {
-      keyframes: sortKeyframes(Array.isArray(parsed?.keyframes) ? parsed.keyframes : []),
+      initialized: parsed?.initialized === true || keyframes.length > 0,
+      keyframes,
       version: 1,
     };
   } catch {
-    return { keyframes: [], version: 1 };
+    return { initialized: false, keyframes: [], version: 1 };
   }
 };
 
-export function createCameraDirectorStore() {
-  let state = readStoredState();
+export function createCameraDirectorStore(initialKeyframes = []) {
+  const initialState = {
+    initialized: true,
+    keyframes: sortKeyframes(initialKeyframes),
+    version: 1,
+  };
+  const storedState = readStoredState();
+  let state = storedState.initialized ? storedState : cloneState(initialState);
   let selectedId = state.keyframes[0]?.id ?? null;
   const past = [];
   const future = [];
@@ -34,6 +42,7 @@ export function createCameraDirectorStore() {
   });
   const restore = (nextState) => {
     state = {
+      initialized: true,
       keyframes: sortKeyframes(nextState.keyframes ?? []),
       version: 1,
     };
@@ -81,6 +90,7 @@ export function createCameraDirectorStore() {
       }
       commit((draft) => {
         draft.keyframes = nextState.keyframes.map(normalizeKeyframe);
+        draft.initialized = true;
         draft.version = 1;
       });
     },
@@ -119,6 +129,12 @@ export function createCameraDirectorStore() {
             id: selectedId,
           });
         }
+      });
+    },
+
+    resetToInitial() {
+      commit((draft) => {
+        draft.keyframes = cloneState(initialState.keyframes);
       });
     },
   };

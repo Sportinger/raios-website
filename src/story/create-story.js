@@ -44,8 +44,17 @@ export function createStory({ scene, context }) {
       start: start + section.start * chapterLength,
     }));
   });
+  const cameraKeyframes = chapters.flatMap(({ chapter, end, label, start }) => (
+    chapter.cameraKeyframes ?? []
+  ).map((keyframe) => ({
+    label: `${label} · ${keyframe.label}`,
+    progress: start + keyframe.progress * (end - start),
+  }))).filter((keyframe, index, keyframes) => (
+    index === 0 || Math.abs(keyframe.progress - keyframes[index - 1].progress) > 0.000001
+  ));
 
   return {
+    cameraKeyframes,
     navigationItems,
     totalWeight,
 
