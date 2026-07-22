@@ -29,20 +29,20 @@ function createMachine(tracker, lane) {
   group.position.set(x, 0, z);
   group.scale.setScalar(scale);
   group.add(createVectorBox(tracker, {
-    size: [3.5, 0.45, 6.8], color: FACTORY_PALETTE.panel,
-    edgeColor: FACTORY_PALETTE.edge, position: [0, 0.225, 0],
+    size: [2.2, 0.28, 2.45], color: FACTORY_PALETTE.panel,
+    edgeColor: FACTORY_PALETTE.edge, position: [0, 0.14, 0],
   }));
   group.add(createVectorBox(tracker, {
-    size: [2.15, 2.8, 2.1], color: FACTORY_PALETTE.panelLight,
-    edgeColor: color, position: [0, 1.85, -0.65],
+    size: [1.55, 1.62, 1.38], color: FACTORY_PALETTE.panelLight,
+    edgeColor: color, position: [0, 0.98, -0.18],
   }));
   const aperture = createVectorBox(tracker, {
-    size: [1.25, 0.72, 0.08], color, edgeColor: FACTORY_PALETTE.white,
-    position: [0, 1.75, 0.44],
+    size: [0.92, 0.42, 0.06], color, edgeColor: FACTORY_PALETTE.white,
+    position: [0, 0.95, 0.53],
   });
   group.add(aperture);
-  const status = createRing(tracker, 0.48, color, 0.055);
-  status.position.set(0, 3.12, -0.65);
+  const status = createRing(tracker, 0.27, color, 0.04);
+  status.position.set(0, 1.9, -0.18);
   group.add(status);
   const labelCopy = {
     compiler: "COMPILER · rustc → WASM",
@@ -50,34 +50,34 @@ function createMachine(tracker, lane) {
     guard: "GUARD · LIVE GATE",
   }[lane.id];
   const label = createTextLabel(tracker, {
-    text: labelCopy, width: 2.4, height: 0.48, color,
-    background: FACTORY_PALETTE.ink, position: [0, 2.45, 0.5], fontSize: 42,
+    text: labelCopy, width: 1.8, height: 0.36, color,
+    background: FACTORY_PALETTE.ink, position: [0, 1.28, 0.56], fontSize: 38,
   });
   const progressRail = createVectorBox(tracker, {
-    size: [2.35, 0.13, 0.07], color: FACTORY_PALETTE.ink,
-    edgeColor: FACTORY_PALETTE.edge, position: [0, 3.58, -0.61],
+    size: [1.82, 0.1, 0.06], color: FACTORY_PALETTE.ink,
+    edgeColor: FACTORY_PALETTE.edge, position: [0, 2.25, -0.16],
   });
   const progressFill = createVectorBox(tracker, {
-    size: [2.18, 0.07, 0.09], color, position: [-1.09, 3.58, -0.55],
+    size: [1.68, 0.055, 0.075], color, position: [-0.84, 2.25, -0.11],
   });
   progressFill.scale.x = 0.001;
   const progressCaption = createTextLabel(tracker, {
     text: lane.id === "compiler" ? "READY · ROUND 0/3" : lane.id === "verifier" ? "READY · NEXT ROUND 2/3" : "REPORT · HASH · RIGHTS · OWNER",
-    width: 3.25, height: 0.38, color: 0xafc2d9, background: FACTORY_PALETTE.ink,
-    position: [0, 3.95, -0.62], fontSize: 38,
+    width: 2.7, height: 0.32, color: 0xafc2d9, background: FACTORY_PALETTE.ink,
+    position: [0, 2.62, -0.16], fontSize: 34,
   });
   const versionCaption = lane.id === "compiler" ? createTextLabel(tracker, {
     text: "rustc 1.83.0-dev · NO NET", width: 2.85, height: 0.3,
     color: 0x718197, background: FACTORY_PALETTE.ink,
-    position: [0, 3.73, -0.5], fontSize: 35,
+    position: [0, 2.43, -0.1], fontSize: 32,
   }) : null;
   const glow = createVectorBox(tracker, {
-    size: [2.5, 3.1, 2.45], color, position: [0, 1.9, -0.65], opacity: 0.055,
+    size: [1.85, 1.9, 1.65], color, position: [0, 1.05, -0.18], opacity: 0.055,
   });
   glow.visible = false;
   group.add(glow, label, progressRail, progressFill, progressCaption);
   if (versionCaption) group.add(versionCaption);
-  return { group, aperture, status, progressFill, progressCaption, versionCaption, glow };
+  return { group, aperture, status, progressRail, progressFill, progressCaption, versionCaption, glow };
 }
 
 function createDoor(tracker, color, position = [0, 0, 0], scale = 1) {
@@ -207,7 +207,7 @@ function createCompilerScene(tracker) {
   tokens.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   group.add(tokens);
   const materialRoute = createRoute(tracker, [
-    [-5.5, 1.1, 3.3], [-2.2, 1.1, 2.8], [1.2, 1.1, 2.35], [5.15, 1.1, -1.7], [-4.25, 1.1, -2.1],
+    [-3.2, 0.9, 2.7], [-1.4, 0.9, 2.2], [0, 0.9, 1.6], [2.55, 0.9, -1.2], [-2.2, 0.9, -1.55],
   ], FACTORY_PALETTE.blue, 0.075);
   const sceneCaption = createTextLabel(tracker, {
     text: "ROUND 1/3 · COMPILER GATE", width: 11.5, height: 0.58,
@@ -566,6 +566,11 @@ export function createFactoryWorld() {
   const tracker = createResourceTracker();
   const group = new THREE.Group();
   group.name = "factory-world";
+  group.userData.recommendedWorldOffset = Object.freeze({
+    x: FACTORY_LAYOUT.recommendedWorldOffset.x,
+    y: FACTORY_LAYOUT.recommendedWorldOffset.y,
+    z: FACTORY_LAYOUT.recommendedWorldOffset.z,
+  });
 
   const builder = createBuilderScene(tracker, false);
   const inert = createBuilderScene(tracker, true);
@@ -593,6 +598,12 @@ export function createFactoryWorld() {
     const time = Math.min(120, Math.max(0, Number.isFinite(nextTime) ? nextTime : 0));
     Object.entries(scenes).forEach(([id, scene]) => showScene(scene.group, time, FACTORY_SCENES[id]));
 
+    // Foundation owns the canonical Builder Deck, source material and
+    // workpiece. Factory contributes only the tools on that right-hand deck.
+    builder.group.visible = false;
+    inert.group.visible = false;
+    compiler.deck.group.visible = false;
+
     const deckRise = smootherstep(interval(time, 25.25, 28.45));
     builder.group.position.y = -2.8 + deckRise * 2.8;
     builder.hatch.scale.setScalar(0.72 + deckRise * 0.28);
@@ -614,6 +625,10 @@ export function createFactoryWorld() {
     const compileProgress = smootherstep(interval(time, 41, 48));
     compiler.machines.forEach((machine, index) => {
       const lane = FACTORY_LANES[index];
+      const reveal = smootherstep(interval(time, lane.revealAt, lane.revealAt + 0.82));
+      machine.group.visible = reveal > 0.001;
+      machine.group.scale.setScalar(lane.scale * Math.max(0.001, reveal));
+      machine.group.position.y = -0.48 * (1 - reveal);
       machine.status.rotation.z = time * (0.55 + index * 0.15);
       machine.aperture.scale.x = 0.25 + compileProgress * 0.75;
       position.set(lane.x, 0.75 + Math.sin((time + index) * 2.2) * 0.08, lane.z + 2.5 - compileProgress * 2.5);
@@ -634,10 +649,21 @@ export function createFactoryWorld() {
     compiler.machines.forEach((machine, index) => {
       const value = machineProgress[index];
       machine.progressFill.scale.x = Math.max(0.001, value);
-      machine.progressFill.position.x = -1.09 + value * 1.09;
+      machine.progressFill.position.x = -0.84 + value * 0.84;
       machine.glow.visible = value > 0.02;
       machine.glow.scale.setScalar(0.96 + pulse(time, 41 + index, 80) * 0.05);
     });
+    const uiStarts = [40.6, 42.6, Number.POSITIVE_INFINITY];
+    compiler.machines.forEach((machine, index) => {
+      const uiVisible = time >= uiStarts[index];
+      machine.progressRail.visible = uiVisible;
+      machine.progressFill.visible = uiVisible;
+      machine.progressCaption.visible = uiVisible;
+      if (machine.versionCaption) machine.versionCaption.visible = uiVisible;
+    });
+    compiler.sceneCaption.visible = time >= 41;
+    compiler.tokens.visible = time >= 41;
+    compiler.materialRoute.visible = time >= 35.55 && time < 40.6;
     const compilerCopy = time < 42.25
       ? "READY · ROUND 0/3"
       : time < 46
@@ -733,7 +759,7 @@ export function createFactoryWorld() {
     const gateProgress = smootherstep(interval(time, 84.55, 85.25));
     guard.liveDoor.hinge.rotation.y = -gateProgress * Math.PI * 0.72;
     guard.machine.progressFill.scale.x = Math.max(0.001, guardProgress);
-    guard.machine.progressFill.position.x = -1.09 + guardProgress * 1.09;
+    guard.machine.progressFill.position.x = -0.84 + guardProgress * 0.84;
     guard.machine.glow.visible = gateProgress > 0;
     setLabelText(guard.gateStatus, gateProgress >= 1 ? "GUARD · LIVE DOOR UNLOCKED" : "GUARD · WAITING FOR REPORT");
 

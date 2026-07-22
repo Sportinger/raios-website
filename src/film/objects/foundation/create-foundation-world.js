@@ -4,6 +4,7 @@ import {
   FOUNDATION_TIMELINE,
   GENESIS_FOOTPRINT,
   KERNEL_FOOTPRINT,
+  NETWORK_EXTENSION_FOOTPRINT,
 } from "./foundation-config.js";
 
 const PALETTE = Object.freeze({
@@ -83,6 +84,25 @@ function setOpacity(root, opacity) {
     materials.forEach((material) => {
       material.transparent = material.userData.preserveTransparency || opacity < 0.999;
       material.opacity = opacity;
+    });
+  });
+}
+
+function setFade(root, opacity) {
+  const value = clamp01(opacity);
+  root.visible = value > 0.001;
+  root.traverse((object) => {
+    if (!object.material) return;
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    materials.forEach((material) => {
+      if (material.userData.foundationBaseOpacity === undefined) {
+        material.userData.foundationBaseOpacity = material.opacity;
+      }
+      const baseOpacity = material.userData.foundationBaseOpacity;
+      material.transparent = material.userData.preserveTransparency
+        || baseOpacity < 0.999
+        || value < 0.999;
+      material.opacity = baseOpacity * value;
     });
   });
 }
@@ -247,8 +267,12 @@ function createDeck({ width, depth, height, color, edgeColor, label }) {
   grid.position.y = height + 0.006;
   grid.material.transparent = true;
   grid.material.opacity = 0.18;
-  const titleWidth = Math.min(2.25, Math.max(1.65, width * 0.34));
-  const title = createDeckLabel(label, edgeColor, titleWidth, height);
+  const title = new THREE.Group();
+  if (label) {
+    const titleWidth = Math.min(2.25, Math.max(1.65, width * 0.34));
+    const titleDecal = createDeckLabel(label, edgeColor, titleWidth, height);
+    title.add(titleDecal);
+  }
   title.position.set(0, height * 0.52, depth / 2 + 0.034);
   const underglow = createGlow(edgeColor, width * 0.96, depth * 0.34);
   underglow.material.opacity = 0.17;
@@ -393,7 +417,7 @@ function createKeyForge() {
     ));
   }
   burst.position.y = 0.74;
-  const label = createLabel("GENESIS · KEY FORGE", PALETTE.greenHigh, 2.5, 43);
+  const label = createLabel("GENESIS · KEY FORGE", PALETTE.greenHigh, 1.25, 43);
   label.position.set(0, 0.02, 0.72);
   group.add(socket, socketEdges, stem, core, glow, burst, label);
   return { group, core, glow, burst };
@@ -547,7 +571,7 @@ function createDoorAndKey(labelText = "net.https") {
     hinges.add(hinge);
   });
   frame.add(socket, socketEdges, doorVoid, left, right, lintel, threshold, leafPivot, hinges);
-  const label = createLabel(labelText, PALETTE.amber, 2.05, 68);
+  const label = createLabel(labelText, PALETTE.amber, 1.05, 68);
   label.position.set(0, 0.12, 0.86);
   label.material.depthTest = false;
   frame.add(label);
@@ -663,9 +687,27 @@ export function createFoundationWorld() {
     height: 0.72,
     color: 0x05080d, edgeColor: PALETTE.blue, label: "RUST-KERNEL",
   });
-  const kernelFacets = createSlabFacets(5.8, 5.1, 0.72);
+  const kernelFacets = createSlabFacets(
+    KERNEL_FOOTPRINT.compact.width,
+    KERNEL_FOOTPRINT.compact.depth,
+    0.72,
+  );
   kernel.body.add(kernelFacets);
   place(kernel.group, FOUNDATION_LAYOUT.kernel);
+  const networkExtension = createDeck({
+    width: NETWORK_EXTENSION_FOOTPRINT.width,
+    depth: NETWORK_EXTENSION_FOOTPRINT.depth,
+    height: 0.72,
+    color: 0x05080d,
+    edgeColor: PALETTE.blue,
+    label: "",
+  });
+  networkExtension.body.add(createSlabFacets(
+    NETWORK_EXTENSION_FOOTPRINT.width,
+    NETWORK_EXTENSION_FOOTPRINT.depth,
+    0.72,
+  ));
+  place(networkExtension.group, FOUNDATION_LAYOUT.networkExtension);
   const genesis = createDeck({
     width: GENESIS_FOOTPRINT.width, depth: GENESIS_FOOTPRINT.depth, height: 0.34,
     color: PALETTE.panel, edgeColor: PALETTE.greenHigh, label: "GENESIS DECK",
@@ -692,9 +734,9 @@ export function createFoundationWorld() {
   ], false, "centripetal"));
   const doorToNet = createSignalRoute(new THREE.CatmullRomCurve3([
     new THREE.Vector3(2.9, 1.16, 2.52),
-    new THREE.Vector3(3.42, 0.88, 2.7),
-    new THREE.Vector3(4.02, 0.78, 2.96),
-    new THREE.Vector3(4.55, 0.76, 3.12),
+    new THREE.Vector3(4.6, 0.88, 2.25),
+    new THREE.Vector3(6.6, 0.78, 1.85),
+    new THREE.Vector3(8.5, 0.76, 1.5),
   ], false, "centripetal"));
   const forgeToDoor = createSignalRoute(new THREE.CatmullRomCurve3([
     new THREE.Vector3(0.85, 1.8, 0.2),
@@ -715,21 +757,22 @@ export function createFoundationWorld() {
   buildDoor.key.visible = false;
   buildDoor.group.scale.setScalar(0.82);
   const buildLine = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-0.05, 1.68, 0.58),
-    new THREE.Vector3(0.05, 1.28, 0.52),
-    new THREE.Vector3(0.28, 1.16, 0.58),
-    new THREE.Vector3(0.6, 1.15, 0.7),
+    new THREE.Vector3(1.0, 1.68, 1.1),
+    new THREE.Vector3(1.1, 1.3, 0.2),
+    new THREE.Vector3(1.45, 1.16, -1.0),
+    new THREE.Vector3(1.95, 1.15, -2.35),
   ], false, "centripetal"), PALETTE.green);
   const requestToBuilder = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.75, 1.18, 0.7),
-    new THREE.Vector3(1.45, 1.12, 0.48),
-    new THREE.Vector3(2.2, 1.12, 0.24),
-    new THREE.Vector3(2.72, 1.12, 0.05),
+    new THREE.Vector3(2.1, 1.18, -2.45),
+    new THREE.Vector3(2.8, 1.12, -3.8),
+    new THREE.Vector3(3.7, 1.12, -5.3),
+    new THREE.Vector3(4.43, 1.12, -6.5),
   ], false, "centripetal"), PALETTE.green);
 
   group.add(
     prompt.group,
     kernel.group,
+    networkExtension.group,
     genesis.group,
     agent,
     keyForge.group,
@@ -774,6 +817,9 @@ export function createFoundationWorld() {
       FOUNDATION_LAYOUT.kernel[2],
     );
     setDeckFootprint(kernel, kernelScaleX, kernelScaleZ);
+    setDeckRise(networkExtension, foundationExpansion);
+    const extensionPlanScale = Math.max(0.04, foundationExpansion);
+    setDeckFootprint(networkExtension, extensionPlanScale, extensionPlanScale);
     const compactGenesisWidth = KERNEL_FOOTPRINT.compact.width * (510 / 630);
     const compactGenesisDepth = KERNEL_FOOTPRINT.compact.depth * (510 / 630);
     setDeckFootprint(
@@ -820,18 +866,19 @@ export function createFoundationWorld() {
 
     const lineDraw = timedProgress(time, FOUNDATION_TIMELINE.agentRoute);
     setRouteProgress(agentToDoor, lineDraw, time, time >= FOUNDATION_TIMELINE.networkConnectedAt);
+    const networkWindowAlpha = 1 - progress(time, 106.25, 106.6);
+    setFade(agentToDoor.group, lineDraw * networkWindowAlpha);
 
     const doorRise = timedProgress(time, FOUNDATION_TIMELINE.netDoorRise);
-    internet.frame.visible = doorRise > 0.001;
     internet.frame.position.y = -(1 - doorRise) * 0.9;
     internet.frame.scale.y = Math.max(0.001, doorRise);
+    setFade(internet.frame, doorRise * networkWindowAlpha);
     internet.leafPivot.rotation.y = -Math.PI * 0.62 * progress(
       time,
       FOUNDATION_TIMELINE.netKey.detach,
       FOUNDATION_TIMELINE.netKey.insert,
     );
     const forgeRise = timedProgress(time, FOUNDATION_TIMELINE.keyForgeRise);
-    keyForge.group.visible = time >= FOUNDATION_TIMELINE.keyForgeRise.start && time < 33.45;
     keyForge.group.position.y = 1.06 - (1 - forgeRise) * 0.42;
     keyForge.group.scale.y = Math.max(0.001, forgeRise);
     keyForge.core.scale.setScalar(0.8 + Math.sin(time * 6) * 0.2);
@@ -842,6 +889,12 @@ export function createFoundationWorld() {
       FOUNDATION_TIMELINE.netKey.start,
       FOUNDATION_TIMELINE.netKey.insert,
     ), time);
+    setFade(
+      forgeToDoor.group,
+      progress(time, FOUNDATION_TIMELINE.netKey.start, FOUNDATION_TIMELINE.netKey.insert)
+        * (1 - progress(time, FOUNDATION_TIMELINE.netKey.insert, FOUNDATION_TIMELINE.netKey.end)),
+    );
+    setFade(keyForge.group, forgeRise * (1 - progress(time, 33.15, 33.45)));
     const keyTravel = progress(
       time,
       FOUNDATION_TIMELINE.netKey.start,
@@ -860,15 +913,21 @@ export function createFoundationWorld() {
       time,
       time >= FOUNDATION_TIMELINE.networkConnectedAt,
     );
+    setFade(
+      doorToNet.group,
+      timedProgress(time, FOUNDATION_TIMELINE.netRoute) * networkWindowAlpha,
+    );
 
     const builderRise = timedProgress(time, FOUNDATION_TIMELINE.builderRise);
     setDeckRise(builder, builderRise);
     const buildDraw = timedProgress(time, FOUNDATION_TIMELINE.buildRequestRoute);
     setRouteProgress(buildLine, buildDraw, time, time >= FOUNDATION_TIMELINE.buildKey.insert);
+    const buildRequestWindowAlpha = 1 - progress(time, 94.58, 95.01);
+    setFade(buildLine.group, buildDraw * buildRequestWindowAlpha);
     const buildDoorRise = timedProgress(time, FOUNDATION_TIMELINE.buildDoorRise);
-    buildDoor.frame.visible = buildDoorRise > 0.001;
     buildDoor.frame.position.y = -(1 - buildDoorRise) * 0.7;
     buildDoor.frame.scale.y = Math.max(0.001, buildDoorRise);
+    setFade(buildDoor.frame, buildDoorRise * buildRequestWindowAlpha);
     buildDoor.leafPivot.rotation.y = -Math.PI * 0.62 * progress(
       time,
       FOUNDATION_TIMELINE.buildKey.detach,
@@ -879,6 +938,11 @@ export function createFoundationWorld() {
       timedProgress(time, FOUNDATION_TIMELINE.builderRoute),
       time,
       time >= FOUNDATION_TIMELINE.builderRoute.end,
+    );
+    setFade(
+      requestToBuilder.group,
+      timedProgress(time, FOUNDATION_TIMELINE.builderRoute)
+        * (1 - progress(time, 94.53, 94.87)),
     );
 
     const sourceRise = timedProgress(time, FOUNDATION_TIMELINE.sourceRise);
