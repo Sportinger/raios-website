@@ -32,7 +32,8 @@ Foundation und Factory hängen im eingebetteten Film gemeinsam an einem stabilen
 Transform-Träger im Mittelpunkt des Rust-Kernel-Layers, sodass spätere
 Layer-Rotationen den vollständigen Objektverbund geschlossen mitnehmen. Zwischen
 Playback `00:28.29` und `00:40.72` dreht sich dieser Verbund weich um `90°` im
-Uhrzeigersinn und behält die neue Ausrichtung anschließend bei.
+Uhrzeigersinn. Zwischen `00:58.00` und `01:06.00` folgen weitere `45°` in
+derselben Richtung; danach bleibt der Verbund bei insgesamt `135°` stehen.
 
 ## Lokal starten
 

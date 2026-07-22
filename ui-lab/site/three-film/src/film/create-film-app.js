@@ -16,19 +16,19 @@ import {
 } from "./presentation/index.js";
 
 const AUTOPLAY_SECONDS_PER_SECOND = 1;
-const KERNEL_ROTATION_PLAYBACK = Object.freeze({
-  start: 28.29,
-  end: 40.72,
-  angle: -Math.PI / 2,
-});
+const KERNEL_ROTATION_SEGMENTS = Object.freeze([
+  { start: 28.29, end: 40.72, angle: -Math.PI / 2 },
+  { start: 58, end: 66, angle: -Math.PI / 4 },
+]);
 
 const clampPlaybackTime = (time) => THREE.MathUtils.clamp(time, 0, FILM_PLAYBACK_DURATION);
-const kernelRotationAtPlaybackTime = (time) => (
-  KERNEL_ROTATION_PLAYBACK.angle * THREE.MathUtils.smootherstep(
+const kernelRotationAtPlaybackTime = (time) => KERNEL_ROTATION_SEGMENTS.reduce(
+  (rotation, segment) => rotation + segment.angle * THREE.MathUtils.smootherstep(
     time,
-    KERNEL_ROTATION_PLAYBACK.start,
-    KERNEL_ROTATION_PLAYBACK.end,
-  )
+    segment.start,
+    segment.end,
+  ),
+  0,
 );
 const sceneAt = (time) => FILM_SCENES.find(({ start, end }) => (
   time >= start && time < end
