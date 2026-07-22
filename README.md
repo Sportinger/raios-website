@@ -18,7 +18,7 @@ betrachten, ohne die deterministische Filmfassung zu verändern.
 - Dauer bei PLAY: `149,489` Sekunden
 - Kanonische Animationszeit: `148` Sekunden
 - Szenen: `14`
-- Kamera-Keyframes: `28`
+- Kamera-Keyframes: `23`
 - Scrollstrecke: `1600svh` plus ein sichtbarer Viewport
 - Autoplay: eine Filmsekunde pro realer Sekunde
 - Finale: `1` kompakte Player-Insel plus `60` echte App-Layer
@@ -249,12 +249,13 @@ Prüfsiegel auf und transportiert sie zum Guard.
 Die SVG-Kamera des Referenzfilms war ein 2D-Pan/Zoom mit `scale`, `focusX` und
 `focusY`. Der Nachbau übersetzt diese Werte auf eine echte orthografische Kamera
 mit einer räumlichen isometrischen Blickrichtung. Referenzformat, Widescreen-
-Korrektur und vertikaler Bias bleiben erhalten. Alle 28 Kamera-Keyframes tragen
-Fokus, Zoom und optionalen 3D-Yaw in einem gemeinsamen Vertrag. Dadurch werden
-Builder-Aufbau, fehlgeschlagener Shadow-Probelauf und die drei erfolgreichen
-VM-Testakte als durchgehende Kamerafahrten interpoliert, ohne einen separaten
-Orbit nachträglich über den nächsten Shot zu legen. Die Signalringe des
-NET-Turms bleiben dabei als Billboards stets frontal zur Kamera ausgerichtet.
+Korrektur, vertikaler Bias, die 18 Original-Keyframes, fünf zusätzliche
+Shadow-VM-Keyframes und deren Smoothstep-Interpolation bleiben erhalten. Drei
+deterministische 3D-Kamerabögen umfahren den entstehenden Builder Layer, den
+fehlgeschlagenen Shadow-Probelauf und die drei erfolgreichen VM-Testakte;
+danach kehrt die Filmkamera jeweils in die kanonische Pose zurück. Die
+Signalringe des NET-Turms bleiben dabei als Billboards stets frontal zur Kamera
+ausgerichtet.
 `FREE ORBIT` aktiviert Drehen, Zoomen und Verschieben mit Maus oder Touch, ohne
 Playback oder Sprecher zu unterbrechen. Die Welt animiert weiter, während die
 frei gewählte Kamerapose erhalten bleibt. `EXIT ORBIT` oder ein Kapitelsprung

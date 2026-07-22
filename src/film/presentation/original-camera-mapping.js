@@ -35,7 +35,6 @@ export function originalCameraKeyframeAt(time, keyframes = FILM_CAMERA_KEYFRAMES
     scale: THREE.MathUtils.lerp(before.scale, after.scale, mix),
     focusX: THREE.MathUtils.lerp(before.focusX, after.focusX, mix),
     focusY: THREE.MathUtils.lerp(before.focusY, after.focusY, mix),
-    yaw: THREE.MathUtils.lerp(before.yaw ?? 0, after.yaw ?? 0, mix),
   });
 }
 
@@ -82,22 +81,13 @@ export function createOriginalThreeCameraMapper(camera, {
   worldHeight = 20,
 } = {}) {
   const target = baseTarget.clone();
-  const baseDirection = cameraDirection.clone().normalize();
-  const orbitAxis = new THREE.Vector3(0, 1, 0);
-  const direction = new THREE.Vector3();
-  const viewDirection = new THREE.Vector3();
-  const screenRight = new THREE.Vector3();
-  const screenUp = new THREE.Vector3();
+  const direction = cameraDirection.clone().normalize();
+  const viewDirection = direction.clone().negate();
+  const screenRight = new THREE.Vector3().crossVectors(viewDirection, camera.up).normalize();
+  const screenUp = new THREE.Vector3().crossVectors(screenRight, viewDirection).normalize();
 
   const setTime = (time, viewportWidth, viewportHeight) => {
     const state = originalSvgCameraAt(time, viewportWidth, viewportHeight);
-    direction.copy(baseDirection).applyAxisAngle(
-      orbitAxis,
-      THREE.MathUtils.degToRad(state.yaw),
-    );
-    viewDirection.copy(direction).negate();
-    screenRight.crossVectors(viewDirection, camera.up).normalize();
-    screenUp.crossVectors(screenRight, viewDirection).normalize();
     const wideBiasWorld = state.responsiveVerticalBias
       * (worldHeight / ORIGINAL_CAMERA_CONSTANTS.referenceHeight);
     target.copy(baseTarget)
