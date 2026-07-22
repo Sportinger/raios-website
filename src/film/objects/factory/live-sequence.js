@@ -1,7 +1,11 @@
 import * as THREE from "three";
 import { FILM_ACTION_TIMINGS } from "../../film-data.js";
 import { createCanvasSprite, roundedRect } from "./canvas-primitives.js";
-import { FACTORY_LAYOUT, FACTORY_PALETTE } from "./config.js";
+import {
+  FACTORY_LAYOUT,
+  FACTORY_PALETTE,
+  FACTORY_PLAYER_DOMAIN_LAYOUT,
+} from "./config.js";
 import {
   createFactoryDoorOnSurface,
   FACTORY_STANDARD_DOOR_SCALE,
@@ -23,9 +27,14 @@ import {
 } from "../shared/vector-layer.js";
 
 const DOMAIN_CENTER = new THREE.Vector3(
-  FACTORY_LAYOUT.shadow.position.x,
-  FACTORY_LAYOUT.shadow.position.y + FACTORY_LAYOUT.shadow.thickness,
-  FACTORY_LAYOUT.shadow.position.z,
+  FACTORY_PLAYER_DOMAIN_LAYOUT.start.x,
+  FACTORY_PLAYER_DOMAIN_LAYOUT.start.y,
+  FACTORY_PLAYER_DOMAIN_LAYOUT.start.z,
+);
+const DOMAIN_DOCK_CENTER = new THREE.Vector3(
+  FACTORY_PLAYER_DOMAIN_LAYOUT.dock.x,
+  FACTORY_PLAYER_DOMAIN_LAYOUT.dock.y,
+  FACTORY_PLAYER_DOMAIN_LAYOUT.dock.z,
 );
 const AGENT_PORT = new THREE.Vector3(-11.695, 0.18, 13.45);
 const DOMAIN_DOOR_X = Object.freeze([-4.48, -1.48, 1.52]);
@@ -343,9 +352,13 @@ export function createLiveSequence(tracker) {
       FILM_ACTION_TIMINGS.archipelago.domainContraction.end,
     ));
     setOpacity(domain.group, domainAlpha);
-    domain.group.position.copy(DOMAIN_CENTER);
+    domain.group.position.lerpVectors(DOMAIN_CENTER, DOMAIN_DOCK_CENTER, contraction);
     domain.group.scale.setScalar(1);
-    const compactFootprint = THREE.MathUtils.lerp(1, 0.18, contraction);
+    const compactFootprint = THREE.MathUtils.lerp(
+      1,
+      FACTORY_PLAYER_DOMAIN_LAYOUT.compactScale,
+      contraction,
+    );
     setVectorLayerFootprint(domain.layer, compactFootprint, compactFootprint);
     const domainOutline = smootherstep(interval(time, 116.8, 117.2));
     setVectorLayerBuild(domain.layer, {

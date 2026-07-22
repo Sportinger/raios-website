@@ -1,6 +1,7 @@
 import {
   FILM_DOOR_SCALE,
   FILM_LAYER_HEIGHT,
+  FILM_PLAYER_DOMAIN_COMPACT_SCALE,
   FILM_QUADRANT_SIZE,
   FOUNDATION_PRESENTATION_SCALE,
 } from "../../layout-constants.js";
@@ -54,6 +55,14 @@ export const FOUNDATION_LAYOUT = Object.freeze({
   production: point(6.72, FOUNDATION_LAYER_HEIGHT * 2, -9.17),
 });
 
+const PRIVATE_ISLAND_STATION = Object.freeze({
+  x: FOUNDATION_SURFACES.genesis.centerX - FOUNDATION_LAYOUT.production[0],
+  z: FOUNDATION_SURFACES.genesis.centerZ
+    - FILM_QUADRANT_SIZE / 2
+    - FILM_QUADRANT_SIZE * FILM_PLAYER_DOMAIN_COMPACT_SCALE / 2
+    - FOUNDATION_LAYOUT.production[2],
+});
+
 // Local coordinates inside the canonical Builder quadrant. The workpiece
 // docks one body-width away from each program instead of hovering near the
 // quadrant center.
@@ -62,6 +71,11 @@ export const FOUNDATION_WORKPIECE_STATIONS = Object.freeze({
   compiler: point(1.4, 0, 1.4),
   tester: point(0.65, 0, -1.3),
   guard: point(-1.45, 0, 0.8),
+  liveDomain: point(-6.108, 0, 1.912),
+  // Same world-space center as the compact Player Domain after it docks
+  // against Genesis. Keeping this in the station contract prevents the
+  // PLAYER.WASM machine from drifting independently during the finale.
+  privateIsland: point(PRIVATE_ISLAND_STATION.x, 0, PRIVATE_ISLAND_STATION.z),
 });
 
 export const KERNEL_FOOTPRINT = Object.freeze({

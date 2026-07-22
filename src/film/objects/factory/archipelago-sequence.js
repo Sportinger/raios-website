@@ -1,7 +1,11 @@
 import * as THREE from "three";
 import { FILM_ACTION_TIMINGS } from "../../film-data.js";
 import { createCanvasSprite, roundedRect } from "./canvas-primitives.js";
-import { FACTORY_LAYOUT, FACTORY_PALETTE } from "./config.js";
+import {
+  FACTORY_LAYOUT,
+  FACTORY_PALETTE,
+  FACTORY_PLAYER_DOMAIN_LAYOUT,
+} from "./config.js";
 import {
   createFreestandingFactoryDoor,
   setFactoryDoorOpen,
@@ -14,9 +18,9 @@ import {
 } from "../shared/vector-layer.js";
 
 const PLAYER_ANCHOR = Object.freeze({
-  x: FACTORY_LAYOUT.shadow.position.x,
-  y: FACTORY_LAYOUT.shadow.position.y + FACTORY_LAYOUT.shadow.thickness,
-  z: FACTORY_LAYOUT.shadow.position.z,
+  x: FACTORY_PLAYER_DOMAIN_LAYOUT.dock.x,
+  y: FACTORY_PLAYER_DOMAIN_LAYOUT.dock.y,
+  z: FACTORY_PLAYER_DOMAIN_LAYOUT.dock.z,
 });
 // Final Foundation kernel bounds expressed in Factory-local coordinates.
 // App layers use the kernel top as their base plane and stay inside its inset.
@@ -28,16 +32,16 @@ const RUST_SURFACE = Object.freeze({
   top: FACTORY_LAYOUT.shadow.position.y,
 });
 const GENESIS_CLEARANCE = Object.freeze({
-  centerX: PLAYER_ANCHOR.x,
-  centerZ: PLAYER_ANCHOR.z + 12.755,
-  width: 10.35,
-  depth: 10.35,
+  centerX: FACTORY_PLAYER_DOMAIN_LAYOUT.genesis.centerX,
+  centerZ: FACTORY_PLAYER_DOMAIN_LAYOUT.genesis.centerZ,
+  width: FACTORY_PLAYER_DOMAIN_LAYOUT.genesis.width,
+  depth: FACTORY_PLAYER_DOMAIN_LAYOUT.genesis.depth,
 });
 const PLAYER_CLEARANCE = Object.freeze({
   centerX: PLAYER_ANCHOR.x,
   centerZ: PLAYER_ANCHOR.z,
-  width: 2.7,
-  depth: 2.7,
+  width: FACTORY_LAYOUT.shadow.width * FACTORY_PLAYER_DOMAIN_LAYOUT.compactScale,
+  depth: FACTORY_LAYOUT.shadow.depth * FACTORY_PLAYER_DOMAIN_LAYOUT.compactScale,
 });
 const ARCHIPELAGO_TIMING = FILM_ACTION_TIMINGS.archipelago;
 const ISLAND_REVEAL_START = ARCHIPELAGO_TIMING.firstIslandAt;
@@ -154,7 +158,7 @@ const APP_DEFINITIONS = Object.freeze(APP_CATALOG.map(([labelCopy, iconCopy, acc
     start: ISLAND_REVEAL_START + index * ISLAND_STAGGER_SECONDS,
     width: 2.1 * widthScale,
     depth: 2.1 * depthScale,
-    height: 0.28 + 0.13 * ISLAND_SIZE_PATTERN[(index + 6) % ISLAND_SIZE_PATTERN.length],
+    height: FACTORY_PLAYER_DOMAIN_LAYOUT.height,
     position: Object.freeze({
       x: slot.x,
       y: RUST_SURFACE.top,

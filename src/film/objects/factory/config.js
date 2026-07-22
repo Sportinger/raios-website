@@ -1,5 +1,6 @@
 import {
   FILM_LAYER_HEIGHT,
+  FILM_PLAYER_DOMAIN_COMPACT_SCALE,
   FILM_QUADRANT_SIZE,
   FOUNDATION_PRESENTATION_SCALE,
 } from "../../layout-constants.js";
@@ -87,4 +88,36 @@ export const FACTORY_LAYOUT = Object.freeze({
   inputDoor: Object.freeze({ edge: "left", along: -2.7 }),
   outputDoor: Object.freeze({ edge: "right", along: -2.7 }),
   recommendedWorldOffset: Object.freeze({ x: 7.895, y: 1.59, z: -5.895 }),
+});
+
+// The live domain starts in the former Shadow-VM quadrant. During the finale
+// it contracts into the first private app island and docks flush against the
+// near edge of Genesis. All following islands use its slab height.
+const FACTORY_QUADRANT_CENTER_SPAN = FACTORY_BUILDER_SURFACE.centerX
+  - FACTORY_LAYOUT.shadow.position.x;
+const GENESIS_CENTER_Z = FACTORY_LAYOUT.shadow.position.z + FACTORY_QUADRANT_CENTER_SPAN;
+const PLAYER_DOMAIN_COMPACT_DEPTH = FACTORY_LAYOUT.shadow.depth
+  * FILM_PLAYER_DOMAIN_COMPACT_SCALE;
+
+export const FACTORY_PLAYER_DOMAIN_LAYOUT = Object.freeze({
+  compactScale: FILM_PLAYER_DOMAIN_COMPACT_SCALE,
+  height: FACTORY_LAYOUT.shadow.thickness,
+  start: Object.freeze({
+    x: FACTORY_LAYOUT.shadow.position.x,
+    y: FACTORY_LAYOUT.shadow.position.y + FACTORY_LAYOUT.shadow.thickness,
+    z: FACTORY_LAYOUT.shadow.position.z,
+  }),
+  dock: Object.freeze({
+    x: FACTORY_LAYOUT.shadow.position.x,
+    y: FACTORY_LAYOUT.shadow.position.y + FACTORY_LAYOUT.shadow.thickness,
+    z: GENESIS_CENTER_Z
+      - FACTORY_LAYOUT.shadow.depth / 2
+      - PLAYER_DOMAIN_COMPACT_DEPTH / 2,
+  }),
+  genesis: Object.freeze({
+    centerX: FACTORY_LAYOUT.shadow.position.x,
+    centerZ: GENESIS_CENTER_Z,
+    width: FACTORY_LAYOUT.shadow.width,
+    depth: FACTORY_LAYOUT.shadow.depth,
+  }),
 });

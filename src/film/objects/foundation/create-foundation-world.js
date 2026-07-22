@@ -61,7 +61,12 @@ const smoothstep = (value) => {
   const t = clamp01(value);
   return t * t * (3 - 2 * t);
 };
+const smootherstep = (value) => {
+  const t = clamp01(value);
+  return t * t * t * (t * (t * 6 - 15) + 10);
+};
 const progress = (time, start, end) => smoothstep((time - start) / (end - start));
+const smootherProgress = (time, start, end) => smootherstep((time - start) / (end - start));
 const timedProgress = (time, timing) => progress(time, timing.start, timing.end);
 const place = (object, coordinates) => object.position.set(...coordinates);
 const FILM_CAMERA_DIRECTION = new THREE.Vector3(1, 0.8164965809, 1).normalize();
@@ -1377,8 +1382,9 @@ export function createFoundationWorld() {
     const workpieceRise = timedProgress(time, FOUNDATION_TIMELINE.workpieceRise);
     production.workpiece.visible = workpieceRise > 0.001;
     const residentRise = progress(time, 117.2, 120);
-    const compactPlayer = progress(time, 134, 137);
-    production.workpiece.position.y = -(1 - workpieceRise) * 0.35 + residentRise;
+    const compactPlayer = smootherProgress(time, 134, 137);
+    const livePlayerHeight = -(1 - workpieceRise) * 0.35 + residentRise;
+    production.workpiece.position.y = THREE.MathUtils.lerp(livePlayerHeight, 0, compactPlayer);
     production.workpiece.scale.setScalar(Math.max(
       0.001,
       THREE.MathUtils.lerp(0.54, 1, workpieceRise)
@@ -1389,6 +1395,8 @@ export function createFoundationWorld() {
     const compilerDock = FOUNDATION_WORKPIECE_STATIONS.compiler;
     const testerDock = FOUNDATION_WORKPIECE_STATIONS.tester;
     const guardDock = FOUNDATION_WORKPIECE_STATIONS.guard;
+    const liveDomainDock = FOUNDATION_WORKPIECE_STATIONS.liveDomain;
+    const privateIslandDock = FOUNDATION_WORKPIECE_STATIONS.privateIsland;
     const workpieceFrames = [
       { at: 34, x: 0, z: 0 },
       { at: 39, x: workpieceHome[0], z: workpieceHome[2] },
@@ -1420,17 +1428,21 @@ export function createFoundationWorld() {
       { at: 114.1, x: workpieceHome[0], z: workpieceHome[2] },
       { at: 116, x: workpieceHome[0], z: workpieceHome[2] },
       { at: 117.6, x: -1.816, z: -0.312 },
-      { at: 120, x: -6.108, z: 1.912 },
-      { at: 134, x: -6.108, z: 1.912 },
-      { at: 137, x: -0.574, z: 6.885 },
-      { at: 148, x: -0.574, z: 6.885 },
+      { at: 120, x: liveDomainDock[0], z: liveDomainDock[2] },
+      { at: 134, x: liveDomainDock[0], z: liveDomainDock[2] },
+      { at: 137, x: privateIslandDock[0], z: privateIslandDock[2] },
+      { at: 148, x: privateIslandDock[0], z: privateIslandDock[2] },
     ];
     const beforeFrame = workpieceFrames.reduce(
       (best, frame) => (frame.at <= time ? frame : best),
       workpieceFrames[0],
     );
     const afterFrame = workpieceFrames.find((frame) => frame.at > time) ?? workpieceFrames.at(-1);
-    const workpieceMove = beforeFrame === afterFrame ? 1 : progress(time, beforeFrame.at, afterFrame.at);
+    const workpieceMove = beforeFrame === afterFrame
+      ? 1
+      : beforeFrame.at >= 134
+        ? compactPlayer
+        : progress(time, beforeFrame.at, afterFrame.at);
     production.workpiece.position.x = THREE.MathUtils.lerp(beforeFrame.x, afterFrame.x, workpieceMove);
     production.workpiece.position.z = THREE.MathUtils.lerp(beforeFrame.z, afterFrame.z, workpieceMove);
     const workpieceCopy = time >= 55.4 ? "PLAYER.WASM" : "PLAYER.RS";

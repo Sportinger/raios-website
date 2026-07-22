@@ -63,13 +63,15 @@ nicht mehr durch Verschieben oder Skalieren der gesamten Gruppe einblenden.
 Beim Outro läuft derselbe Vertrag rückwärts: Der Körper sinkt zuerst in seine
 Trägerfläche zurück, anschließend wird der verbleibende Grundriss gelöscht.
 
-Ab Kapitel 13 bleibt die Player-Domain an ihrer bestehenden Weltposition neben
-Genesis. Nur ihr X/Z-Footprint schrumpft zentriert über
-`setVectorLayerFootprint` auf `18 %`; Höhe und Gruppenposition verändern sich
-nicht. Danach entstehen `60` App-Inseln ausschließlich auf der sichtbaren
-Rust-Kernel-Fläche, ohne Genesis oder die Player-Insel zu überdecken. Sie nutzen
-unterschiedliche Breiten, Tiefen und Höhen und bauen sich nacheinander über
-denselben `vector-layer`-Lifecycle aus Grundriss und aufwachsendem Körper auf.
+Ab Kapitel 13 schrumpft die Player-Domain über `setVectorLayerFootprint` auf
+`18 %` und fährt als erste private App-Insel bündig an die freie Kante des
+Genesis Decks. `PLAYER.WASM` bleibt währenddessen auf dieser Insel verankert
+und bewegt sich nicht unabhängig von ihr. Danach entstehen `60` App-Inseln von
+diesem Startpunkt aus ausschließlich auf der sichtbaren Rust-Kernel-Fläche,
+ohne Genesis oder die Player-Insel zu überdecken. Ihre Breiten und Tiefen
+variieren, aber alle besitzen exakt dieselbe Sockelhöhe und Oberkante wie die
+Player-Insel. Sie bauen sich nacheinander über denselben `vector-layer`-
+Lifecycle aus Grundriss und aufwachsendem Körper auf.
 Das Archipelago besitzt keine verbindenden Kabel oder Signallinien. Bereits
 entstandene Inseln driften oder pulsieren anschließend nicht weiter; fertige
 Layerzustände werden zudem nicht in jedem Frame erneut aufgebaut.
