@@ -54,7 +54,7 @@ Szenenlogik.
 
 ### Sprecher und Audio
 
-Die sechs vorhandenen Sprecherpassagen aus dem Referenzfilm liegen unter
+Die vierzehn vorhandenen Sprecherpassagen liegen unter
 `src/assets/audio/` und werden über das eigenständige Modul
 `presentation/create-film-narration.js` an dieselbe deterministische Filmzeit
 wie ihre Captions gebunden. Nach der ersten Nutzerinteraktion folgen sie sowohl

@@ -58,6 +58,15 @@ export const FILM_VOICE_CUES = freezeEntries([
     ]),
   },
   {
+    id: "feedback-fix",
+    start: 52,
+    end: 57.8,
+    captions: freezeEntries([
+      { start: 0, end: 2.55, text: "The failure returns a precise report." },
+      { start: 2.55, end: 5.8, text: "The agent fixes the source and compiles again." },
+    ]),
+  },
+  {
     id: "shadow-rehearsal-fail",
     start: 57.8,
     end: 69.8,
@@ -66,6 +75,15 @@ export const FILM_VOICE_CUES = freezeEntries([
       { start: 3, end: 6.2, text: "A ghost copy receives only mocked input and files." },
       { start: 6.2, end: 9.2, text: "The replay reaches only 653 of 654 claims." },
       { start: 9.2, end: 12, text: "The frame hash mismatches. The test fails closed." },
+    ]),
+  },
+  {
+    id: "twin-build-fix",
+    start: 69.8,
+    end: 80.2,
+    captions: freezeEntries([
+      { start: 0, end: 4.35, text: "The mismatch returns as a precise report." },
+      { start: 4.35, end: 10.4, text: "After the fix, two independent builds produce exactly the same bytes." },
     ]),
   },
   {
@@ -80,6 +98,41 @@ export const FILM_VOICE_CUES = freezeEntries([
       { start: 19.3, end: 23.5, text: "A third cell attacks every boundary." },
       { start: 23.5, end: 27, text: "Seven attacks. Seven fail-closed walls." },
       { start: 27, end: 27.8, text: "Only then does the tester hand over the proof." },
+    ]),
+  },
+  {
+    id: "guard-bindings",
+    start: 108,
+    end: 116,
+    captions: freezeEntries([
+      { start: 0, end: 4.9, text: "The guard binds the compiler package and all three test seals." },
+      { start: 4.9, end: 8, text: "Owner approval opens the live door." },
+    ]),
+  },
+  {
+    id: "live-release",
+    start: 116,
+    end: 124,
+    captions: freezeEntries([
+      { start: 0, end: 3.55, text: "The approved program leaves the Builder layer." },
+      { start: 3.55, end: 8, text: "Every disposable door, cable, and machine closes behind it." },
+    ]),
+  },
+  {
+    id: "compact-domain",
+    start: 134,
+    end: 140,
+    captions: freezeEntries([
+      { start: 0, end: 6, text: "Now the complete player domain contracts into one private app island." },
+    ]),
+  },
+  {
+    id: "archipelago",
+    start: 140,
+    end: 148,
+    captions: freezeEntries([
+      { start: 0, end: 4, text: "Every app receives its own isolated island:" },
+      { start: 4, end: 8, text: "sixty apps, sixty boundaries, on one shared Rust kernel." },
     ]),
   },
 ]);
