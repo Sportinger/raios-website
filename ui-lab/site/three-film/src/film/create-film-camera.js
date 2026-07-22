@@ -12,7 +12,7 @@ const COMPOSITION_VERTICAL_OFFSET = 0.9;
 const INTRO_SIDE_VIEW = Object.freeze({
   holdUntil: 13,
   transitionEnd: 15.3,
-  azimuthOffset: Math.PI / 4,
+  azimuthOffset: -Math.PI / 4,
 });
 const RUST_KERNEL_MID_HEIGHT = FILM_LAYER_HEIGHT * FOUNDATION_PRESENTATION_SCALE / 2;
 const INTRO_SIDE_DIRECTION = CAMERA_DIRECTION.clone()
