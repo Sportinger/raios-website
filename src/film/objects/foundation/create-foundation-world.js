@@ -61,6 +61,8 @@ const FILM_CAMERA_DIRECTION = new THREE.Vector3(1, 0.8164965809, 1).normalize();
 const DECK_HEIGHT_DELTA = FOUNDATION_LAYER_HEIGHT - 0.34;
 const DECK_ROUTE_Y = FOUNDATION_SURFACES.genesis.top + 0.02;
 const DECK_KEY_TARGET_Y = FOUNDATION_SURFACES.genesis.top + 0.76;
+const KEY_FORGE_SCALE_XZ = 1.12;
+const KEY_FORGE_SCALE_Y = 0.24;
 
 function anchorFoundationDoor(door, placement) {
   return anchorVectorDoorToSurface(door, {
@@ -520,8 +522,8 @@ function createDeck({ width, depth, height, color, edgeColor, label, labelColor 
 function createKeyForge() {
   const group = new THREE.Group();
   const hatch = createSlidingFloorHatch({
-    width: 0.94,
-    depth: 0.94,
+    width: 0.82,
+    depth: 0.82,
     color: PALETTE.greenHigh,
     fillColor: FOUNDATION_SURFACES.genesis.color,
   });
@@ -901,7 +903,7 @@ export function createFoundationWorld() {
   agent.group.scale.setScalar(agentScale);
   const keyForge = createKeyForge();
   place(keyForge.group, FOUNDATION_LAYOUT.keyForge);
-  keyForge.group.scale.setScalar(1.5);
+  keyForge.group.scale.set(KEY_FORGE_SCALE_XZ, KEY_FORGE_SCALE_Y, KEY_FORGE_SCALE_XZ);
   const internet = createDoorAndKey("net.https");
   anchorFoundationDoor(internet, FOUNDATION_LAYOUT.netDoor);
   internet.group.scale.setScalar(FOUNDATION_DOOR_SCALE);
@@ -1265,7 +1267,7 @@ export function createFoundationWorld() {
       0,
     );
     keyForge.group.position.set(...FOUNDATION_LAYOUT.keyForge);
-    keyForge.group.scale.setScalar(1.5);
+    keyForge.group.scale.set(KEY_FORGE_SCALE_XZ, KEY_FORGE_SCALE_Y, KEY_FORGE_SCALE_XZ);
     setSlidingFloorHatch(keyForge.hatch, forgeOutline, forgeOpen, legacyWorldAlpha);
     const keyStart = new THREE.Vector3(
       FOUNDATION_LAYOUT.keyForge[0],
