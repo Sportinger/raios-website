@@ -27,6 +27,52 @@ const smoothstep = (value) => {
 const progress = (time, start, end) => smoothstep((time - start) / (end - start));
 const timedProgress = (time, timing) => progress(time, timing.start, timing.end);
 const place = (object, coordinates) => object.position.set(...coordinates);
+const FILM_CAMERA_DIRECTION = new THREE.Vector3(1, 0.8164965809, 1).normalize();
+
+function createBeamBetween(start, end, radius, color, radialSegments = 8) {
+  const direction = new THREE.Vector3().subVectors(end, start);
+  const beam = new THREE.Mesh(
+    new THREE.CylinderGeometry(radius, radius, direction.length(), radialSegments),
+    new THREE.MeshBasicMaterial({ color }),
+  );
+  beam.position.copy(start).add(end).multiplyScalar(0.5);
+  beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
+  return beam;
+}
+
+function createThickBoxEdges(size, color, radius = 0.024) {
+  const group = new THREE.Group();
+  const half = size.clone().multiplyScalar(0.5);
+  [-1, 1].forEach((ySign) => {
+    [-1, 1].forEach((zSign) => {
+      group.add(createBeamBetween(
+        new THREE.Vector3(-half.x, ySign * half.y, zSign * half.z),
+        new THREE.Vector3(half.x, ySign * half.y, zSign * half.z),
+        radius,
+        color,
+      ));
+    });
+    [-1, 1].forEach((xSign) => {
+      group.add(createBeamBetween(
+        new THREE.Vector3(xSign * half.x, ySign * half.y, -half.z),
+        new THREE.Vector3(xSign * half.x, ySign * half.y, half.z),
+        radius,
+        color,
+      ));
+    });
+  });
+  [-1, 1].forEach((xSign) => {
+    [-1, 1].forEach((zSign) => {
+      group.add(createBeamBetween(
+        new THREE.Vector3(xSign * half.x, -half.y, zSign * half.z),
+        new THREE.Vector3(xSign * half.x, half.y, zSign * half.z),
+        radius,
+        color,
+      ));
+    });
+  });
+  return group;
+}
 
 function setOpacity(root, opacity) {
   root.visible = opacity > 0.001;
@@ -50,7 +96,11 @@ function createLabel(text, color = PALETTE.ink, width = 3, fontSize = 52) {
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.letterSpacing = "4px";
+  context.lineJoin = "round";
+  context.lineWidth = Math.max(8, fontSize * 0.18);
+  context.strokeStyle = "#05080d";
   context.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
+  context.strokeText(text, canvas.width / 2, canvas.height / 2);
   context.fillText(text, canvas.width / 2, canvas.height / 2);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -94,10 +144,7 @@ function createOutlinedBox(size, color, edgeColor = PALETTE.blueHigh) {
   const group = new THREE.Group();
   const geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
   const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color }));
-  const edges = new THREE.LineSegments(
-    new THREE.EdgesGeometry(geometry),
-    new THREE.LineBasicMaterial({ color: edgeColor, transparent: true, opacity: 0.72 }),
-  );
+  const edges = createThickBoxEdges(size, edgeColor);
   group.add(mesh, edges);
   return group;
 }
@@ -266,7 +313,6 @@ function createKeyForge() {
     new THREE.CylinderGeometry(0.45, 0.45, 0.09, 4),
     new THREE.MeshBasicMaterial({ color: PALETTE.panelHigh }),
   );
-  socket.rotation.y = Math.PI / 4;
   socket.position.y = 0.045;
   const socketEdges = new THREE.LineSegments(
     new THREE.EdgesGeometry(socket.geometry),
@@ -309,23 +355,62 @@ function createKeyForge() {
 
 function createNetTower() {
   const group = new THREE.Group();
-  const material = new THREE.LineBasicMaterial({ color: PALETTE.blueHigh });
-  const segments = [
-    [[-0.42, 0, 0], [0, 1.78, 0]],
-    [[0.42, 0, 0], [0, 1.78, 0]],
-    [[-0.31, 0.48, 0], [0.31, 0.48, 0]],
-    [[-0.21, 0.94, 0], [0.21, 0.94, 0]],
+  const socket = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.48, 0.48, 0.055, 4),
+    new THREE.MeshBasicMaterial({ color: 0x0c1724 }),
+  );
+  socket.position.y = 0.028;
+  const socketOutline = new THREE.Group();
+  const socketCorners = [
+    new THREE.Vector3(-0.48, 0.062, 0),
+    new THREE.Vector3(0, 0.062, -0.48),
+    new THREE.Vector3(0.48, 0.062, 0),
+    new THREE.Vector3(0, 0.062, 0.48),
   ];
-  segments.forEach((segment) => {
-    group.add(new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints(segment.map(([x, y, z]) => new THREE.Vector3(x, y, z))),
-      material,
+  socketCorners.forEach((corner, index) => {
+    socketOutline.add(createBeamBetween(
+      corner,
+      socketCorners[(index + 1) % socketCorners.length],
+      0.018,
+      PALETTE.blue,
+      6,
     ));
   });
+
+  const apex = new THREE.Vector3(0, 1.78, 0);
+  const feet = [
+    new THREE.Vector3(-0.42, 0.06, -0.12),
+    new THREE.Vector3(0.42, 0.06, -0.12),
+    new THREE.Vector3(-0.42, 0.06, 0.12),
+    new THREE.Vector3(0.42, 0.06, 0.12),
+  ];
+  const mast = new THREE.Group();
+  feet.forEach((foot) => mast.add(createBeamBetween(foot, apex, 0.028, PALETTE.blueHigh)));
+  [0.48, 0.94].forEach((height, levelIndex) => {
+    const halfWidth = levelIndex === 0 ? 0.31 : 0.21;
+    [-0.12, 0.12].forEach((z) => {
+      mast.add(createBeamBetween(
+        new THREE.Vector3(-halfWidth, height, z),
+        new THREE.Vector3(halfWidth, height, z),
+        0.025,
+        PALETTE.blueHigh,
+      ));
+    });
+    [-halfWidth, halfWidth].forEach((x) => {
+      mast.add(createBeamBetween(
+        new THREE.Vector3(x, height, -0.12),
+        new THREE.Vector3(x, height, 0.12),
+        0.021,
+        PALETTE.blue,
+      ));
+    });
+  });
+
   const signal = new THREE.Mesh(
-    new THREE.RingGeometry(0.35, 0.37, 40),
-    new THREE.MeshBasicMaterial({ color: PALETTE.blue, transparent: true, opacity: 0.26, side: THREE.DoubleSide }),
+    new THREE.TorusGeometry(0.35, 0.018, 6, 48),
+    new THREE.MeshBasicMaterial({ color: PALETTE.blue, transparent: true, opacity: 0.45 }),
   );
+  signal.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), FILM_CAMERA_DIRECTION);
   signal.position.y = 1.62;
   const beacon = new THREE.Mesh(
     new THREE.SphereGeometry(0.055, 10, 6),
@@ -336,68 +421,89 @@ function createNetTower() {
   glow.position.copy(beacon.position);
   const rings = [0, 1, 2].map(() => {
     const ring = new THREE.Mesh(
-      new THREE.RingGeometry(0.18, 0.205, 40),
-      new THREE.MeshBasicMaterial({ color: PALETTE.blueHigh, transparent: true, side: THREE.DoubleSide }),
+      new THREE.TorusGeometry(0.18, 0.016, 6, 40),
+      new THREE.MeshBasicMaterial({ color: PALETTE.blueHigh, transparent: true }),
     );
+    ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), FILM_CAMERA_DIRECTION);
     ring.position.copy(beacon.position);
     group.add(ring);
     return ring;
   });
-  const label = createLabel("NET", PALETTE.ink, 1.1, 58);
-  label.position.set(0, -0.18, 0.2);
-  group.add(signal, beacon, glow, label);
+  const label = createLabel("NET", PALETTE.ink, 1.45, 72);
+  label.position.set(0, 0.14, 0.62);
+  group.add(socket, socketOutline, mast, signal, beacon, glow, label);
   return { group, rings, signal, beacon, glow };
 }
 
-function createDoorAndKey() {
+function createDoorAndKey(labelText = "net.https") {
   const group = new THREE.Group();
   const frame = new THREE.Group();
   const socket = new THREE.Mesh(
     new THREE.CylinderGeometry(0.78, 0.78, 0.08, 4),
     new THREE.MeshBasicMaterial({ color: PALETTE.panelHigh }),
   );
-  socket.rotation.y = Math.PI / 4;
   socket.position.y = 0.04;
-  const socketEdges = new THREE.LineSegments(
-    new THREE.EdgesGeometry(socket.geometry),
-    new THREE.LineBasicMaterial({ color: PALETTE.blue }),
-  );
-  socketEdges.rotation.copy(socket.rotation);
-  socketEdges.position.copy(socket.position);
+  const socketEdges = new THREE.Group();
+  const socketCorners = [
+    new THREE.Vector3(-0.78, 0.09, 0),
+    new THREE.Vector3(0, 0.09, -0.78),
+    new THREE.Vector3(0.78, 0.09, 0),
+    new THREE.Vector3(0, 0.09, 0.78),
+  ];
+  socketCorners.forEach((corner, index) => {
+    socketEdges.add(createBeamBetween(
+      corner,
+      socketCorners[(index + 1) % socketCorners.length],
+      0.022,
+      PALETTE.blueHigh,
+      6,
+    ));
+  });
   const frameMaterial = new THREE.MeshBasicMaterial({ color: PALETTE.blueHigh });
   const verticalGeometry = new THREE.BoxGeometry(0.12, 1.55, 0.16);
   const lintelGeometry = new THREE.BoxGeometry(1.18, 0.12, 0.16);
   const left = new THREE.Mesh(verticalGeometry, frameMaterial);
   const right = new THREE.Mesh(verticalGeometry, frameMaterial);
   const lintel = new THREE.Mesh(lintelGeometry, frameMaterial);
+  const threshold = new THREE.Mesh(
+    new THREE.BoxGeometry(1.18, 0.075, 0.18),
+    new THREE.MeshBasicMaterial({ color: 0xb6d9ff }),
+  );
   left.position.set(-0.53, 0.775, 0);
   right.position.set(0.53, 0.775, 0);
   lintel.position.set(0, 1.49, 0);
+  threshold.position.set(0, 0.1, 0);
+  const doorVoid = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.94, 1.36),
+    new THREE.MeshBasicMaterial({ color: 0x04080e, transparent: true, opacity: 0.7, side: THREE.DoubleSide }),
+  );
+  doorVoid.position.set(0, 0.78, -0.055);
   const leafPivot = new THREE.Group();
   leafPivot.position.set(-0.47, 0.75, 0);
   const leaf = createOutlinedBox(new THREE.Vector3(0.92, 1.36, 0.08), PALETTE.panel, PALETTE.blue);
   leaf.position.x = 0.46;
   const inset = createOutlinedBox(new THREE.Vector3(0.68, 0.94, 0.04), 0x0b1420, PALETTE.lineDark);
-  inset.position.set(0.46, 0, 0.062);
+  inset.position.set(0, 0, 0.062);
   const handle = new THREE.Mesh(
     new THREE.SphereGeometry(0.045, 8, 5),
     new THREE.MeshBasicMaterial({ color: PALETTE.amber }),
   );
-  handle.position.set(0.79, 0, 0.09);
+  handle.position.set(0.33, 0, 0.09);
   leaf.add(inset, handle);
   leafPivot.add(leaf);
   const hinges = new THREE.Group();
   [0.32, 1.16].forEach((height) => {
     const hinge = new THREE.Mesh(
       new THREE.CylinderGeometry(0.035, 0.035, 0.16, 8),
-      new THREE.MeshBasicMaterial({ color: PALETTE.blueHigh }),
+      new THREE.MeshBasicMaterial({ color: PALETTE.amber }),
     );
     hinge.position.set(-0.55, height, 0.1);
     hinges.add(hinge);
   });
-  frame.add(socket, socketEdges, left, right, lintel, leafPivot, hinges);
-  const label = createLabel("net.https", PALETTE.blueHigh, 1.55, 54);
-  label.position.set(0, -0.17, 0.62);
+  frame.add(socket, socketEdges, doorVoid, left, right, lintel, threshold, leafPivot, hinges);
+  const label = createLabel(labelText, PALETTE.amber, 2.05, 68);
+  label.position.set(0, 0.12, 0.86);
+  label.material.depthTest = false;
   frame.add(label);
 
   const key = new THREE.Group();
@@ -447,31 +553,35 @@ function createSourceAndWorkpiece() {
   return { group, source, workpiece, core };
 }
 
-function createSignalRoute(curve, color = PALETTE.blue, samples = 72) {
+function createSignalRoute(curve, color = PALETTE.blue, samples = 30) {
   const points = curve.getPoints(samples);
   const group = new THREE.Group();
-  const underlay = new THREE.Line(
-    new THREE.BufferGeometry().setFromPoints(points),
-    new THREE.LineBasicMaterial({ color: PALETTE.lineDark, transparent: true, opacity: 0.92 }),
-  );
-  const signal = new THREE.Line(
-    new THREE.BufferGeometry().setFromPoints(points),
-    new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.95 }),
-  );
+  const routeSegments = [];
+  for (let index = 1; index < points.length; index += 1) {
+    const segment = new THREE.Group();
+    segment.add(
+      createBeamBetween(points[index - 1], points[index], 0.055, PALETTE.lineDark, 7),
+      createBeamBetween(points[index - 1], points[index], 0.029, color, 7),
+    );
+    routeSegments.push(segment);
+    group.add(segment);
+  }
   const pulse = new THREE.Mesh(
-    new THREE.SphereGeometry(0.075, 10, 7),
+    new THREE.SphereGeometry(0.09, 10, 7),
     new THREE.MeshBasicMaterial({ color }),
   );
-  const glow = createGlow(color, 0.72, 0.72);
-  group.add(underlay, signal, pulse, glow);
-  return { group, curve, underlay, signal, pulse, glow, pointCount: points.length };
+  const glow = createGlow(color, 0.84, 0.84);
+  group.add(pulse, glow);
+  return { group, curve, routeSegments, pulse, glow };
 }
 
 function setRouteProgress(route, amount, time, persistent = false) {
   const value = clamp01(amount);
   route.group.visible = value > 0.001;
-  route.signal.geometry.setDrawRange(0, Math.max(1, Math.ceil(route.pointCount * value)));
-  route.underlay?.geometry?.setDrawRange(0, Math.max(1, Math.ceil(route.pointCount * value)));
+  const visibleSegments = Math.ceil(route.routeSegments.length * value);
+  route.routeSegments.forEach((segment, index) => {
+    segment.visible = index < visibleSegments;
+  });
   const pulseProgress = persistent && value >= 0.999
     ? ((time * 0.42) % 1 + 1) % 1
     : value;
@@ -504,7 +614,7 @@ export function createFoundationWorld() {
   place(agent, FOUNDATION_LAYOUT.agent);
   const keyForge = createKeyForge();
   place(keyForge.group, FOUNDATION_LAYOUT.keyForge);
-  const internet = createDoorAndKey();
+  const internet = createDoorAndKey("net.https");
   place(internet.group, FOUNDATION_LAYOUT.netDoor);
   const netTower = createNetTower();
   place(netTower.group, FOUNDATION_LAYOUT.netTower);
@@ -534,16 +644,10 @@ export function createFoundationWorld() {
   place(builder.group, FOUNDATION_LAYOUT.builder);
   const production = createSourceAndWorkpiece();
   place(production.group, FOUNDATION_LAYOUT.production);
-  const buildDoor = createDoorAndKey();
+  const buildDoor = createDoorAndKey("build.request");
   place(buildDoor.group, FOUNDATION_LAYOUT.buildDoor);
   buildDoor.key.visible = false;
   buildDoor.group.scale.setScalar(0.82);
-  const buildDoorLabel = createLabel("build.request", PALETTE.greenHigh, 1.72, 44);
-  buildDoorLabel.position.set(0, -0.19, 0.64);
-  buildDoor.frame.children.filter((child) => child.isSprite).forEach((child) => {
-    child.visible = false;
-  });
-  buildDoor.frame.add(buildDoorLabel);
   const buildLine = createSignalRoute(new THREE.CatmullRomCurve3([
     new THREE.Vector3(-3.18, 1.44, 0.48),
     new THREE.Vector3(-1.9, 1.16, 0.16),

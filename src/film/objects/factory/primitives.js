@@ -1,4 +1,9 @@
 import * as THREE from "three";
+import { LineSegments2 } from "three/addons/lines/LineSegments2.js";
+import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js";
+import { LineMaterial } from "three/addons/lines/LineMaterial.js";
+
+const OUTLINE_WIDTH = 0.045;
 
 export function createResourceTracker() {
   const geometries = new Set();
@@ -55,13 +60,17 @@ export function createVectorBox(tracker, {
   const mesh = new THREE.Mesh(geometry, material);
   group.add(mesh);
   if (edgeColor !== undefined) {
-    const edgeGeometry = tracker.geometry(new THREE.EdgesGeometry(geometry));
-    const edgeMaterial = tracker.material(new THREE.LineBasicMaterial({
+    const sourceEdges = new THREE.EdgesGeometry(geometry);
+    const edgeGeometry = tracker.geometry(new LineSegmentsGeometry().fromEdgesGeometry(sourceEdges));
+    sourceEdges.dispose();
+    const edgeMaterial = tracker.material(new LineMaterial({
       color: edgeColor,
+      linewidth: OUTLINE_WIDTH,
+      worldUnits: true,
       transparent: opacity < 1,
       opacity,
     }));
-    group.add(new THREE.LineSegments(edgeGeometry, edgeMaterial));
+    group.add(new LineSegments2(edgeGeometry, edgeMaterial));
   }
   group.position.set(...position);
   return group;
