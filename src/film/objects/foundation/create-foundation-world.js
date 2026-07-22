@@ -1102,6 +1102,7 @@ export function createFoundationWorld() {
       targetObject: kernel.body,
       targetLocalPoint: kernelCalloutAnchor,
       angle: -THREE.MathUtils.degToRad(26.565),
+      holdSeconds: 1.8,
     });
     const compactGenesisWidth = KERNEL_FOOTPRINT.compact.width * (510 / 630);
     const compactGenesisDepth = KERNEL_FOOTPRINT.compact.depth * (510 / 630);

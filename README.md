@@ -90,6 +90,9 @@ Der Callout beginnt gleichzeitig mit dem Zeichnen des zugehörigen
 Layer-Grundrisses. Nach dem vollständigen Ausschreiben bleibt das Panel fünf
 Sekunden rechts unten stehen; erst danach startet seine Dock- und
 Outroanimation.
+Der Rust-Kernel ist die zeitlich begründete Ausnahme: Sein Callout fährt schon
+nach `1,8` Sekunden aus und ist vollständig verschwunden, unmittelbar bevor
+der Genesis-Layer-Grundriss beginnt.
 
 ### Maschinenvertrag
 
