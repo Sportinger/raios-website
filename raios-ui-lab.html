@@ -9,6 +9,14 @@
   <link rel="stylesheet" href="ui-lab/lab.css">
   <link rel="stylesheet" href="ui-lab/site/boot-sequence.css">
   <link rel="stylesheet" href="ui-lab/site/story.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
   <button id="view-mode-toggle" type="button" aria-pressed="false">
@@ -55,10 +63,12 @@
     </section>
     <div class="website-infinite-grid" aria-hidden="true"></div>
     <div class="website-story-flow">
-    <section class="website-story story-opener film-section" data-story-reveal aria-label="The factory moves in" lang="en">
+    <section class="website-story story-opener film-section" data-story-reveal data-film-engine="three" aria-label="The factory moves in" lang="en">
       <div class="story-inner film-story-inner">
         <figure class="film-frame">
-          <svg id="film-svg" class="film-svg" viewBox="0 -220 1200 1120" role="img"
+          <div id="film-three-root" class="film-three-root" role="region"
+            aria-label="A real-time 3D architecture film showing how raiOS builds, tests, approves and isolates programs."></div>
+          <svg id="film-svg" class="film-svg" data-film-legacy aria-hidden="true" viewBox="0 -220 1200 1120" role="img"
             aria-label="A two-minute animated architecture film. A request becomes a hashed capsule, receives an explicit network capability, enters an offline build site with a real Rust compiler, passes reproducible twin builds and hostile isolation tests, receives physical owner approval, runs as a small music-player domain, then becomes one of twenty-one isolated app islands including games, browser, video, mail and creative tools.">
             <defs>
               <linearGradient id="film-bg" x1="0" y1="0" x2="0" y2="1">

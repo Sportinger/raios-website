@@ -14,6 +14,21 @@ Dieses eigenständige Repository enthält bewusst nur die Website. Kernel-Quellc
 
 Zwischen Website und UI Lab kann direkt auf der Seite über den Modus-Schalter gewechselt werden.
 
+### Genesis-Film in echtem 3D
+
+Der Website-Modus verwendet den modularen Three.js-Film aus
+`ui-lab/site/three-film/`. Er wird in einem Shadow DOM montiert, damit seine
+Styles und DOM-IDs nicht mit Website oder UI Lab kollidieren. Die bestehende
+2,5D-SVG-Fassung bleibt vollständig in `raios-ui-lab.html`, `story.css` und
+`film.js` erhalten, ist über `data-film-engine="three"` jedoch abgeklemmt.
+
+`ui-lab/site/film.js` bleibt der zentrale Website-Controller: Er übersetzt die
+natürliche Scrollposition in die Playback-Zeit des 3D-Films und nimmt Sprünge
+aus dessen Kapitelsteuerung wieder als Seitenscroll entgegen. Der eingebettete
+Renderer ist transparent und deaktiviert seinen internen GridHelper, sodass das
+durchlaufende Website-Raster hinter der Szene sichtbar bleibt und mit der Seite
+scrollt. Der eigenständige Three.js-Film behält weiterhin sein eigenes Raster.
+
 ## Lokal starten
 
 Es müssen keine Abhängigkeiten installiert werden. Starte im Repository einen beliebigen statischen Webserver, zum Beispiel:
@@ -52,6 +67,7 @@ Reine Dokumentationsänderungen lösen aufgrund der Pfadfilter im Workflow kein 
 | --- | --- |
 | `raios-ui-lab.html` | Gemeinsamer Einstiegspunkt für Website und UI Lab |
 | `ui-lab/site/` | Website-Modus, Story, Boot-Sequenz und Genesis-Film |
+| `ui-lab/site/three-film/` | Isolierter Three.js-Film mit Audio und Embed-Laufzeit |
 | `ui-lab/lab/` | UI-Lab-Steuerung, Szenarien und Diagnose |
 | `ui-lab/core/` | Gemeinsames Modell, Fonts und Zeichenprimitiven |
 | `ui-lab/surfaces/` | Einzelne raiOS-Oberflächen und Abläufe |

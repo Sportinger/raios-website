@@ -416,8 +416,163 @@
     return api;
   }
 
+  function initialiseEmbeddedThreeFilm(filmSection) {
+    const host = filmSection.querySelector("#film-three-root");
+    if (!host) {
+      window.__RAIOS_FILM__ = unavailableApi();
+      return;
+    }
+
+    const params = new URLSearchParams(location.search);
+    const reducedMotionQuery = typeof window.matchMedia === "function"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)")
+      : null;
+    const deterministic = params.get("anim") === "0";
+    const requestedAnimationTime = params.has("animt")
+      ? clamp(Number.parseFloat(params.get("animt")) || 0, 0, 148)
+      : deterministic
+        ? 0
+        : undefined;
+    let app = null;
+    let playbackDuration = 1;
+    let scrollFrame = 0;
+    let resizeFrame = 0;
+
+    const scrollState = () => {
+      const bounds = filmSection.getBoundingClientRect();
+      const sectionTravel = Math.max(1, filmSection.offsetHeight - window.innerHeight);
+      const startOffset = Math.min(
+        window.innerHeight * FILM_EARLY_START_VIEWPORT_RATIO,
+        FILM_EARLY_START_MAX_PX,
+      );
+      const travel = sectionTravel + startOffset;
+      return {
+        bounds,
+        startOffset,
+        travel,
+        progress: clamp((startOffset - bounds.top) / travel, 0, 1),
+        active: bounds.top <= startOffset && bounds.bottom >= window.innerHeight - 1,
+      };
+    };
+
+    const scrollYForPlaybackTime = (time, state = scrollState()) => {
+      const sectionTop = window.scrollY + state.bounds.top;
+      const rawTarget = sectionTop - state.startOffset
+        + (clamp(time, 0, playbackDuration) / playbackDuration) * state.travel;
+      const maxScrollY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      return clamp(rawTarget, 0, maxScrollY);
+    };
+
+    const syncFromPageScroll = () => {
+      scrollFrame = 0;
+      if (!app) return;
+      const websiteEnabled = document.body.dataset.shellMode === "website";
+      if (deterministic || (reducedMotionQuery && reducedMotionQuery.matches)
+        || document.body.classList.contains("film-isolate") || !websiteEnabled) {
+        app.setActive(false);
+        return;
+      }
+      const state = scrollState();
+      const targetTime = state.progress * playbackDuration;
+      if (Math.abs(app.getPlaybackTime() - targetTime) > 0.0001) {
+        app.setPlaybackTime(targetTime, { source: "scroll" });
+      }
+      app.setActive(state.active);
+    };
+
+    const scheduleScrollSync = () => {
+      if (scrollFrame) return;
+      scrollFrame = requestAnimationFrame(syncFromPageScroll);
+    };
+
+    const scheduleResizeSync = () => {
+      if (resizeFrame) cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => {
+        resizeFrame = 0;
+        scheduleScrollSync();
+      });
+    };
+
+    const requestPlaybackTime = (time) => {
+      const targetY = scrollYForPlaybackTime(time);
+      window.scrollTo({ top: targetY, left: window.scrollX, behavior: "auto" });
+      scheduleScrollSync();
+    };
+
+    const detachController = () => {
+      window.removeEventListener("scroll", scheduleScrollSync);
+      window.removeEventListener("resize", scheduleResizeSync);
+      document.removeEventListener("raios:website-mode", scheduleScrollSync);
+      if (scrollFrame) cancelAnimationFrame(scrollFrame);
+      if (resizeFrame) cancelAnimationFrame(resizeFrame);
+      scrollFrame = 0;
+      resizeFrame = 0;
+    };
+
+    const api = {
+      ready: false,
+      duration: 148,
+      playbackDuration: 0,
+      getTime: () => app ? app.getAnimationTime() : (requestedAnimationTime || 0),
+      setTime: (time) => app && app.setAnimationTime(time, { source: "seek" }),
+      seek: (time) => app && app.setAnimationTime(time, { source: "seek" }),
+      renderAt: (time) => app && app.setAnimationTime(time, { source: "seek" }),
+      render: (time) => {
+        if (app && typeof time !== "undefined") app.setAnimationTime(time, { source: "seek" });
+      },
+      pause: () => app && app.setPlaying(false),
+      play: () => app && app.setPlaying(true),
+      refresh: () => {
+        scheduleScrollSync();
+        return Boolean(app);
+      },
+    };
+    Object.defineProperties(api, {
+      time: { enumerable: true, get: api.getTime },
+      playing: { enumerable: true, get: () => false },
+    });
+    window.__RAIOS_FILM__ = api;
+
+    const moduleUrl = new URL("ui-lab/site/three-film/embedded-film.js", document.baseURI);
+    const buildVersion = document.querySelector('meta[name="raios-build-version"]')?.content;
+    if (buildVersion && buildVersion !== "development") {
+      moduleUrl.searchParams.set("v", buildVersion);
+    }
+
+    import(moduleUrl.href).then(({ mountEmbeddedFilm }) => {
+      app = mountEmbeddedFilm(host, {
+        initialAnimationTime: requestedAnimationTime,
+        onRequestPlaybackTime: requestPlaybackTime,
+      });
+      playbackDuration = app.duration;
+      api.ready = true;
+      api.playbackDuration = playbackDuration;
+      scheduleScrollSync();
+    }).catch((error) => {
+      host.dataset.filmLoadError = "true";
+      console.error("Unable to mount the Three.js architecture film", error);
+      detachController();
+      filmSection.dataset.filmEngine = "legacy";
+      filmSection.querySelector("[data-film-legacy]")?.removeAttribute("aria-hidden");
+      initialiseFilm();
+    });
+
+    window.addEventListener("scroll", scheduleScrollSync, { passive: true });
+    window.addEventListener("resize", scheduleResizeSync, { passive: true });
+    document.addEventListener("raios:website-mode", scheduleScrollSync);
+    window.addEventListener("pagehide", () => {
+      detachController();
+      if (app) app.dispose();
+    }, { once: true });
+  }
+
   function initialiseFilm() {
     // ================= SECTION: Setup & state =================
+    const embeddedFilmSection = document.querySelector('.film-section[data-film-engine="three"]');
+    if (embeddedFilmSection) {
+      initialiseEmbeddedThreeFilm(embeddedFilmSection);
+      return;
+    }
     const svg = document.getElementById("film-svg") || document.getElementById("film-animatic");
     const root = document.getElementById("film-animatic") || svg;
     if (!svg || !root) {
