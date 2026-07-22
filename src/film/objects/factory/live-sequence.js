@@ -1,11 +1,19 @@
 import * as THREE from "three";
 import { createCanvasSprite, roundedRect } from "./canvas-primitives.js";
-import { FACTORY_PALETTE } from "./config.js";
-import { createFactoryDoor } from "./door-primitives.js";
+import { FACTORY_LAYOUT, FACTORY_PALETTE } from "./config.js";
+import {
+  createFactoryDoor,
+  orientFactoryDoor,
+  setFactoryDoorEmergence,
+} from "./door-primitives.js";
 import { createRoute, createTextLabel, createVectorBox } from "./primitives.js";
 import { interval, smoothstep, smootherstep } from "./timeline.js";
 
-const DOMAIN_CENTER = new THREE.Vector3(-10.318, 1.5, 3.179);
+const DOMAIN_CENTER = new THREE.Vector3(
+  FACTORY_LAYOUT.shadow.position.x,
+  FACTORY_LAYOUT.shadow.position.y + FACTORY_LAYOUT.shadow.thickness,
+  FACTORY_LAYOUT.shadow.position.z,
+);
 const COMPACT_DOMAIN_CENTER = new THREE.Vector3(-0.25, 1.5, 14.09);
 const AGENT_PORT = new THREE.Vector3(-11.695, 0.18, 13.45);
 const DOMAIN_DOOR_X = Object.freeze([-4.48, -1.48, 1.52]);
@@ -38,19 +46,18 @@ function createDomain(tracker) {
   group.position.copy(DOMAIN_CENTER);
   const surface = new THREE.Group();
   surface.name = "player-domain-surface";
-  surface.position.set(0.5, 0, -0.5);
-  surface.scale.set(1.11, 1, 1.11);
+  const { width, depth, thickness, gridStep } = FACTORY_LAYOUT.shadow;
   const slab = createVectorBox(tracker, {
-    size: [10.35, 0.52, 10.35],
-    color: 0x0c3026,
+    size: [width, thickness, depth],
+    color: 0x0b1a17,
     edgeColor: 0x70e29a,
-    position: [0, -0.26, 0],
-    opacity: 0.72,
+    position: [0, -thickness / 2, 0],
+    opacity: 1,
   });
   surface.add(slab);
-  for (let offset = -4.2; offset <= 4.2; offset += 2.1) {
-    const xLine = createRoute(tracker, [[offset, 0.035, -5.14], [offset, 0.035, 5.14]], 0x275947, 0.014);
-    const zLine = createRoute(tracker, [[-5.14, 0.035, offset], [5.14, 0.035, offset]], 0x275947, 0.014);
+  for (let offset = -4.2; offset <= 4.2; offset += gridStep) {
+    const xLine = createRoute(tracker, [[offset, 0.035, -depth / 2], [offset, 0.035, depth / 2]], 0x244f40, 0.014);
+    const zLine = createRoute(tracker, [[-width / 2, 0.035, offset], [width / 2, 0.035, offset]], 0x244f40, 0.014);
     surface.add(xLine, zLine);
   }
   const title = createTextLabel(tracker, {
@@ -59,7 +66,7 @@ function createDomain(tracker) {
     height: 0.42,
     color: 0x6b836f,
     background: 0x07110e,
-    position: [0, -0.08, 5.35],
+    position: [0, -thickness * 0.45, depth / 2 + 0.04],
     fontSize: 45,
     billboard: true,
   });
@@ -68,14 +75,15 @@ function createDomain(tracker) {
 
   const labels = ["fb region", "input", "file door"];
   const doors = DOMAIN_DOOR_X.map((x, index) => {
-    const door = createFactoryDoor(tracker, FACTORY_PALETTE.edge, [x, -0.53, 3.525], 0.32);
-    door.group.rotation.y = Math.PI / 4;
+    const door = createFactoryDoor(tracker, FACTORY_PALETTE.edge, [x, 0, depth / 2], 0.32);
+    orientFactoryDoor(door, { porchWorldAngle: 0 });
     const label = createTextLabel(tracker, {
       text: labels[index], width: 1.45, height: 0.3,
       color: 0xa9bdad, background: 0x07110e,
       position: [0, 4.28, 0], fontSize: 43, billboard: true,
     });
     door.group.add(label);
+    door.label = label;
     group.add(door.group);
     return door;
   });
@@ -86,12 +94,12 @@ function createDomainRoutes(tracker) {
   return DOMAIN_DOOR_X.map((doorX, index) => {
     const end = DOMAIN_CENTER.clone();
     end.x += doorX * 0.2;
-    end.y = 0.28;
+    end.y += 0.1;
     end.z += 0.12;
     const route = createRoute(tracker, [
       AGENT_PORT.toArray(),
       [-11.0 + index * 0.34, 0.3, 9.4 - index * 0.42],
-      [DOMAIN_CENTER.x + doorX, 0.28, DOMAIN_CENTER.z + 3.525],
+      [DOMAIN_CENTER.x + doorX, DOMAIN_CENTER.y + 0.1, DOMAIN_CENTER.z + FACTORY_LAYOUT.shadow.depth / 2],
       end.toArray(),
     ], FACTORY_PALETTE.green, 0.025);
     route.name = `player-capability-route-${index + 1}`;
@@ -292,10 +300,19 @@ export function createLiveSequence(tracker) {
     domain.group.scale.setScalar(THREE.MathUtils.lerp(1, 0.25, contraction));
     domain.title.material.opacity = domainAlpha * (1 - smootherstep(interval(time, 106, 109)));
     domain.doors.forEach((door, index) => {
-      const reveal = smootherstep(interval(time, 92.35 + index * 0.05, 93.55 + index * 0.05));
-      door.group.visible = reveal > 0.001 && time < 106.55;
-      door.group.position.y = -0.53 - (1 - reveal) * 1.1;
-      door.group.scale.setScalar(0.32 * Math.max(0.001, reveal));
+      const delay = index * 0.05;
+      const outline = smootherstep(interval(time, 92.35 + delay, 92.72 + delay));
+      const hatchOpen = smootherstep(interval(time, 92.64 + delay, 93.04 + delay));
+      const rise = smootherstep(interval(time, 92.92 + delay, 93.55 + delay));
+      door.group.visible = outline > 0.001 && time < 106.55;
+      door.group.position.y = 0;
+      setFactoryDoorEmergence(door, {
+        outlineAmount: outline,
+        openAmount: hatchOpen,
+        riseAmount: rise,
+        opacity: domainAlpha,
+      });
+      door.label.visible = rise > 0.65 && time < 106.55;
       door.hinge.rotation.y = -smootherstep(interval(time, 93.55, 94.35)) * Math.PI * 0.62;
     });
     const routeProgress = smootherstep(interval(time, 92.35, 95.35));

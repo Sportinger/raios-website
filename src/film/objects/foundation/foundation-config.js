@@ -11,7 +11,7 @@ export const FOUNDATION_LAYOUT = Object.freeze({
   genesisCompact: point(-3.05, FOUNDATION_LAYER_HEIGHT, 0),
   agentCompact: point(-2.0, FOUNDATION_LAYER_HEIGHT * 2, 0.87),
   keyForge: point(0.52, FOUNDATION_LAYER_HEIGHT * 2, -1.12),
-  netDoor: point(2.75, 0.76, 2.45),
+  netDoor: point(2.75, FOUNDATION_LAYER_HEIGHT, 2.45),
   netTower: point(8.65, FOUNDATION_LAYER_HEIGHT, 2.3),
   builder: point(6.72, FOUNDATION_LAYER_HEIGHT, -9.17),
   buildDoor: point(2.833, FOUNDATION_LAYER_HEIGHT * 2, -1.08),

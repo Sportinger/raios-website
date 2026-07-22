@@ -212,6 +212,8 @@ export function createVectorDoor({
   thresholdColor = 0xb6d9ff,
   rotationY = 0,
   hatchRotationY = rotationY,
+  porchOffset = 0.82,
+  porchSide = 1,
 } = {}) {
   const group = new THREE.Group();
   group.name = "reusable-vector-door";
@@ -276,8 +278,32 @@ export function createVectorDoor({
     color: edgeColor,
     rotationY: hatchRotationY,
   });
+  // The frame marks the deck edge. The hatch/landing sits completely outside
+  // that edge instead of straddling the layer underneath the frame.
+  hatch.group.position.set(
+    Math.sin(rotationY) * porchOffset * porchSide,
+    0,
+    Math.cos(rotationY) * porchOffset * porchSide,
+  );
   group.add(hatch.group, frame);
-  return { group, frame, hatch, leafPivot, hinge: leafPivot, leaf };
+  return {
+    group,
+    frame,
+    hatch,
+    leafPivot,
+    hinge: leafPivot,
+    leaf,
+    porchOffset,
+    porchSide,
+  };
+}
+
+export function setVectorDoorPorchAngle(door, angleY) {
+  door.hatch.group.position.set(
+    Math.sin(angleY) * door.porchOffset * door.porchSide,
+    0,
+    Math.cos(angleY) * door.porchOffset * door.porchSide,
+  );
 }
 
 export function setVectorDoorEmergence(door, {

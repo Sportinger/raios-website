@@ -2,6 +2,7 @@ import * as THREE from "three";
 import {
   createVectorDoor,
   setVectorDoorEmergence,
+  setVectorDoorPorchAngle,
 } from "../shared/vector-door.js";
 import { FACTORY_PALETTE } from "./config.js";
 
@@ -34,4 +35,12 @@ export function createFactoryDoor(tracker, color, position = [0, 0, 0], scale = 
 export function setFactoryDoorEmergence(door, state) {
   door.group.scale.setScalar(door.baseScale);
   setVectorDoorEmergence(door.mechanism, state);
+}
+
+export function orientFactoryDoor(door, {
+  yaw = Math.PI / 4,
+  porchWorldAngle = yaw,
+} = {}) {
+  door.group.rotation.y = yaw;
+  setVectorDoorPorchAngle(door.mechanism, porchWorldAngle - yaw);
 }

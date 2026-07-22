@@ -38,6 +38,7 @@ import { createApprovalSequence } from "./approval-sequence.js";
 import { createArchipelagoSequence } from "./archipelago-sequence.js";
 import {
   createFactoryDoor as createDoor,
+  orientFactoryDoor,
   setFactoryDoorEmergence,
 } from "./door-primitives.js";
 import { createLiveSequence } from "./live-sequence.js";
@@ -84,9 +85,9 @@ function createBuilderScene(tracker, inert = false) {
     color: FACTORY_PALETTE.edge, background: FACTORY_PALETTE.ink,
     position: [0, 0.38, 5.08], fontSize: 54,
   });
-  const inputDoor = createDoor(tracker, FACTORY_PALETTE.cyan, [FACTORY_LAYOUT.inputDoor.x, 0.76, FACTORY_LAYOUT.inputDoor.z], 0.52);
+  const inputDoor = createDoor(tracker, FACTORY_PALETTE.cyan, [FACTORY_LAYOUT.inputDoor.x, deckLayout.thickness, FACTORY_LAYOUT.inputDoor.z], 0.52);
   inputDoor.group.rotation.y = FACTORY_LAYOUT.inputDoor.yaw;
-  const outputDoor = createDoor(tracker, FACTORY_PALETTE.green, [FACTORY_LAYOUT.outputDoor.x, 0.76, FACTORY_LAYOUT.outputDoor.z], 0.52);
+  const outputDoor = createDoor(tracker, FACTORY_PALETTE.green, [FACTORY_LAYOUT.outputDoor.x, deckLayout.thickness, FACTORY_LAYOUT.outputDoor.z], 0.52);
   outputDoor.group.rotation.y = FACTORY_LAYOUT.outputDoor.yaw;
   const outLabel = createTextLabel(tracker, {
     text: "/out", width: 1.25, height: 0.34, color: FACTORY_PALETTE.amber,
@@ -320,15 +321,19 @@ function createProofScene(tracker) {
     color: 0xe7d6fa, background: 0x12091e, position: [0, 0.85, 0.78], fontSize: 42, billboard: true,
   }));
   group.add(cellar, subject);
-  const deckTop = shadowLayout.thickness + 0.02;
+  const deckTop = shadowLayout.thickness;
+  const gridTop = deckTop + 0.02;
   for (let x = -5; x <= 5; x += shadowLayout.gridStep) {
-    group.add(createRoute(tracker, [[x, deckTop, -shadowLayout.depth / 2], [x, deckTop, shadowLayout.depth / 2]], 0xc594ff, 0.018));
+    group.add(createRoute(tracker, [[x, gridTop, -shadowLayout.depth / 2], [x, gridTop, shadowLayout.depth / 2]], 0xc594ff, 0.018));
   }
   for (let z = -3; z <= 3; z += shadowLayout.gridStep) {
-    group.add(createRoute(tracker, [[-shadowLayout.width / 2, deckTop, z], [shadowLayout.width / 2, deckTop, z]], 0xc594ff, 0.018));
+    group.add(createRoute(tracker, [[-shadowLayout.width / 2, gridTop, z], [shadowLayout.width / 2, gridTop, z]], 0xc594ff, 0.018));
   }
-  const entryDoor = createDoor(tracker, 0xd8acff, [4.5, deckTop, -2.55], 0.65);
-  entryDoor.group.rotation.y = -Math.PI / 4;
+  const halfWidth = shadowLayout.width * 0.5;
+  const halfDepth = shadowLayout.depth * 0.5;
+  const entryDoorPosition = new THREE.Vector3(halfWidth, deckTop, -2.2);
+  const entryDoor = createDoor(tracker, 0xd8acff, entryDoorPosition.toArray(), 0.65);
+  orientFactoryDoor(entryDoor, { porchWorldAngle: Math.PI / 2 });
   group.add(entryDoor.group);
   const shadowTitle = createTextLabel(tracker, {
     text: "SHADOW WORLD · DISPOSABLE · ZERO LIVE EFFECT", width: 7.8, height: 0.58,
@@ -340,9 +345,9 @@ function createProofScene(tracker) {
     color: 0xdcc3f6, background: 0x130b1c, position: [0, 4.15, 0], fontSize: 52, billboard: true,
   });
   entryDoor.group.add(entryLabel);
-  const mockDoors = [-3.7, -1.8, 0.1].map((x, index) => {
-    const door = createDoor(tracker, 0xc28bff, [x, deckTop, 2.55 + index * 0.15], 0.4);
-    door.group.rotation.y = Math.PI / 7;
+  const mockDoors = [-3.7, -1.35, 1].map((x, index) => {
+    const door = createDoor(tracker, 0xc28bff, [x, deckTop, halfDepth], 0.4);
+    orientFactoryDoor(door, { porchWorldAngle: 0 });
     const label = createTextLabel(tracker, {
       text: ["fb.mock", "input.inject", "file.sandbox"][index],
       width: 2.2, height: 0.36, color: 0xdcc3f6, background: 0x130b1c,
@@ -353,7 +358,11 @@ function createProofScene(tracker) {
     return door;
   });
   const entryRoute = createRoute(tracker, [
-    [6.8, 1.1, -4], [5.2, 1.15, -3.3], [4.5, 1.15, -2.55], [2.5, 1.15, -1.2], [0, 1.15, 0],
+    [halfWidth + 2, gridTop + 0.08, -3.5],
+    [halfWidth + 0.8, gridTop + 0.08, -2.8],
+    [entryDoorPosition.x, gridTop + 0.08, entryDoorPosition.z],
+    [2.5, gridTop + 0.08, -1.2],
+    [0, gridTop + 0.08, 0],
   ], 0xc48eff, 0.055);
   group.add(entryRoute);
   const attacks = [
