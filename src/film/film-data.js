@@ -69,11 +69,16 @@ export const FILM_ACTION_TIMINGS = deepFreeze({
     kernelRise: { start: 4.69, end: 6.14 },
     genesisOutline: { start: 8.28, end: 9.08 },
     genesisRise: { start: 9.08, end: 10.58 },
+    agentOutline: { start: 13.02, end: 13.62 },
     worldExpansion: { start: 13.02, end: 14.82 },
+    agentRise: { start: 13.62, end: 14.82 },
+    netOutline: { start: 14.82, end: 15.32 },
+    netHatch: { start: 15.32, end: 15.77 },
+    netRise: { start: 15.67, end: 16.62 },
     builderFloorOnline: { start: 30.15, end: 31.15 },
   },
   network: {
-    nodeOnlineAt: 13.2,
+    nodeOnlineAt: 16.62,
     connectedAt: 22.37,
   },
   compiler: {

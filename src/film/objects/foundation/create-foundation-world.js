@@ -564,6 +564,7 @@ function setFootprintOutline(outline, drawAmount, opacity = 1) {
 
 function createAgent() {
   const group = new THREE.Group();
+  const solid = new THREE.Group();
   const shadow = new THREE.Mesh(
     new THREE.CircleGeometry(0.92, 4),
     new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.38, depthWrite: false }),
@@ -600,8 +601,10 @@ function createAgent() {
   });
   const label = createLabel("AGENT", PALETTE.ink, 1.18, 62);
   label.position.set(0, 0.66, 0.616);
-  group.add(shadow, body, topInset, status, statusGlow, kerbs, label);
-  return group;
+  solid.add(shadow, body, topInset, status, statusGlow, kerbs, label);
+  const outline = createFootprintOutline(1.34, 1.18, PALETTE.blueHigh);
+  group.add(outline.group, solid);
+  return { group, solid, outline };
 }
 
 function createKeyForge() {
@@ -652,27 +655,29 @@ function createKeyForge() {
 
 function createNetTower() {
   const group = new THREE.Group();
-  const socket = new THREE.Mesh(
+  const tower = new THREE.Group();
+  const recess = new THREE.Mesh(
     new THREE.CylinderGeometry(0.48, 0.48, 0.055, 4),
     new THREE.MeshBasicMaterial({ color: 0x0c1724 }),
   );
-  socket.position.y = 0.028;
-  const socketOutline = new THREE.Group();
-  const socketCorners = [
-    new THREE.Vector3(-0.48, 0.062, 0),
-    new THREE.Vector3(0, 0.062, -0.48),
-    new THREE.Vector3(0.48, 0.062, 0),
-    new THREE.Vector3(0, 0.062, 0.48),
-  ];
-  socketCorners.forEach((corner, index) => {
-    socketOutline.add(createBeamBetween(
-      corner,
-      socketCorners[(index + 1) % socketCorners.length],
-      0.018,
+  recess.position.y = 0.018;
+  const outline = createFootprintOutline(1.08, 1.08, PALETTE.blueHigh);
+  const hatch = new THREE.Group();
+  const createFlap = (side) => {
+    const pivot = new THREE.Group();
+    pivot.position.set(side * 0.52, 0.055, 0);
+    const flap = createOutlinedBox(
+      new THREE.Vector3(0.52, 0.055, 1.04),
+      0x101d2b,
       PALETTE.blue,
-      6,
-    ));
-  });
+    );
+    flap.position.x = -side * 0.26;
+    pivot.add(flap);
+    hatch.add(pivot);
+    return pivot;
+  };
+  const leftHatch = createFlap(-1);
+  const rightHatch = createFlap(1);
 
   const apex = new THREE.Vector3(0, 1.78, 0);
   const feet = [
@@ -723,13 +728,26 @@ function createNetTower() {
     );
     ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), FILM_CAMERA_DIRECTION);
     ring.position.copy(beacon.position);
-    group.add(ring);
+    tower.add(ring);
     return ring;
   });
   const label = createLabel("NET", PALETTE.ink, 1.45, 72);
   label.position.set(0, 0.14, 0.62);
-  group.add(socket, socketOutline, mast, signal, beacon, glow, label);
-  return { group, rings, signal, beacon, glow };
+  tower.add(mast, signal, beacon, glow, label);
+  group.add(recess, outline.group, hatch, tower);
+  return {
+    group,
+    tower,
+    outline,
+    hatch,
+    leftHatch,
+    rightHatch,
+    recess,
+    rings,
+    signal,
+    beacon,
+    glow,
+  };
 }
 
 function createDoorAndKey(labelText = "net.https", {
@@ -1066,11 +1084,11 @@ export function createFoundationWorld() {
   );
 
   const agent = createAgent();
-  place(agent, FOUNDATION_LAYOUT.agent);
+  place(agent.group, FOUNDATION_LAYOUT.agentCompact);
   // Compensates for the authored Foundation-set scale so the Agent retains
   // the original block-to-deck ratio while the two decks fill the frame.
   const agentScale = 1.24;
-  agent.scale.setScalar(agentScale);
+  agent.group.scale.setScalar(agentScale);
   const keyForge = createKeyForge();
   place(keyForge.group, FOUNDATION_LAYOUT.keyForge);
   keyForge.group.scale.setScalar(1.5);
@@ -1231,7 +1249,7 @@ export function createFoundationWorld() {
     kernelCallout.group,
     genesis.group,
     genesisCallout.group,
-    agent,
+    agent.group,
     keyForge.group,
     internet.group,
     netTower.group,
@@ -1280,7 +1298,7 @@ export function createFoundationWorld() {
       1 - progress(time, FOUNDATION_TIMELINE.kernelRise.start, 5.13),
     );
     setOpacity(kernel.title, progress(time, 8.06, 8.28));
-    const foundationExpansion = timedProgress(time, FOUNDATION_TIMELINE.agentRise);
+    const foundationExpansion = timedProgress(time, FOUNDATION_TIMELINE.worldExpansion);
     if (group.userData.presentationBaseX === undefined) {
       group.userData.presentationBaseX = group.position.x;
     }
@@ -1380,32 +1398,55 @@ export function createFoundationWorld() {
     });
 
     const legacyWorldAlpha = 1 - progress(time, 106, 108.7);
+    const agentOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.agentOutline);
     const agentRise = timedProgress(time, FOUNDATION_TIMELINE.agentRise);
-    agent.visible = agentRise * legacyWorldAlpha > 0.001;
-    agent.position.set(
-      THREE.MathUtils.lerp(
-        FOUNDATION_LAYOUT.agentCompact[0],
-        FOUNDATION_LAYOUT.agent[0],
-        foundationExpansion,
-      ),
-      FOUNDATION_LAYOUT.agent[1] - (1 - agentRise) * 1.12,
-      FOUNDATION_LAYOUT.agent[2],
+    agent.group.position.set(
+      FOUNDATION_LAYOUT.agentCompact[0]
+        - FOUNDATION_LAYOUT.expansionOffset[0] * foundationExpansion / foundationScaleX,
+      FOUNDATION_LAYOUT.agentCompact[1],
+      FOUNDATION_LAYOUT.agentCompact[2]
+        - FOUNDATION_LAYOUT.expansionOffset[2] * foundationExpansion / foundationScaleZ,
     );
-    agent.scale.y = agentScale * Math.max(0.001, agentRise);
-    setFade(agent, agentRise * legacyWorldAlpha);
+    agent.group.visible = (agentOutlineDraw > 0.001 || agentRise > 0.001)
+      && legacyWorldAlpha > 0.001;
+    agent.solid.scale.y = Math.max(0.001, agentRise);
+    setFade(agent.solid, agentRise * legacyWorldAlpha);
+    setFootprintOutline(
+      agent.outline,
+      agentOutlineDraw,
+      legacyWorldAlpha * (1 - progress(time, FOUNDATION_TIMELINE.agentRise.start, 14.02)),
+    );
 
+    const netOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.netOutline);
+    const netHatchOpen = timedProgress(time, FOUNDATION_TIMELINE.netHatch);
     const netRise = timedProgress(time, FOUNDATION_TIMELINE.netRise);
-    netTower.group.visible = netRise * legacyWorldAlpha > 0.001;
-    netTower.group.position.y = FOUNDATION_LAYOUT.netTower[1] + 0.3 - (1 - netRise) * 0.92;
-    netTower.group.scale.y = 1.18 * Math.max(0.001, netRise);
+    netTower.group.visible = (netOutlineDraw > 0.001 || netHatchOpen > 0.001 || netRise > 0.001)
+      && legacyWorldAlpha > 0.001;
+    netTower.group.position.y = FOUNDATION_LAYOUT.netTower[1];
+    netTower.group.scale.setScalar(1.18);
+    setFootprintOutline(
+      netTower.outline,
+      netOutlineDraw,
+      legacyWorldAlpha * (1 - netHatchOpen),
+    );
+    netTower.recess.visible = netHatchOpen > 0.001;
+    netTower.hatch.visible = netOutlineDraw > 0.999 || netHatchOpen > 0.001;
+    netTower.leftHatch.rotation.z = Math.PI * 0.5 * netHatchOpen;
+    netTower.rightHatch.rotation.z = -Math.PI * 0.5 * netHatchOpen;
+    netTower.tower.visible = netRise > 0.001;
+    netTower.tower.position.y = THREE.MathUtils.lerp(-1.72, 0, netRise);
+    setFade(
+      netTower.tower,
+      progress(time, FOUNDATION_TIMELINE.netRise.start, FOUNDATION_TIMELINE.netRise.start + 0.16)
+        * legacyWorldAlpha,
+    );
     netTower.rings.forEach((ring, index) => {
-      const cycle = ((time - 13.2 - index * 1.2) % 3.6 + 3.6) % 3.6 / 3.6;
+      const cycle = ((time - FOUNDATION_TIMELINE.netRise.end - index * 1.2) % 3.6 + 3.6) % 3.6 / 3.6;
       ring.scale.setScalar(0.4 + cycle * 2.5);
-      ring.material.opacity = time < 13.2 ? 0 : (1 - cycle) * 0.72 * legacyWorldAlpha;
+      ring.material.opacity = time < FOUNDATION_TIMELINE.netRise.end
+        ? 0
+        : (1 - cycle) * 0.72 * legacyWorldAlpha;
     });
-    setFade(netTower.signal, legacyWorldAlpha);
-    setFade(netTower.beacon, legacyWorldAlpha);
-    setFade(netTower.glow, legacyWorldAlpha);
     netTower.signal.rotation.z = time * 0.26;
     netTower.beacon.scale.setScalar(0.8 + Math.sin(time * 4) * 0.18);
 
