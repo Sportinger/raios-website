@@ -9,7 +9,12 @@ import {
   GENESIS_FOOTPRINT,
   KERNEL_FOOTPRINT,
 } from "./foundation-config.js";
-import { createLayerCallout, setLayerCallout } from "./layer-callout.js";
+import { createVectorCallout, setVectorCallout } from "../shared/vector-callout.js";
+import {
+  createVectorLayer,
+  setVectorLayerBuild,
+  setVectorLayerFootprint,
+} from "../shared/vector-layer.js";
 import {
   anchorVectorDoorToSurface,
   attachVectorDoorLabel,
@@ -489,72 +494,26 @@ function createSlabFacets(width, depth, height) {
 }
 
 function createDeck({ width, depth, height, color, edgeColor, label, labelColor = edgeColor }) {
-  const group = new THREE.Group();
-  const body = createOutlinedBox(new THREE.Vector3(width, height, depth), color, edgeColor);
-  body.position.y = height / 2;
-  const top = new THREE.Mesh(
-    new THREE.PlaneGeometry(width - 0.08, depth - 0.08),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.94 }),
-  );
-  top.rotation.x = -Math.PI / 2;
-  top.position.y = height + 0.009;
-  const grid = new THREE.GridHelper(Math.max(width, depth), 8, edgeColor, edgeColor);
-  grid.scale.set(width / Math.max(width, depth), 1, depth / Math.max(width, depth));
-  grid.position.y = height + 0.006;
-  grid.material.transparent = true;
-  grid.material.opacity = 0.18;
   const title = new THREE.Group();
   if (label) {
     const titleWidth = Math.min(2.25, Math.max(1.65, width * 0.34));
     const titleDecal = createDeckLabel(label, labelColor, titleWidth, height);
     title.add(titleDecal);
   }
-  title.position.set(0, height * 0.52, depth / 2 + 0.034);
   const underglow = createGlow(edgeColor, width * 0.96, depth * 0.34);
   underglow.material.opacity = 0.17;
   underglow.position.set(0, 0.04, depth * 0.18);
-  group.add(body, top, grid, title, underglow);
-  return {
-    group,
-    body,
-    top,
-    grid,
-    title,
-    underglow,
+  return createVectorLayer({
+    id: label?.toLowerCase().replace(/[^a-z0-9]+/g, "-") ?? "foundation",
     width,
     depth,
     height,
-    gridScale: grid.scale.clone(),
-  };
-}
-
-function setDeckRise(deck, amount) {
-  const scale = Math.max(0.001, amount);
-  deck.body.scale.y = scale;
-  deck.body.position.y = deck.height * scale / 2;
-  deck.top.position.y = deck.height * scale + 0.009;
-  deck.grid.position.y = deck.height * scale + 0.006;
-  deck.title.position.y = deck.height * scale * 0.56;
-  setOpacity(deck.title, clamp01((amount - 0.55) / 0.45));
-  deck.group.visible = amount > 0.001;
-}
-
-function setDeckFootprint(deck, scaleX, scaleZ) {
-  deck.body.scale.x = scaleX;
-  deck.body.scale.z = scaleZ;
-  deck.top.scale.set(scaleX, scaleZ, 1);
-  deck.grid.scale.set(
-    deck.gridScale.x * scaleX,
-    deck.gridScale.y,
-    deck.gridScale.z * scaleZ,
-  );
-  deck.underglow.scale.set(
-    deck.width * 0.96 * scaleX,
-    deck.depth * 0.34 * scaleZ,
-    1,
-  );
-  deck.underglow.position.z = deck.depth * 0.18 * scaleZ;
-  deck.title.position.z = deck.depth * 0.5 * scaleZ + 0.04;
+    color,
+    edgeColor,
+    title,
+    titlePosition: [0, height * 0.52, depth / 2 + 0.034],
+    underglow,
+  });
 }
 
 function createFootprintOutline(width, depth, color) {
@@ -983,13 +942,7 @@ export function createFoundationWorld() {
   );
   kernel.body.add(kernelFacets);
   place(kernel.group, FOUNDATION_LAYOUT.kernel);
-  const kernelOutline = createFootprintOutline(
-    KERNEL_FOOTPRINT.compact.width,
-    KERNEL_FOOTPRINT.compact.depth,
-    PALETTE.blueHigh,
-  );
-  kernel.group.add(kernelOutline.group);
-  const kernelCallout = createLayerCallout({
+  const kernelCallout = createVectorCallout({
     title: "RUST-KERNEL",
     copy: "OWNS CPU · RAM · USB · DISPLAY · NET",
     color: PALETTE.blueHigh,
@@ -1007,13 +960,7 @@ export function createFoundationWorld() {
     color: PALETTE.panel, edgeColor: 0x587b9e, label: "GENESIS DECK", labelColor: PALETTE.ink,
   });
   place(genesis.group, FOUNDATION_LAYOUT.genesisCompact);
-  const genesisOutline = createFootprintOutline(
-    GENESIS_FOOTPRINT.width,
-    GENESIS_FOOTPRINT.depth,
-    PALETTE.greenHigh,
-  );
-  genesis.group.add(genesisOutline.group);
-  const genesisCallout = createLayerCallout({
+  const genesisCallout = createVectorCallout({
     title: "GENESIS DECK",
     copy: "BUILDS ABOVE KERNEL · GRANTS DOORS",
     color: PALETTE.green,
@@ -1073,7 +1020,7 @@ export function createFoundationWorld() {
   const builderHatch = createBuilderHatch(BUILDER_FOOTPRINT.width, BUILDER_FOOTPRINT.depth);
   builderHatch.position.y = builder.height + 0.025;
   builder.group.add(builderHatch);
-  const builderCallout = createLayerCallout({
+  const builderCallout = createVectorCallout({
     title: "BUILDER DECK",
     copy: "OFFLINE TOOLS \u00b7 SEALED EGRESS",
     color: PALETTE.blueHigh,
@@ -1255,19 +1202,12 @@ export function createFoundationWorld() {
     const time = Math.min(120, Math.max(0, Number(rawTime) || 0));
     const kernelOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.kernelOutline);
     const kernelRise = timedProgress(time, FOUNDATION_TIMELINE.kernelRise);
-    setDeckRise(kernel, kernelRise);
-    const kernelSolidVisible = kernelRise > 0.001;
-    kernel.body.visible = kernelSolidVisible;
-    kernel.top.visible = kernelSolidVisible;
-    kernel.grid.visible = kernelSolidVisible;
-    kernel.underglow.visible = kernelSolidVisible;
-    kernel.group.visible = kernelOutlineDraw > 0.001 || kernelSolidVisible;
-    setFootprintOutline(
-      kernelOutline,
-      kernelOutlineDraw,
-      1 - progress(time, FOUNDATION_TIMELINE.kernelRise.start, 5.13),
-    );
-    setOpacity(kernel.title, progress(time, 8.06, 8.28));
+    setVectorLayerBuild(kernel, {
+      outlineAmount: kernelOutlineDraw,
+      riseAmount: kernelRise,
+      outlineOpacity: 1 - progress(time, FOUNDATION_TIMELINE.kernelRise.start, 5.13),
+      titleOpacity: progress(time, 8.06, 8.28),
+    });
     const foundationExpansion = timedProgress(time, FOUNDATION_TIMELINE.worldExpansion);
     if (group.userData.presentationBaseX === undefined) {
       group.userData.presentationBaseX = group.position.x;
@@ -1319,9 +1259,9 @@ export function createFoundationWorld() {
         - KERNEL_FOOTPRINT.compact.depth * (kernelScaleZ - 1) * 0.5
         - FOUNDATION_LAYOUT.expansionOffset[2] * foundationExpansion / foundationScaleZ,
     );
-    setDeckFootprint(kernel, kernelScaleX, kernelScaleZ);
+    setVectorLayerFootprint(kernel, kernelScaleX, kernelScaleZ);
     kernel.title.position.x = -KERNEL_FOOTPRINT.compact.width * (kernelScaleX - 1) * 0.5;
-    setLayerCallout(kernelCallout, time, {
+    setVectorCallout(kernelCallout, time, {
       start: 6.24,
       introEnd: 7.04,
       titleStart: 7.28,
@@ -1334,7 +1274,7 @@ export function createFoundationWorld() {
     });
     const compactGenesisWidth = KERNEL_FOOTPRINT.compact.width * (510 / 630);
     const compactGenesisDepth = KERNEL_FOOTPRINT.compact.depth * (510 / 630);
-    setDeckFootprint(
+    setVectorLayerFootprint(
       genesis,
       THREE.MathUtils.lerp(compactGenesisWidth / GENESIS_FOOTPRINT.width, 1, foundationExpansion),
       THREE.MathUtils.lerp(compactGenesisDepth / GENESIS_FOOTPRINT.depth, 1, foundationExpansion),
@@ -1348,20 +1288,13 @@ export function createFoundationWorld() {
       FOUNDATION_LAYOUT.genesisCompact[2]
         - FOUNDATION_LAYOUT.expansionOffset[2] * foundationExpansion / foundationScaleZ,
     );
-    setDeckRise(genesis, genesisRise);
-    const genesisSolidVisible = genesisRise > 0.001;
-    genesis.body.visible = genesisSolidVisible;
-    genesis.top.visible = genesisSolidVisible;
-    genesis.grid.visible = genesisSolidVisible;
-    genesis.underglow.visible = genesisSolidVisible;
-    genesis.group.visible = genesisOutlineDraw > 0.001 || genesisSolidVisible;
-    setFootprintOutline(
-      genesisOutline,
-      genesisOutlineDraw,
-      1 - progress(time, FOUNDATION_TIMELINE.genesisRise.start, 9.52),
-    );
-    setOpacity(genesis.title, progress(time, 12.8, 13.02));
-    setLayerCallout(genesisCallout, time, {
+    setVectorLayerBuild(genesis, {
+      outlineAmount: genesisOutlineDraw,
+      riseAmount: genesisRise,
+      outlineOpacity: 1 - progress(time, FOUNDATION_TIMELINE.genesisRise.start, 9.52),
+      titleOpacity: progress(time, 12.8, 13.02),
+    });
+    setVectorCallout(genesisCallout, time, {
       start: 10.68,
       introEnd: 11.48,
       titleStart: 12.02,
@@ -1526,15 +1459,22 @@ export function createFoundationWorld() {
       timedProgress(time, FOUNDATION_TIMELINE.netRoute) * networkWindowAlpha,
     );
 
+    const builderOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.builderOutline);
     const builderRise = timedProgress(time, FOUNDATION_TIMELINE.builderRise);
-    setDeckRise(builder, builderRise);
+    const builderRelease = progress(time, 94.62, 95.8);
+    setVectorLayerBuild(builder, {
+      outlineAmount: builderOutlineDraw,
+      riseAmount: builderRise,
+      opacity: 1 - builderRelease,
+      outlineOpacity: 1 - progress(time, FOUNDATION_TIMELINE.builderRise.start, 27.9),
+      titleOpacity: progress(time, 32.68, 32.9),
+    });
     builderHatch.position.y = builder.height * builderRise + 0.025;
     const floorOnline = timedProgress(time, FOUNDATION_TIMELINE.builderFloorOnline);
     setFade(builderHatch, builderRise * (1 - floorOnline));
-    setOpacity(builder.title, progress(time, 32.68, 32.9));
-    setLayerCallout(builderCallout, time, {
-      start: 28.25,
-      introEnd: 29.05,
+    setVectorCallout(builderCallout, time, {
+      start: 28.55,
+      introEnd: 29.35,
       titleStart: 32,
       end: 32.9,
       root: group,
@@ -1801,9 +1741,7 @@ export function createFoundationWorld() {
     const sourceCaptionAlpha = progress(time, 33, 33.5) * (1 - progress(time, 39.8, 40.25));
     setFade(sourceCaption, sourceCaptionAlpha);
     setFade(hashCaption, sourceCaptionAlpha);
-    const builderRelease = progress(time, 94.62, 95.8);
     builder.group.position.y = FOUNDATION_LAYOUT.builder[1] - builderRelease * 0.58;
-    setFade(builder.group, builderRise * (1 - builderRelease));
     return time;
   }
 

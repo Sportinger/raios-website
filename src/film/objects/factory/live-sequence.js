@@ -7,13 +7,15 @@ import {
   setFactoryDoorEmergence,
   setFactoryDoorOpen,
 } from "./door-primitives.js";
-import { createRoute, createTextLabel, createVectorBox } from "./primitives.js";
+import { createRoute, createTextLabel } from "./primitives.js";
 import { interval, smoothstep, smootherstep } from "./timeline.js";
 import {
   cableDoorLandingDrop,
   cableSurfacePoint,
   VECTOR_CABLE_DIRECTIONS,
 } from "../shared/vector-cable.js";
+import { createVectorCallout, setVectorCallout } from "../shared/vector-callout.js";
+import { createVectorLayer, setVectorLayerBuild } from "../shared/vector-layer.js";
 
 const DOMAIN_CENTER = new THREE.Vector3(
   FACTORY_LAYOUT.shadow.position.x,
@@ -51,22 +53,7 @@ function createDomain(tracker) {
   const group = new THREE.Group();
   group.name = "player-domain";
   group.position.copy(DOMAIN_CENTER);
-  const surface = new THREE.Group();
-  surface.name = "player-domain-surface";
   const { width, depth, thickness, gridStep } = FACTORY_LAYOUT.shadow;
-  const slab = createVectorBox(tracker, {
-    size: [width, thickness, depth],
-    color: 0x0b1a17,
-    edgeColor: 0x70e29a,
-    position: [0, -thickness / 2, 0],
-    opacity: 1,
-  });
-  surface.add(slab);
-  for (let offset = -4.2; offset <= 4.2; offset += gridStep) {
-    const xLine = createRoute(tracker, [[offset, 0.035, -depth / 2], [offset, 0.035, depth / 2]], 0x244f40, 0.014);
-    const zLine = createRoute(tracker, [[-width / 2, 0.035, offset], [width / 2, 0.035, offset]], 0x244f40, 0.014);
-    surface.add(xLine, zLine);
-  }
   const title = createTextLabel(tracker, {
     text: "PLAYER DOMAIN",
     width: 3.35,
@@ -77,19 +64,25 @@ function createDomain(tracker) {
     fontSize: 45,
     billboard: true,
   });
-  surface.add(title);
-  group.add(surface);
-
-  const labels = ["fb region", "input", "file door"];
-  const domainSurface = Object.freeze({
+  const layer = createVectorLayer({
+    tracker,
     id: "player-domain",
-    color: 0x0b1a17,
-    centerX: 0,
-    centerZ: 0,
     width,
     depth,
-    top: 0,
+    height: thickness,
+    baseY: -thickness,
+    color: 0x0b1a17,
+    edgeColor: 0x70e29a,
+    topOpacity: 1,
+    gridDivisions: Math.round(Math.max(width, depth) / gridStep),
+    gridOpacity: 0.28,
+    title,
+    titlePosition: [0, -thickness * 0.45, depth / 2 + 0.04],
   });
+  group.add(layer.group);
+
+  const labels = ["fb region", "input", "file door"];
+  const domainSurface = layer.surface;
   const routeSurface = Object.freeze({
     id: "player-domain-world",
     centerX: DOMAIN_CENTER.x,
@@ -112,8 +105,9 @@ function createDomain(tracker) {
   });
   return {
     group,
-    surface,
-    slab,
+    layer,
+    surface: layer.group,
+    slab: layer.body,
     title,
     doors,
     supportSurface: domainSurface,
@@ -305,6 +299,13 @@ export function createLiveSequence(tracker) {
   const group = new THREE.Group();
   group.name = "live-release-and-runtime";
   const domain = createDomain(tracker);
+  const domainCallout = createVectorCallout({
+    tracker,
+    title: "PLAYER DOMAIN",
+    copy: "LIVE RUNTIME · APPROVED EGRESS",
+    color: 0x70e29a,
+    width: 5.5,
+  });
   const routes = createDomainRoutes(tracker, domain);
   const egress = createEgressDots(tracker);
   const playerUi = createPlayerUi(tracker);
@@ -318,12 +319,20 @@ export function createLiveSequence(tracker) {
     "A CRASH COSTS ONE BLOCK, NEVER THE HOUSE.",
   ], 13, 0.9);
   crashCaption.sprite.position.set(-7.8, -8.3, 7.8);
-  group.add(domain.group, ...routes, ...egress.dots, playerUi.sprite, egressCaption.sprite, crashCaption.sprite);
+  group.add(
+    domain.group,
+    domainCallout.group,
+    ...routes,
+    ...egress.dots,
+    playerUi.sprite,
+    egressCaption.sprite,
+    crashCaption.sprite,
+  );
 
-  function setTime(rawTime) {
+  function setTime(rawTime, camera) {
     const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 120);
     const domainAlpha = windowAlpha(time, 88.8, 120, 0.45);
-    const domainRise = smootherstep(interval(time, 89.2, 92));
+    const domainRise = smootherstep(interval(time, 89.2, 90.42));
     const contraction = smootherstep(interval(time, 106, 109));
     const finaleDrift = smootherstep(interval(time, 109, 117));
     const compactX = COMPACT_DOMAIN_CENTER.x + 4.1 * finaleDrift;
@@ -331,11 +340,31 @@ export function createLiveSequence(tracker) {
     setOpacity(domain.group, domainAlpha);
     domain.group.position.set(
       THREE.MathUtils.lerp(DOMAIN_CENTER.x, compactX, contraction),
-      DOMAIN_CENTER.y - (1 - domainRise) * 2.6,
+      DOMAIN_CENTER.y,
       THREE.MathUtils.lerp(DOMAIN_CENTER.z, compactZ, contraction),
     );
     domain.group.scale.setScalar(THREE.MathUtils.lerp(1, 0.25, contraction));
-    domain.title.material.opacity = domainAlpha * (1 - smootherstep(interval(time, 106, 109)));
+    const domainOutline = smootherstep(interval(time, 88.8, 89.2));
+    setVectorLayerBuild(domain.layer, {
+      outlineAmount: domainOutline,
+      riseAmount: domainRise,
+      opacity: domainAlpha,
+      outlineOpacity: domainAlpha * (1 - smootherstep(interval(time, 89.2, 89.72))),
+      titleOpacity: domainAlpha
+        * smootherstep(interval(time, 92.08, 92.35))
+        * (1 - smootherstep(interval(time, 106, 109))),
+    });
+    setVectorCallout(domainCallout, time, {
+      start: 90.48,
+      introEnd: 90.98,
+      titleStart: 91.42,
+      end: 92.35,
+      root: group,
+      camera,
+      targetObject: domain.layer.body,
+      targetLocalPoint: new THREE.Vector3(0, 0, domain.layer.depth / 2 + 0.04),
+      angle: -THREE.MathUtils.degToRad(26.565),
+    });
     domain.doors.forEach((door, index) => {
       const delay = index * 0.05;
       const outline = smootherstep(interval(time, 92.35 + delay, 92.72 + delay));
@@ -377,5 +406,5 @@ export function createLiveSequence(tracker) {
   }
 
   setTime(0);
-  return { group, setTime, domain, routes, playerUi };
+  return { group, setTime, domain, domainCallout, routes, playerUi };
 }

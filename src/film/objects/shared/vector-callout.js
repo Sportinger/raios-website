@@ -4,6 +4,9 @@ const UNIT_Y = new THREE.Vector3(0, 1, 0);
 const CAMERA_PANEL_DISTANCE = 0.7;
 const CAMERA_PANEL_SCALE = 1.92;
 const DOCKED_PANEL_SCALE = 0.3;
+const trackGeometry = (tracker, geometry) => tracker?.geometry?.(geometry) ?? geometry;
+const trackMaterial = (tracker, material) => tracker?.material?.(material) ?? material;
+const trackTexture = (tracker, texture) => tracker?.texture?.(texture) ?? texture;
 
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
 const smoothstep = (value) => {
@@ -58,16 +61,16 @@ function drawLayerCallout(callout, titleAmount, copyAmount, cursorVisible) {
   callout.texture.needsUpdate = true;
 }
 
-function createDynamicBeam(radius, color) {
-  const material = new THREE.MeshBasicMaterial({
+function createDynamicBeam(tracker, radius, color) {
+  const material = trackMaterial(tracker, new THREE.MeshBasicMaterial({
     color,
     transparent: true,
     depthTest: false,
     depthWrite: false,
-  });
+  }));
   material.userData.preserveTransparency = true;
   const beam = new THREE.Mesh(
-    new THREE.CylinderGeometry(radius, radius, 1, 8),
+    trackGeometry(tracker, new THREE.CylinderGeometry(radius, radius, 1, 8)),
     material,
   );
   beam.renderOrder = 78;
@@ -93,35 +96,35 @@ function setRouteOpacity(route, opacity) {
   });
 }
 
-export function createLayerCallout({ title, copy, color, width = 7 }) {
+export function createVectorCallout({ tracker, title, copy, color, width = 7 }) {
   const canvas = document.createElement("canvas");
   canvas.width = 1200;
   canvas.height = 300;
   const context = canvas.getContext("2d");
-  const texture = new THREE.CanvasTexture(canvas);
+  const texture = trackTexture(tracker, new THREE.CanvasTexture(canvas));
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearFilter;
-  const material = new THREE.SpriteMaterial({
+  const material = trackMaterial(tracker, new THREE.SpriteMaterial({
     map: texture,
     transparent: true,
     depthTest: false,
     depthWrite: false,
-  });
+  }));
   material.userData.preserveTransparency = true;
   const card = new THREE.Sprite(material);
   const height = width * canvas.height / canvas.width;
   card.renderOrder = 80;
 
-  const firstSegment = createDynamicBeam(0.018, color);
-  const secondSegment = createDynamicBeam(0.018, color);
+  const firstSegment = createDynamicBeam(tracker, 0.018, color);
+  const secondSegment = createDynamicBeam(tracker, 0.018, color);
   const targetDot = new THREE.Mesh(
-    new THREE.SphereGeometry(0.07, 10, 6),
-    new THREE.MeshBasicMaterial({
+    trackGeometry(tracker, new THREE.SphereGeometry(0.07, 10, 6)),
+    trackMaterial(tracker, new THREE.MeshBasicMaterial({
       color,
       transparent: true,
       depthTest: false,
       depthWrite: false,
-    }),
+    })),
   );
   targetDot.renderOrder = 79;
   const route = new THREE.Group();
@@ -150,7 +153,7 @@ export function createLayerCallout({ title, copy, color, width = 7 }) {
   return callout;
 }
 
-export function setLayerCallout(callout, time, {
+export function setVectorCallout(callout, time, {
   start,
   introEnd,
   titleStart,

@@ -86,6 +86,7 @@ export const FOUNDATION_TIMELINE = Object.freeze({
   networkConnectedAt: 22.37,
   kernelSquareExpansion: window(24.72, 26.2),
   buildRequestRoute: window(26.5, 27.4),
+  builderOutline: window(26.65, 27.45),
   builderRise: window(27.45, 28.45),
   buildDoorRise: window(27.45, 28.1),
   buildKey: Object.freeze({ start: 28, detach: 28.34, insert: 28.75, end: 29.2 }),

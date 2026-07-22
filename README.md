@@ -51,6 +51,21 @@ Die Foundation-Welt deckt die Sekunden `0–41` ab. Die Factory-Welt modelliert
 die Sekunden `41–120`. Wiederholte Produktionspfade und das Insel-Finale nutzen
 Konfiguration beziehungsweise `THREE.InstancedMesh` statt duplizierter Szenen.
 
+### Layer- und Callout-Vertrag
+
+Rust-Kernel, Genesis Deck, Builder Deck, Shadow VM und Player Domain verwenden
+`objects/shared/vector-layer.js`. Größe, Höhe, Farbe, Grid und Boden-Pivot sind
+Konfiguration; der deterministische Aufbau ist immer gleich: Zuerst zeichnet
+sich der Grundriss auf dem Trägerboden, danach wächst der massive Layer bei
+unveränderter Position bis zu seiner vollen Höhe. Eigene Szenen dürfen Layer
+nicht mehr durch Verschieben oder Skalieren der gesamten Gruppe einblenden.
+
+Die zugehörigen Erklärtafeln verwenden `objects/shared/vector-callout.js`.
+Dieses Modul öffnet das Panel vor der Kamera, schreibt Titel und Text, bewegt
+es anschließend zum Ziel und aktualisiert die Verbindungslinie bei jeder
+Kamera- oder Objektbewegung. Inhalt, Akzentfarbe, Zielpunkt und Zeitfenster
+bleiben reine Konfiguration.
+
 ### Türvertrag
 
 Alle regulären Filmtüren verwenden `objects/shared/vector-door.js`. Eine Tür

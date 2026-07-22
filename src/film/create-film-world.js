@@ -32,7 +32,7 @@ export function createFilmWorld() {
     scene,
     setTime(time, camera) {
       foundation.setTime(time, camera);
-      factory.setTime(time);
+      factory.setTime(time, camera);
     },
     dispose() {
       foundation.dispose();

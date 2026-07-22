@@ -48,6 +48,8 @@ import {
   cableSurfacePoint,
   VECTOR_CABLE_DIRECTIONS,
 } from "../shared/vector-cable.js";
+import { createVectorCallout, setVectorCallout } from "../shared/vector-callout.js";
+import { createVectorLayer, setVectorLayerBuild } from "../shared/vector-layer.js";
 
 const setLabelText = (label, text) => label.userData.setText?.(text);
 
@@ -353,9 +355,17 @@ function createTwinScene(tracker) {
 function createProofScene(tracker) {
   const group = new THREE.Group();
   const shadowLayout = FACTORY_LAYOUT.shadow;
-  const cellar = createVectorBox(tracker, {
-    size: [shadowLayout.width, shadowLayout.thickness, shadowLayout.depth], color: 0x351d4e, edgeColor: 0xb77cff,
-    position: [0, shadowLayout.thickness / 2, 0], opacity: 0.82,
+  const layer = createVectorLayer({
+    tracker,
+    id: "shadow-vm",
+    width: shadowLayout.width,
+    depth: shadowLayout.depth,
+    height: shadowLayout.thickness,
+    color: 0x351d4e,
+    edgeColor: 0xb77cff,
+    topOpacity: 0.82,
+    gridDivisions: Math.round(Math.max(shadowLayout.width, shadowLayout.depth) / shadowLayout.gridStep),
+    gridOpacity: 0.32,
   });
   const subject = createVectorBox(tracker, {
     size: [1.5, 1.2, 1.5], color: 0x171125,
@@ -365,26 +375,11 @@ function createProofScene(tracker) {
     text: "PLAYER.WASM · GHOST COPY", width: 2.6, height: 0.38,
     color: 0xe7d6fa, background: 0x12091e, position: [0, 0.85, 0.78], fontSize: 42, billboard: true,
   }));
-  group.add(cellar, subject);
+  group.add(layer.group, subject);
   const deckTop = shadowLayout.thickness;
-  const gridTop = deckTop + 0.02;
-  for (let x = -5; x <= 5; x += shadowLayout.gridStep) {
-    group.add(createRoute(tracker, [[x, gridTop, -shadowLayout.depth / 2], [x, gridTop, shadowLayout.depth / 2]], 0xc594ff, 0.018));
-  }
-  for (let z = -3; z <= 3; z += shadowLayout.gridStep) {
-    group.add(createRoute(tracker, [[-shadowLayout.width / 2, gridTop, z], [shadowLayout.width / 2, gridTop, z]], 0xc594ff, 0.018));
-  }
   const halfWidth = shadowLayout.width * 0.5;
   const shadowDoorScale = FACTORY_STANDARD_DOOR_SCALE;
-  const shadowSurface = Object.freeze({
-    id: "shadow",
-    color: 0x351d4e,
-    centerX: 0,
-    centerZ: 0,
-    width: shadowLayout.width,
-    depth: shadowLayout.depth,
-    top: deckTop,
-  });
+  const shadowSurface = layer.surface;
   const shadowUnderlaySurface = Object.freeze({ id: "shadow-underlay", top: 0 });
   const entryDoor = createFactoryDoorOnSurface(tracker, 0xd8acff, {
     surface: shadowSurface,
@@ -445,7 +440,7 @@ function createProofScene(tracker) {
     spikes.setMatrixAt(index, matrix);
   }
   group.add(spikes);
-  return { group, subject, spikes, entryDoor, mockDoors, entryRoute, attacks };
+  return { group, layer, subject, spikes, entryDoor, mockDoors, entryRoute, attacks };
 }
 
 export function createFactoryWorld() {
@@ -476,15 +471,28 @@ export function createFactoryWorld() {
     FACTORY_LAYOUT.shadow.position.z,
   );
   proof.spikes.visible = false;
+  const shadowCallout = createVectorCallout({
+    tracker,
+    title: "SHADOW VM",
+    copy: "DISPOSABLE · ZERO LIVE EFFECT",
+    color: 0xb77cff,
+    width: 5.5,
+  });
   const guardStatus = createGuardStatusPanel(tracker);
   const scenes = { builder, inert, compiler, feedback, twins, proof };
   Object.entries(scenes).forEach(([id, scene]) => {
     scene.group.name = `factory-${id}`;
     group.add(scene.group);
   });
-  group.add(guardStatus.group, approvalSequence.group, liveSequence.group, archipelagoSequence.group);
+  group.add(
+    guardStatus.group,
+    shadowCallout.group,
+    approvalSequence.group,
+    liveSequence.group,
+    archipelagoSequence.group,
+  );
 
-  function setTime(nextTime) {
+  function setTime(nextTime, camera) {
     const time = Math.min(120, Math.max(0, Number.isFinite(nextTime) ? nextTime : 0));
     Object.entries(scenes).forEach(([id, scene]) => showScene(scene.group, time, FACTORY_SCENES[id]));
 
@@ -693,7 +701,7 @@ export function createFactoryWorld() {
               : "GUARD · LIVE DOOR OPEN";
     setGuardStatusPanel(guardStatus, guardStatusCopy, guardStatusAlpha);
     approvalSequence.setTime(time);
-    liveSequence.setTime(time);
+    liveSequence.setTime(time, camera);
     archipelagoSequence.setTime(time);
     const compilerWindow = time >= FACTORY_SCENES.compiler.start && time < FACTORY_SCENES.compiler.end;
     const workshopAlpha = compilerWindow
@@ -709,20 +717,45 @@ export function createFactoryWorld() {
     const scanIntro = scanWindow ? smootherstep(interval(time, scanWindow[0], scanWindow[0] + 0.55)) : 0;
     const scanOutro = scanWindow ? 1 - smootherstep(interval(time, scanWindow[1] - 0.42, scanWindow[1])) : 0;
     const scanAlpha = scanIntro * scanOutro;
-    const scanProgress = scanWindow ? interval(time, scanWindow[0], scanWindow[1]) : 0;
     setFactoryOpacity(proof.group, scanAlpha * 0.72);
-    proof.group.position.y = FACTORY_LAYOUT.shadow.position.y - (1 - scanIntro) * 0.42;
-    // The Shadow VM is a fixed kernel quadrant. Scaling the whole group made
-    // its seams drift against Genesis and Builder during every scan intro.
+    proof.group.position.y = FACTORY_LAYOUT.shadow.position.y;
     proof.group.scale.setScalar(1);
+    const shadowOutline = scanWindow
+      ? smootherstep(interval(time, scanWindow[0], scanWindow[0] + 0.34))
+      : 0;
+    const shadowLayerRise = scanWindow
+      ? smootherstep(interval(time, scanWindow[0] + 0.34, scanWindow[0] + 0.88))
+      : 0;
+    setVectorLayerBuild(proof.layer, {
+      outlineAmount: shadowOutline,
+      riseAmount: shadowLayerRise,
+      opacity: scanOutro,
+      outlineOpacity: scanOutro * (1 - smootherstep(interval(
+        time,
+        (scanWindow?.[0] ?? 0) + 0.34,
+        (scanWindow?.[0] ?? 0) + 0.72,
+      ))),
+      titleOpacity: 0,
+    });
+    setVectorCallout(shadowCallout, time, {
+      start: 58.68,
+      introEnd: 59.08,
+      titleStart: 59.32,
+      end: 60.45,
+      root: group,
+      camera,
+      targetObject: proof.layer.body,
+      targetLocalPoint: new THREE.Vector3(0, 0, FACTORY_LAYOUT.shadow.depth / 2 + 0.04),
+      angle: -THREE.MathUtils.degToRad(26.565),
+    });
     const shadowDoorIntro = scanWindow
-      ? smootherstep(interval(time, scanWindow[0] + 0.22, scanWindow[0] + 0.72))
+      ? smootherstep(interval(time, scanWindow[0] + 0.82, scanWindow[0] + 1.22))
       : 0;
     const shadowLabelWrite = scanWindow
-      ? smootherstep(interval(time, scanWindow[0] + 0.42, scanWindow[0] + 0.82))
+      ? smootherstep(interval(time, scanWindow[0] + 1.02, scanWindow[0] + 1.42))
       : 0;
     const shadowDoorRise = scanWindow
-      ? smootherstep(interval(time, scanWindow[0] + 0.68, scanWindow[0] + 1.18))
+      ? smootherstep(interval(time, scanWindow[0] + 1.28, scanWindow[0] + 1.78))
       : 0;
     setFactoryDoorEmergence(proof.entryDoor, {
       porchAmount: shadowDoorIntro,
@@ -734,23 +767,23 @@ export function createFactoryWorld() {
       const delay = index * 0.09;
       setFactoryDoorEmergence(door, {
         porchAmount: scanWindow
-          ? smootherstep(interval(time, scanWindow[0] + 0.34 + delay, scanWindow[0] + 0.68 + delay))
+          ? smootherstep(interval(time, scanWindow[0] + 0.94 + delay, scanWindow[0] + 1.28 + delay))
           : 0,
         labelAmount: scanWindow
-          ? smootherstep(interval(time, scanWindow[0] + 0.52 + delay, scanWindow[0] + 0.86 + delay))
+          ? smootherstep(interval(time, scanWindow[0] + 1.12 + delay, scanWindow[0] + 1.46 + delay))
           : 0,
         riseAmount: scanWindow
-          ? smootherstep(interval(time, scanWindow[0] + 0.74 + delay, scanWindow[0] + 1.18 + delay))
+          ? smootherstep(interval(time, scanWindow[0] + 1.34 + delay, scanWindow[0] + 1.78 + delay))
           : 0,
         opacity: scanAlpha * 0.72,
       });
     });
     const shadowEntry = scanWindow
-      ? smootherstep(interval(time, scanWindow[0] + 0.48, Math.min(scanWindow[0] + 1.58, scanWindow[1] - 0.72)))
+      ? smootherstep(interval(time, scanWindow[0] + 1.42, Math.min(scanWindow[0] + 2.18, scanWindow[1] - 0.42)))
       : 0;
     setFactoryDoorOpen(proof.entryDoor, shadowEntry);
     const shadowPlayerIntro = scanWindow
-      ? smootherstep(interval(time, scanWindow[0] + 0.4, scanWindow[0] + 0.68))
+      ? smootherstep(interval(time, scanWindow[0] + 1.18, scanWindow[0] + 1.5))
       : 0;
     proof.subject.visible = shadowPlayerIntro * scanOutro > 0.001;
     const shadowPoint = proof.entryRoute.userData.curve.getPointAt(shadowEntry);
