@@ -61,4 +61,9 @@ export const FOUNDATION_TIMELINE = Object.freeze({
   workpieceRise: window(34, 37.2),
   materialMain: window(34, 37.3),
   materialCargo: window(34.8, 38.2),
+  editOne: Object.freeze([
+    window(49.95, 51.75),
+    window(50.35, 52.15),
+    window(50.75, 52.55),
+  ]),
 });

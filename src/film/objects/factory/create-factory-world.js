@@ -15,6 +15,12 @@ import {
   createTextLabel,
   createVectorBox,
 } from "./primitives.js";
+import {
+  createWorkshopChecklist,
+  createWorkshopConsole,
+  createWorkshopMachine,
+  setWorkshopConsole,
+} from "./workshop-primitives.js";
 
 const setYScale = (object, scale) => {
   object.scale.y = Math.max(0.001, scale);
@@ -198,14 +204,21 @@ function createCompilerScene(tracker) {
   const group = new THREE.Group();
   const deck = createBuilderScene(tracker, true);
   group.add(deck.group);
-  const machines = FACTORY_LANES.map((lane) => createMachine(tracker, lane));
+  const machines = FACTORY_LANES.map((lane) => createWorkshopMachine(tracker, lane));
   machines.forEach(({ group: machine }) => group.add(machine));
-
-  const tokenGeometry = tracker.geometry(new THREE.BoxGeometry(1.05, 0.34, 1.05));
-  const tokenMaterial = createFlatMaterial(tracker, FACTORY_PALETTE.amber);
-  const tokens = new THREE.InstancedMesh(tokenGeometry, tokenMaterial, FACTORY_LANES.length);
-  tokens.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-  group.add(tokens);
+  const compilerConsole = createWorkshopConsole(tracker, {
+    position: [1.555, 5.5, 3.423],
+    width: 3.2,
+    initialCopy: "READY · ROUND 0/3",
+    version: "rustc 1.83.0-dev · NO NET",
+  });
+  const verifierConsole = createWorkshopConsole(tracker, {
+    position: [1.984, 3.2, -2.803],
+    width: 3,
+    initialCopy: "READY · NEXT ROUND 2/3",
+  });
+  const checklist = createWorkshopChecklist(tracker);
+  group.add(compilerConsole.group, verifierConsole.group, checklist.group);
   const materialRoute = createRoute(tracker, [
     [-3.2, 0.9, 2.7], [-1.4, 0.9, 2.2], [0, 0.9, 1.6], [2.55, 0.9, -1.2], [-2.2, 0.9, -1.55],
   ], FACTORY_PALETTE.blue, 0.075);
@@ -227,7 +240,17 @@ function createCompilerScene(tracker) {
     background: FACTORY_PALETTE.panel, position: [x, y, z], fontSize: 46,
   }));
   group.add(materialRoute, sceneCaption, ...upgrades);
-  return { group, deck, machines, tokens, materialRoute, sceneCaption, upgrades };
+  return {
+    group,
+    deck,
+    machines,
+    compilerConsole,
+    verifierConsole,
+    checklist,
+    materialRoute,
+    sceneCaption,
+    upgrades,
+  };
 }
 
 function createFeedbackScene(tracker) {
@@ -622,19 +645,13 @@ export function createFactoryWorld() {
     inert.workpiece.scale.setScalar(0.25 + materialProgress * 0.75);
     inert.workpiece.rotation.y = materialProgress * Math.PI * 0.5;
 
-    const compileProgress = smootherstep(interval(time, 41, 48));
     compiler.machines.forEach((machine, index) => {
       const lane = FACTORY_LANES[index];
-      const reveal = smootherstep(interval(time, lane.revealAt, lane.revealAt + 0.82));
+      const reveal = smootherstep(interval(time, lane.revealAt, lane.revealAt + 1));
       machine.group.visible = reveal > 0.001;
       machine.group.scale.setScalar(lane.scale * Math.max(0.001, reveal));
-      machine.group.position.y = -0.48 * (1 - reveal);
-      machine.status.rotation.z = time * (0.55 + index * 0.15);
-      machine.aperture.scale.x = 0.25 + compileProgress * 0.75;
-      position.set(lane.x, 0.75 + Math.sin((time + index) * 2.2) * 0.08, lane.z + 2.5 - compileProgress * 2.5);
-      scale.setScalar(0.35 + compileProgress * 0.65);
-      matrix.compose(position, quaternion, scale);
-      compiler.tokens.setMatrixAt(index, matrix);
+      machine.group.position.y = lane.baseY - 1.3 * (1 - reveal);
+      machine.status.scale.setScalar(0.88 + Math.sin(time * 3.2 + index) * 0.12);
     });
     const firstCompile = smootherstep(interval(time, 42.25, 46));
     const secondCompile = smootherstep(interval(time, 53.25, 55.4));
@@ -646,23 +663,14 @@ export function createFactoryWorld() {
       time < 66.95 ? verifierSecond : verifierThird,
       smootherstep(interval(time, 79.8, 86.2)),
     ];
-    compiler.machines.forEach((machine, index) => {
-      const value = machineProgress[index];
-      machine.progressFill.scale.x = Math.max(0.001, value);
-      machine.progressFill.position.x = -0.84 + value * 0.84;
-      machine.glow.visible = value > 0.02;
-      machine.glow.scale.setScalar(0.96 + pulse(time, 41 + index, 80) * 0.05);
-    });
-    const uiStarts = [40.6, 42.6, Number.POSITIVE_INFINITY];
-    compiler.machines.forEach((machine, index) => {
-      const uiVisible = time >= uiStarts[index];
-      machine.progressRail.visible = uiVisible;
-      machine.progressFill.visible = uiVisible;
-      machine.progressCaption.visible = uiVisible;
-      if (machine.versionCaption) machine.versionCaption.visible = uiVisible;
-    });
-    compiler.sceneCaption.visible = time >= 41;
-    compiler.tokens.visible = time >= 41;
+    const compilerConsoleIntro = smootherstep(interval(time, 40.6, 40.9));
+    compiler.compilerConsole.group.visible = compilerConsoleIntro > 0.001;
+    compiler.compilerConsole.group.scale.setScalar(Math.max(0.001, compilerConsoleIntro));
+    const verifierConsoleIntro = smootherstep(interval(time, 42.6, 42.9));
+    compiler.verifierConsole.group.visible = verifierConsoleIntro > 0.001;
+    compiler.verifierConsole.group.scale.setScalar(Math.max(0.001, verifierConsoleIntro));
+    compiler.checklist.group.visible = time >= 42.9;
+    compiler.sceneCaption.visible = false;
     // The canonical source-file route lives in Foundation so direct seeks and
     // reverse scrubbing cannot reveal a second, offset transport line.
     compiler.materialRoute.visible = false;
@@ -692,8 +700,18 @@ export function createFactoryWorld() {
             : time < 75.6
               ? `CHECKING · ROUND 3/3 · ${Math.round(verifierThird * 100)}%`
               : "PASSED · ROUND 3/3";
-    setLabelText(compiler.machines[0].progressCaption, compilerCopy);
-    setLabelText(compiler.machines[1].progressCaption, verifierCopy);
+    setWorkshopConsole(
+      compiler.compilerConsole,
+      machineProgress[0],
+      compilerCopy,
+      time >= 46 && time < 52.55 ? "failed" : time >= 55.4 && time < 66.95 ? "passed" : "building",
+    );
+    setWorkshopConsole(
+      compiler.verifierConsole,
+      machineProgress[1],
+      verifierCopy,
+      time >= 60.8 && time < 66.95 ? "failed" : time >= 75.6 ? "passed" : "building",
+    );
     setLabelText(
       compiler.sceneCaption,
       time < 52
@@ -707,7 +725,45 @@ export function createFactoryWorld() {
     compiler.upgrades[0].visible = time >= 52;
     compiler.upgrades[1].visible = time >= 70;
     compiler.upgrades[2].visible = time >= 77;
-    compiler.tokens.instanceMatrix.needsUpdate = true;
+    const compilerBody = compiler.machines[0].body;
+    compilerBody.position.set(0, 0, 0);
+    compilerBody.rotation.set(0, 0, 0);
+    compilerBody.scale.set(1, 1, 1);
+    const compiling = time >= 42.25 && time < 46;
+    if (compiling) {
+      const rampIn = smootherstep(interval(time, 42.25, 42.41));
+      const rampOut = 1 - smootherstep(interval(time, 45.88, 46));
+      const strength = Math.min(rampIn, rampOut);
+      compilerBody.position.x = (Math.sin(time * Math.PI * 25.4)
+        + Math.sin(time * Math.PI * 41.8) * 0.42) * 0.025 * strength;
+      compilerBody.position.y = (Math.sin(time * Math.PI * 31.2 + 0.8)
+        + Math.sin(time * Math.PI * 18.6) * 0.36) * 0.018 * strength;
+      compilerBody.rotation.z = Math.sin(time * Math.PI * 22.8 + 1.3) * 0.012 * strength;
+    }
+    if (time >= 45.24 && time < 45.43) {
+      const crouch = smootherstep(interval(time, 45.24, 45.43));
+      compilerBody.position.y = -0.08 * crouch;
+      compilerBody.scale.set(1 + 0.06 * crouch, 1 - 0.14 * crouch, 1 + 0.06 * crouch);
+    } else if (time >= 45.43 && time < 45.68) {
+      const launch = smootherstep(interval(time, 45.43, 45.68));
+      compilerBody.position.y = THREE.MathUtils.lerp(-0.08, 3.6, launch);
+      compilerBody.scale.set(THREE.MathUtils.lerp(1.06, 0.98, launch), THREE.MathUtils.lerp(0.86, 1.04, launch), 1);
+    } else if (time >= 45.68 && time < 46) {
+      const fall = interval(time, 45.68, 46);
+      compilerBody.position.y = THREE.MathUtils.lerp(3.6, 2.4, fall * fall);
+      compilerBody.rotation.z = Math.sin(fall * Math.PI) * 0.015;
+    } else if (time >= 46 && time < 46.18) {
+      const impact = interval(time, 46, 46.18);
+      const impactPulse = Math.sin(impact * Math.PI);
+      compilerBody.position.y = 2.4 + impactPulse * 0.08;
+      compilerBody.scale.set(1 + 0.12 * impactPulse, 1 - 0.17 * impactPulse, 1 + 0.08 * impactPulse);
+    } else if (time >= 46.18 && time < 46.72) {
+      const settle = interval(time, 46.18, 46.72);
+      const returnEase = smootherstep(settle);
+      const rebound = Math.sin(settle * Math.PI) * (1 - settle);
+      compilerBody.position.y = THREE.MathUtils.lerp(2.4, 0, returnEase) + rebound * 0.35;
+      compilerBody.scale.set(1 - 0.035 * rebound, 1 + 0.05 * rebound, 1);
+    }
 
     const fixProgress = smootherstep(interval(time, 54, 60));
     const fixAngle = fixProgress * Math.PI * 2;

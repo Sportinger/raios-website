@@ -15,6 +15,7 @@ const PALETTE = Object.freeze({
   green: 0x64c991,
   greenHigh: 0xbaf3cf,
   amber: 0xf6c769,
+  red: 0xf05b57,
   dark: 0x050a11,
   panel: 0x101a28,
   panelHigh: 0x1c2a3d,
@@ -112,18 +113,6 @@ function createLabel(text, color = PALETTE.ink, width = 3, fontSize = 52) {
   canvas.width = 1024;
   canvas.height = 256;
   const context = canvas.getContext("2d");
-  const renderedFontSize = Math.min(190, fontSize * 2.8);
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  context.font = `800 ${renderedFontSize}px Consolas, monospace`;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.letterSpacing = "4px";
-  context.lineJoin = "round";
-  context.lineWidth = Math.max(12, renderedFontSize * 0.16);
-  context.strokeStyle = "#05080d";
-  context.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
-  context.strokeText(text, canvas.width / 2, canvas.height / 2, 920);
-  context.fillText(text, canvas.width / 2, canvas.height / 2, 920);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearFilter;
@@ -138,7 +127,63 @@ function createLabel(text, color = PALETTE.ink, width = 3, fontSize = 52) {
   sprite.scale.set(width, width * (canvas.height / canvas.width), 1);
   sprite.renderOrder = 50;
   sprite.userData.labelTexture = texture;
+  let renderedText = null;
+  const drawText = (nextText) => {
+    const copy = String(nextText);
+    if (copy === renderedText) return;
+    renderedText = copy;
+    const renderedFontSize = Math.min(190, fontSize * 2.8);
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.font = `800 ${renderedFontSize}px Consolas, monospace`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.letterSpacing = "4px";
+    context.lineJoin = "round";
+    context.lineWidth = Math.max(12, renderedFontSize * 0.16);
+    context.strokeStyle = "#05080d";
+    context.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
+    context.strokeText(copy, canvas.width / 2, canvas.height / 2, 920);
+    context.fillText(copy, canvas.width / 2, canvas.height / 2, 920);
+    texture.needsUpdate = true;
+  };
+  sprite.userData.setText = drawText;
+  drawText(text);
   return sprite;
+}
+
+function createFloorDecal(text, color, width = 3.4, depth = 1.05) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024;
+  canvas.height = 320;
+  const context = canvas.getContext("2d");
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.beginPath();
+  context.roundRect(18, 18, canvas.width - 36, canvas.height - 36, 54);
+  context.fillStyle = "rgba(128, 25, 29, 0.2)";
+  context.fill();
+  context.lineWidth = 18;
+  context.strokeStyle = `#${color.toString(16).padStart(6, "0")}`;
+  context.stroke();
+  context.font = "900 188px Consolas, monospace";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
+  context.fillText(text, canvas.width / 2, canvas.height / 2 + 12, 920);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+  material.userData.preserveTransparency = true;
+  const decal = new THREE.Mesh(new THREE.PlaneGeometry(width, depth), material);
+  decal.rotation.x = -Math.PI / 2;
+  decal.renderOrder = 18;
+  decal.userData.labelTexture = texture;
+  return decal;
 }
 
 function createWideLabel(text, color = PALETTE.ink, width = 6, fontSize = 44) {
@@ -797,14 +842,18 @@ function createProduction() {
     new THREE.MeshBasicMaterial({ color: PALETTE.green }),
   );
   status.position.set(0, 0.96, 0);
-  const label = createLabel("PLAYER.RS", PALETTE.ink, 1.08, 54);
+  const label = createLabel("PLAYER.RS", PALETTE.ink, 1.28, 60);
   label.position.set(0, 0.48, 0.49);
-  workpiece.add(body, status, label);
+  const failureLabel = createLabel("FAILED!", PALETTE.red, 1.24, 58);
+  failureLabel.position.set(0, 0.5, 0.53);
+  failureLabel.renderOrder = 53;
+  workpiece.add(body, status, label, failureLabel);
 
   const main = createFileCard("main.rs");
   const cargo = createFileCard("Cargo.toml");
-  group.add(workpiece, main, cargo);
-  return { group, workpiece, main, cargo, status };
+  const edits = Array.from({ length: 3 }, () => createFileCard("EDIT"));
+  group.add(workpiece, main, cargo, ...edits);
+  return { group, workpiece, main, cargo, edits, status, label, failureLabel };
 }
 
 function createSignalRoute(curve, color = PALETTE.blue, samples = 30, thickness = 1) {
@@ -878,7 +927,7 @@ function setCapabilityKey(key, time, timing, start, end, finalScale = 0.72) {
   setFade(key, growing * outro);
 }
 
-function setMovingFile(file, route, time, timing, delay = 0) {
+function setMovingFile(file, route, time, timing, delay = 0, sizeScale = 1) {
   const start = timing.start + delay;
   const end = timing.end + delay;
   const amount = progress(time, start, end);
@@ -887,7 +936,7 @@ function setMovingFile(file, route, time, timing, delay = 0) {
   file.visible = intro * absorb > 0.001;
   file.position.copy(route.getPointAt(amount));
   file.position.y += 0.12 + Math.sin(amount * Math.PI) * 0.28;
-  file.scale.setScalar(Math.max(0.001, (0.55 + absorb * 0.45) * intro));
+  file.scale.setScalar(Math.max(0.001, (0.55 + absorb * 0.45) * intro * sizeScale));
   setFade(file, intro * absorb);
 }
 
@@ -1024,6 +1073,16 @@ export function createFoundationWorld() {
   const production = createProduction();
   place(production.group, FOUNDATION_LAYOUT.production);
   production.group.remove(production.main, production.cargo);
+  production.edits.forEach((edit) => production.group.remove(edit));
+  const failureDecal = createFloorDecal("FAILED!", PALETTE.red);
+  failureDecal.position.set(
+    FOUNDATION_LAYOUT.production[0] - 0.2,
+    FOUNDATION_LAYOUT.production[1] + 0.025,
+    FOUNDATION_LAYOUT.production[2] + 0.2,
+  );
+  const genesisFailureDecal = createFloorDecal("FAILED!", PALETTE.red, 2.2, 0.72);
+  genesisFailureDecal.position.set(0.473, 1.085, -1.651);
+  group.add(failureDecal, genesisFailureDecal);
   const buildDoor = createDoorAndKey("build.request", { keyTagText: "REQUEST" });
   place(buildDoor.group, FOUNDATION_LAYOUT.buildDoor);
   buildDoor.group.scale.setScalar(0.72);
@@ -1143,6 +1202,7 @@ export function createFoundationWorld() {
     production.group,
     production.main,
     production.cargo,
+    ...production.edits,
     buildLine.group,
     requestToSysroot.group,
     sysrootToSrc.group,
@@ -1494,10 +1554,37 @@ export function createFoundationWorld() {
     production.workpiece.visible = workpieceRise > 0.001;
     production.workpiece.position.y = -(1 - workpieceRise) * 0.35;
     production.workpiece.scale.setScalar(Math.max(0.001, THREE.MathUtils.lerp(0.54, 1, workpieceRise)));
+    const compilerLift = progress(time, 41, 41.85) * (1 - progress(time, 46.2, 49.4));
+    production.workpiece.position.x = -0.217 * compilerLift;
+    production.workpiece.position.z = -0.217 * compilerLift;
+    const applyingEdit = time >= 49.4 && time < 52.55;
+    production.label.userData.setText?.(applyingEdit ? "APPLYING EDIT 01" : "PLAYER.RS");
+    production.label.scale.set(applyingEdit ? 2.1 : 1.28, applyingEdit ? 0.39 : 0.32, 1);
     production.status.scale.setScalar(0.82 + Math.sin(time * 3.6) * 0.14);
     setMovingFile(production.main, materialPath, time, FOUNDATION_TIMELINE.materialMain);
     setMovingFile(production.cargo, materialPath, time, FOUNDATION_TIMELINE.materialCargo);
-    const sourceCaptionAlpha = progress(time, 33, 33.5) * (1 - progress(time, 40.5, 41));
+    production.edits.forEach((edit, index) => {
+      setMovingFile(edit, materialPath, time, FOUNDATION_TIMELINE.editOne[index], 0, 1.25);
+    });
+    const failureActive = time >= 46 && time < 52.55;
+    production.failureLabel.visible = failureActive;
+    failureDecal.visible = failureActive;
+    const failurePunch = progress(time, 46, 46.15);
+    failureDecal.scale.setScalar(failureActive ? THREE.MathUtils.lerp(1.15, 1, failurePunch) : 0.001);
+    setFade(failureDecal, failureActive ? 1 : 0);
+    const genesisFailureActive = time >= 46 && time < 49.55;
+    const genesisConsume = progress(time, 48.15, 49.55);
+    genesisFailureDecal.visible = genesisFailureActive;
+    genesisFailureDecal.position.set(
+      THREE.MathUtils.lerp(0.473, -2.332, genesisConsume),
+      1.085 + Math.sin(genesisConsume * Math.PI) * 0.3,
+      THREE.MathUtils.lerp(-1.651, -1.016, genesisConsume),
+    );
+    genesisFailureDecal.scale.setScalar(
+      genesisFailureActive ? THREE.MathUtils.lerp(1.15, 0.06, genesisConsume) : 0.001,
+    );
+    setFade(genesisFailureDecal, genesisFailureActive ? 1 - progress(time, 49.21, 49.55) : 0);
+    const sourceCaptionAlpha = progress(time, 33, 33.5) * (1 - progress(time, 39.8, 40.25));
     setFade(sourceCaption, sourceCaptionAlpha);
     setFade(hashCaption, sourceCaptionAlpha);
     setFade(

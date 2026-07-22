@@ -27,9 +27,9 @@ export const FACTORY_SCENES = Object.freeze({
 });
 
 export const FACTORY_LANES = Object.freeze([
-  Object.freeze({ id: "compiler", x: 2.69, z: 4.65, scale: 0.72, revealAt: 39, color: FACTORY_PALETTE.cyan }),
-  Object.freeze({ id: "verifier", x: 1.71, z: -3.17, scale: 0.62, revealAt: 41.6, color: FACTORY_PALETTE.violet }),
-  Object.freeze({ id: "guard", x: -5.44, z: 0.75, scale: 0.58, revealAt: 41.9, color: FACTORY_PALETTE.green }),
+  Object.freeze({ id: "compiler", x: 2.411, z: 4.295, baseY: 0.286, scale: 0.96, revealAt: 39, color: FACTORY_PALETTE.cyan }),
+  Object.freeze({ id: "verifier", x: 1.527, z: -3.395, baseY: 0.243, scale: 0.87, revealAt: 41.6, color: FACTORY_PALETTE.violet }),
+  Object.freeze({ id: "guard", x: -5.565, z: 0.536, baseY: 0.269, scale: 0.83, revealAt: 41.9, color: FACTORY_PALETTE.green }),
 ]);
 
 export const FACTORY_LAYOUT = Object.freeze({

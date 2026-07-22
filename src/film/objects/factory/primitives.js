@@ -161,6 +161,7 @@ export function createTextLabel(tracker, {
   position = [0, 0, 0],
   fontSize = 48,
   maxWidth = 940,
+  billboard = false,
 } = {}) {
   if (typeof document === "undefined") {
     return createPanelLabel(tracker, {
@@ -178,15 +179,24 @@ export function createTextLabel(tracker, {
   const texture = tracker.texture(new THREE.CanvasTexture(canvas));
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearFilter;
-  const geometry = tracker.geometry(new THREE.PlaneGeometry(width, height));
-  const material = tracker.material(new THREE.MeshBasicMaterial({
-    map: texture,
-    transparent: true,
-    depthWrite: false,
-    depthTest: false,
-    side: THREE.DoubleSide,
-  }));
-  const label = new THREE.Mesh(geometry, material);
+  const material = billboard
+    ? tracker.material(new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+    }))
+    : tracker.material(new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+      side: THREE.DoubleSide,
+    }));
+  const label = billboard
+    ? new THREE.Sprite(material)
+    : new THREE.Mesh(tracker.geometry(new THREE.PlaneGeometry(width, height)), material);
+  if (billboard) label.scale.set(width, height, 1);
   label.name = `label-${String(text).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   label.position.set(...position);
   label.renderOrder = 40;
