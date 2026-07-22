@@ -109,17 +109,6 @@ function createMachineLabel(tracker, text) {
   const texture = trackTexture(tracker, new THREE.CanvasTexture(canvas));
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearFilter;
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  context.font = `900 ${VECTOR_MACHINE_LABEL_FONT_SIZE}px ${VECTOR_MACHINE_LABEL_FONT}`;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.lineJoin = "round";
-  context.lineWidth = Math.max(10, VECTOR_MACHINE_LABEL_FONT_SIZE * 0.14);
-  context.strokeStyle = "#05080d";
-  context.fillStyle = `#${new THREE.Color(VECTOR_MACHINE_LABEL_COLOR).getHexString()}`;
-  context.strokeText(text, canvas.width / 2, canvas.height / 2, 940);
-  context.fillText(text, canvas.width / 2, canvas.height / 2, 940);
-  texture.needsUpdate = true;
   const material = trackMaterial(tracker, new THREE.SpriteMaterial({
     map: texture,
     transparent: true,
@@ -135,6 +124,25 @@ function createMachineLabel(tracker, text) {
     1,
   );
   label.renderOrder = 52;
+  let renderedText = null;
+  const drawText = (nextText) => {
+    const copy = String(nextText);
+    if (copy === renderedText) return;
+    renderedText = copy;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.font = `900 ${VECTOR_MACHINE_LABEL_FONT_SIZE}px ${VECTOR_MACHINE_LABEL_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.lineJoin = "round";
+    context.lineWidth = Math.max(10, VECTOR_MACHINE_LABEL_FONT_SIZE * 0.14);
+    context.strokeStyle = "#05080d";
+    context.fillStyle = `#${new THREE.Color(VECTOR_MACHINE_LABEL_COLOR).getHexString()}`;
+    context.strokeText(copy, canvas.width / 2, canvas.height / 2, 940);
+    context.fillText(copy, canvas.width / 2, canvas.height / 2, 940);
+    texture.needsUpdate = true;
+  };
+  label.userData.setText = drawText;
+  drawText(text);
   return label;
 }
 
@@ -371,6 +379,10 @@ export function setVectorMachineLampStates(machine, states = []) {
       VECTOR_MACHINE_LAMP_COLORS[state] ?? VECTOR_MACHINE_LAMP_COLORS.pending,
     );
   });
+}
+
+export function setVectorMachineTitle(machine, title) {
+  machine?.titleLabel?.userData.setText?.(title);
 }
 
 export function setVectorMachineBuild(machine, {

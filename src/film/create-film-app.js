@@ -1,6 +1,11 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { FILM_DURATION, FILM_PROMPT, FILM_SCENES } from "./film-data.js";
+import {
+  FILM_DURATION,
+  FILM_POSTER_TIME,
+  FILM_PROMPT,
+  FILM_SCENES,
+} from "./film-data.js";
 import { createFilmCamera } from "./create-film-camera.js";
 import { createFilmWorld } from "./create-film-world.js";
 import { createFilmOverlays } from "./presentation/index.js";
@@ -187,7 +192,9 @@ export function createFilmApp({
   };
 
   resize();
-  setTime(initialTime ?? (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 118 : 0));
+  setTime(initialTime ?? (
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches ? FILM_POSTER_TIME : 0
+  ));
   frame = requestAnimationFrame(animate);
 
   return {

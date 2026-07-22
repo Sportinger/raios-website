@@ -1,6 +1,6 @@
 # raiOS · The Factory Moves In · Real 3D
 
-Dieser Branch rekonstruiert den zweiminütigen 2,5D-Architekturfilm der raiOS-
+Dieser Branch rekonstruiert den rund zweiminütigen 2,5D-Architekturfilm der raiOS-
 Website als eigenständige, echte Three.js-Szene. Der Film auf `main` dient nur
 als visuelle und zeitliche Referenz; UI-Lab-SVG, CSS und Produktionskomponenten
 werden nicht kopiert.
@@ -15,13 +15,13 @@ betrachten, ohne die deterministische Filmfassung zu verändern.
 
 ## Filmvertrag
 
-- Dauer: `120` Sekunden
+- Dauer: `134` Sekunden
 - Szenen: `14`
-- Kamera-Keyframes: `18`
+- Kamera-Keyframes: `23`
 - Scrollstrecke: `1600svh` plus ein sichtbarer Viewport
 - Autoplay: eine Filmsekunde pro realer Sekunde
 - Finale: `21` echte, instanzierte App-Inseln
-- Reduced Motion: deterministisches Poster bei Sekunde `118`
+- Reduced Motion: deterministisches Poster bei Sekunde `132`
 
 Die Zeitachse liegt in `src/film/film-data.js`. Jede Objektwelt besitzt nur eine
 deterministische `setTime(time)`-API; vorwärts scrollen, rückwärts scrollen und
@@ -48,7 +48,7 @@ src/
 ```
 
 Die Foundation-Welt deckt die Sekunden `0–41` ab. Die Factory-Welt modelliert
-die Sekunden `41–120`. Wiederholte Produktionspfade und das Insel-Finale nutzen
+die Sekunden `41–134`. Wiederholte Produktionspfade und das Insel-Finale nutzen
 Konfiguration beziehungsweise `THREE.InstancedMesh` statt duplizierter Szenen.
 
 ### Layer- und Callout-Vertrag
@@ -68,7 +68,7 @@ bleiben reine Konfiguration.
 
 ### Maschinenvertrag
 
-Agent, Compiler, Tester und Guard verwenden
+Agent, `PLAYER.RS`/`PLAYER.WASM`, Compiler, Tester und Guard verwenden
 `objects/shared/vector-machine.js`. Das Modul definiert die gemeinsame
 Körpergeometrie, Flächen, Outlines, Detailstreifen, Schatten und den Aufbau vom
 gezeichneten Grundriss zum aufwachsenden Programm. Programme besitzen kein
@@ -155,13 +155,27 @@ lilafarbene `PLAYER.WASM · GHOST COPY` bewegt sich als echtes 3D-Objekt durch
 die geöffnete `shadow.in`-Tür. Dafür darf weder Kabel noch Puls gezeichnet
 werden.
 
+### Shadow-VM-Vertrag
+
+Der erste Besuch beim Tester führt einen violetten Akt-1-Probelauf aus und
+scheitert an einer Claim-Abweichung. Nach Korrektur und erneutem Kompilieren
+bleibt `PLAYER.WASM` für den vollständigen zweiten Besuch am Tester stehen:
+Akt 1 wird als violette Claim-Prüfung wiederholt, Akt 2 erzeugt zwei gelbe
+Testplattformen mit gleichzeitig laufenden Programmkopien und lässt die
+sichtbare Divergenz über einer gestrichelten 3D-Regenbogenbrücke auf `0%`
+fallen, Akt 3 prüft in einer hellblauen Fail-Closed-Kammer sieben Angriffe.
+Jeder Akt baut seine eigene disposable Plattform vollständig auf und wieder
+ab. Erst nach dem dritten bestandenen Akt nimmt das Programm alle drei
+Prüfsiegel auf und transportiert sie zum Guard.
+
 ## Kamera
 
 Die SVG-Kamera des Referenzfilms war ein 2D-Pan/Zoom mit `scale`, `focusX` und
 `focusY`. Der Nachbau übersetzt diese Werte auf eine echte orthografische Kamera
 mit einer räumlichen isometrischen Blickrichtung. Referenzformat, Widescreen-
-Korrektur, vertikaler Bias, die 18 Original-Keyframes und deren Smoothstep-
-Interpolation bleiben erhalten. `FREE ORBIT` friert die aktuelle Filmzeit ein
+Korrektur, vertikaler Bias, die 18 Original-Keyframes, fünf zusätzliche
+Shadow-VM-Keyframes und deren Smoothstep-Interpolation bleiben erhalten.
+`FREE ORBIT` friert die aktuelle Filmzeit ein
 und aktiviert Drehen, Zoomen und Verschieben mit Maus oder Touch. `EXIT ORBIT`,
 PLAY oder ein Kapitelsprung stellt die Filmkamera wieder exakt her.
 

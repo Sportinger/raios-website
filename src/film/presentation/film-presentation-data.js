@@ -57,6 +57,20 @@ export const FILM_VOICE_CUES = freezeEntries([
       { start: 5.85, end: 9.273438, text: "Let's try that again." },
     ]),
   },
+  {
+    id: "shadow-acts",
+    start: 71.2,
+    end: 94,
+    captions: freezeEntries([
+      { start: 0, end: 3, text: "The corrected program repeats the claims test." },
+      { start: 3, end: 5.8, text: "This time, all 654 claims lock." },
+      { start: 6.8, end: 10, text: "Two fresh cells run the same test at the same time." },
+      { start: 10, end: 13.3, text: "Their divergence falls to zero across the comparison bridge." },
+      { start: 14.3, end: 18.5, text: "A third cell attacks every boundary." },
+      { start: 18.5, end: 22, text: "Seven attacks. Seven fail-closed walls." },
+      { start: 22, end: 22.8, text: "Only then does the tester hand over the proof." },
+    ]),
+  },
 ]);
 
 export const FILM_STATUS_WINDOWS = freezeEntries([
@@ -64,14 +78,19 @@ export const FILM_STATUS_WINDOWS = freezeEntries([
   { start: 46, end: 52.55, tone: "error", text: "FAILED · PRECISE REPORT" },
   { start: 53.25, end: 55.4, tone: "active", text: "COMPILER · ROUND 02" },
   { start: 55.4, end: 56.05, tone: "success", text: "COMPILE OK" },
+  { start: 57.8, end: 60.8, tone: "active", text: "SHADOW VM · REHEARSAL" },
   { start: 62, end: 69.35, tone: "active", text: "REPRODUCIBLE TWIN BUILD" },
   { start: 69.35, end: 70, tone: "success", text: "BYTE EQUAL" },
-  { start: 80, end: 84.55, tone: "active", text: "GUARD · VERIFYING BINDINGS" },
-  { start: 84.55, end: 88, tone: "success", text: "OWNER APPROVED" },
-  { start: 88, end: 96, tone: "success", text: "LIVE DOOR OPEN" },
-  { start: 96, end: 106, tone: "active", text: "PLAYER RUNNING" },
-  { start: 106, end: 112, tone: "active", text: "PRIVATE APP ISLAND" },
-  { start: 112, end: 120, tone: "success", text: "21 ISOLATED APP ISLANDS" },
+  { start: 71.2, end: 77, tone: "active", text: "TEST 1 · CLAIMS · LILAC" },
+  { start: 78, end: 84.5, tone: "active", text: "TEST 2 · PARALLEL DIVERGENCE · AMBER" },
+  { start: 85.5, end: 93.2, tone: "error", text: "TEST 3 · FAIL-CLOSED · ICE" },
+  { start: 93.2, end: 94, tone: "success", text: "3 / 3 TESTS PASSED" },
+  { start: 94, end: 98.55, tone: "active", text: "GUARD · VERIFYING BINDINGS" },
+  { start: 98.55, end: 102, tone: "success", text: "OWNER APPROVED" },
+  { start: 102, end: 110, tone: "success", text: "LIVE DOOR OPEN" },
+  { start: 110, end: 120, tone: "active", text: "PLAYER RUNNING" },
+  { start: 120, end: 126, tone: "active", text: "PRIVATE APP ISLAND" },
+  { start: 126, end: 134, tone: "success", text: "21 ISOLATED APP ISLANDS" },
 ]);
 
 const clamp01 = (value) => Math.min(1, Math.max(0, value));

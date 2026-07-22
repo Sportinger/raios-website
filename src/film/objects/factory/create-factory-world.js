@@ -13,7 +13,6 @@ import {
   smootherstep,
 } from "./timeline.js";
 import {
-  createFlatMaterial,
   createResourceTracker,
   createRing,
   createRoute,
@@ -31,17 +30,14 @@ import { createApprovalSequence } from "./approval-sequence.js";
 import { createArchipelagoSequence } from "./archipelago-sequence.js";
 import {
   createFactoryDoorOnSurface,
-  FACTORY_STANDARD_DOOR_SCALE,
-  setFactoryDoorEmergence,
   setFactoryDoorOpen,
 } from "./door-primitives.js";
 import { createLiveSequence } from "./live-sequence.js";
+import { createShadowVmSequence } from "./shadow-vm-sequence.js";
 import {
   cableSurfacePoint,
   VECTOR_CABLE_DIRECTIONS,
 } from "../shared/vector-cable.js";
-import { createVectorCallout, setVectorCallout } from "../shared/vector-callout.js";
-import { createVectorLayer, setVectorLayerBuild } from "../shared/vector-layer.js";
 import {
   setVectorMachineBuild,
   setVectorMachineLampStates,
@@ -333,106 +329,6 @@ function createTwinScene(tracker) {
   return { group, pods, bridge, seal, progressRails, hashPlates, resultLabel, drillLabel };
 }
 
-function createProofScene(tracker) {
-  const group = new THREE.Group();
-  const shadowLayout = FACTORY_LAYOUT.shadow;
-  const layer = createVectorLayer({
-    tracker,
-    id: "shadow-vm",
-    width: shadowLayout.width,
-    depth: shadowLayout.depth,
-    height: shadowLayout.thickness,
-    color: 0x351d4e,
-    edgeColor: 0xb77cff,
-    topOpacity: 0.82,
-    gridDivisions: Math.round(Math.max(shadowLayout.width, shadowLayout.depth) / shadowLayout.gridStep),
-    gridOpacity: 0.32,
-  });
-  const subject = createVectorBox(tracker, {
-    size: [1.5, 1.2, 1.5], color: 0x6b448b,
-    edgeColor: 0xe0b8ff, position: [0, 0, 0],
-  });
-  subject.name = "player-wasm-ghost-copy";
-  subject.add(createTextLabel(tracker, {
-    text: "PLAYER.WASM · GHOST COPY", width: 2.6, height: 0.38,
-    color: 0xf2e7ff, background: 0x351d4e, position: [0, 0.85, 0.78], fontSize: 42, billboard: true,
-  }));
-  group.add(layer.group, subject);
-  const deckTop = shadowLayout.thickness;
-  const halfWidth = shadowLayout.width * 0.5;
-  const shadowDoorScale = FACTORY_STANDARD_DOOR_SCALE;
-  const shadowSurface = layer.surface;
-  const entryDoor = createFactoryDoorOnSurface(tracker, 0xd8acff, {
-    surface: shadowSurface,
-    edge: "right",
-    along: -2.2,
-    scale: shadowDoorScale,
-    label: "shadow.in",
-    labelColor: 0xdcc3f6,
-  });
-  group.add(entryDoor.group);
-  const mockDoors = [-3.7, -1.35, 1].map((x, index) => {
-    const label = ["fb.mock", "input.inject", "file.sandbox"][index];
-    const door = createFactoryDoorOnSurface(tracker, 0xc28bff, {
-      surface: shadowSurface,
-      edge: "front",
-      along: x,
-      scale: shadowDoorScale,
-      label,
-      labelColor: 0xdcc3f6,
-    });
-    group.add(door.group);
-    return door;
-  });
-  // This is an object trajectory, not a cable. The ghost copy approaches from
-  // the Builder quadrant, passes the physical shadow.in threshold, then
-  // settles inside the disposable VM. No line or pulse is rendered for it.
-  const ghostFlightY = deckTop + 0.68;
-  const entryFlight = new THREE.CatmullRomCurve3([
-    // Exact settled PLAYER.WASM position transformed into this Shadow group.
-    new THREE.Vector3(13.19, ghostFlightY, -0.22),
-    new THREE.Vector3(11.2, ghostFlightY, -0.4),
-    new THREE.Vector3(9, ghostFlightY, -0.8),
-    new THREE.Vector3(7.1, ghostFlightY, -1.55),
-    new THREE.Vector3(halfWidth + 0.85, ghostFlightY, -2.05),
-    new THREE.Vector3(halfWidth + 0.05, ghostFlightY, -2.2),
-    new THREE.Vector3(halfWidth - 0.7, ghostFlightY, -2.05),
-    new THREE.Vector3(2.5, ghostFlightY, -1.2),
-    new THREE.Vector3(0, ghostFlightY, 0),
-  ], false, "centripetal", 0.45);
-  const attacks = [
-    [[-8, 1.2, -2.6], [-5.8, 1.2, -1.6]],
-    [[8, 1.2, -2.8], [5.8, 1.2, -1.8]],
-    [[8, 1.2, 3.4], [5.8, 1.2, 2.4]],
-  ].map((points) => {
-    const route = createRoute(tracker, points, FACTORY_PALETTE.red, 0.035);
-    const impact = new THREE.Group();
-    impact.position.set(...points[1]);
-    [0, Math.PI / 4, Math.PI / 2, -Math.PI / 4].forEach((rotation) => {
-      const ray = createVectorBox(tracker, {
-        size: [1.05, 0.055, 0.055],
-        color: 0xff8b85,
-        position: [0, 0, 0],
-      });
-      ray.rotation.y = rotation;
-      impact.add(ray);
-    });
-    group.add(route, impact);
-    return { route, impact };
-  });
-  const spikeGeometry = tracker.geometry(new THREE.ConeGeometry(0.18, 1.2, 4));
-  const spikeMaterial = createFlatMaterial(tracker, FACTORY_PALETTE.red);
-  const spikes = new THREE.InstancedMesh(spikeGeometry, spikeMaterial, 16);
-  const matrix = new THREE.Matrix4();
-  for (let index = 0; index < 16; index += 1) {
-    const angle = index / 16 * Math.PI * 2;
-    matrix.makeTranslation(Math.cos(angle) * 4.5, 0.15, Math.sin(angle) * 2.8);
-    spikes.setMatrixAt(index, matrix);
-  }
-  group.add(spikes);
-  return { group, layer, subject, spikes, entryDoor, mockDoors, entryFlight, attacks };
-}
-
 export function createFactoryWorld() {
   const tracker = createResourceTracker();
   const group = new THREE.Group();
@@ -453,34 +349,21 @@ export function createFactoryWorld() {
   const archipelagoSequence = createArchipelagoSequence(tracker);
   const feedback = createFeedbackScene(tracker);
   const twins = createTwinScene(tracker);
-  const proof = createProofScene(tracker);
-  proof.group.position.set(
-    FACTORY_LAYOUT.shadow.position.x,
-    FACTORY_LAYOUT.shadow.position.y,
-    FACTORY_LAYOUT.shadow.position.z,
-  );
-  proof.spikes.visible = false;
-  const shadowCallout = createVectorCallout({
-    tracker,
-    title: "SHADOW VM",
-    copy: "DISPOSABLE · ZERO LIVE EFFECT",
-    color: 0xb77cff,
-    width: 5.5,
-  });
+  const proof = createShadowVmSequence(tracker);
   const scenes = { builder, inert, compiler, feedback, twins, proof };
   Object.entries(scenes).forEach(([id, scene]) => {
     scene.group.name = `factory-${id}`;
     group.add(scene.group);
   });
   group.add(
-    shadowCallout.group,
+    proof.callout.group,
     approvalSequence.group,
     liveSequence.group,
     archipelagoSequence.group,
   );
 
   function setTime(nextTime, camera) {
-    const time = Math.min(120, Math.max(0, Number.isFinite(nextTime) ? nextTime : 0));
+    const time = Math.min(134, Math.max(0, Number.isFinite(nextTime) ? nextTime : 0));
     Object.entries(scenes).forEach(([id, scene]) => showScene(scene.group, time, FACTORY_SCENES[id]));
 
     // Foundation owns the canonical Builder Deck, source material and
@@ -527,10 +410,9 @@ export function createFactoryWorld() {
       });
     });
     const verifierSecond = smoothstep(interval(time, 57.8, 60.8));
-    const verifierThird = smoothstep(interval(time, 71.2, 75.6));
     const activeCompileWindow = [[42.25, 46], [53.25, 55.4], [67.5, 69.35]]
       .find(([start, end]) => time >= start && time < end);
-    const activeTestWindow = [[57.8, 60.8], [71.2, 75.6]]
+    const activeTestWindow = [[57.8, 60.8], [71.2, 77], [78, 84.5], [85.5, 93.2]]
       .find(([start, end]) => time >= start && time < end);
     const compilerLampState = time >= 46 && time < 53.25
       ? "failed"
@@ -541,23 +423,23 @@ export function createFactoryWorld() {
           : "pending";
     const testerLampState = time >= 60.8 && time < 71.2
       ? "failed"
-      : time >= 75.6
+      : time >= 93.2
         ? "passed"
         : "pending";
     setVectorMachineLampStates(compiler.machines[0], [compilerLampState]);
     setVectorMachineLampStates(compiler.machines[1], [testerLampState]);
     setVectorMachineLampStates(compiler.machines[2], [
-      time >= 80.45
+      time >= 96.45
         ? "passed"
         : time >= 46 && time < 53.25
           ? "failed"
           : "pending",
-      time >= 82
+      time >= 98
         ? "passed"
         : time >= 60.8 && time < 71.2
           ? "failed"
           : "pending",
-      time >= 84.55 ? "passed" : "pending",
+      time >= 98.55 ? "passed" : "pending",
     ]);
     setVectorMachineProgress(compiler.machines[0], {
       visible: Boolean(activeCompileWindow),
@@ -648,19 +530,16 @@ export function createFactoryWorld() {
       compilerBody.scale.set(1 - 0.045 * hop, 1 + 0.065 * hop, 1);
     }
 
-    const twinPanelIntro = smootherstep(interval(time, 57.6, 57.95));
+    const twinPanelIntro = smootherstep(interval(time, 57.6, 57.95))
+      * (1 - smootherstep(interval(time, 70.25, 71)));
     const twinResult = time >= 60.8 && time < 66.95
       ? "RED · BYTE DRIFT"
-      : time >= 74
-        ? "EQUAL"
-        : time >= 71.2
-          ? "BUILDING A/B"
-          : "WAITING";
+      : "WAITING";
     setTwinVerifierPanel(compiler.twinConsole, {
-      progress: time < 66.95 ? verifierSecond : verifierThird,
+      progress: verifierSecond,
       hashesVisible: time >= 60.3,
       result: twinResult,
-      drills: [time >= 72.8, time >= 74.2, time >= 75.6],
+      drills: [false, false, false],
       opacity: twinPanelIntro,
     });
     setVerifierVerdict(compiler.verifierVerdict, time);
@@ -669,107 +548,11 @@ export function createFactoryWorld() {
     archipelagoSequence.setTime(time);
     const compilerWindow = time >= FACTORY_SCENES.compiler.start && time < FACTORY_SCENES.compiler.end;
     const workshopAlpha = compilerWindow
-      ? 1 - smootherstep(interval(time, 92.75, 94.05))
+      ? 1 - smootherstep(interval(time, 106.75, 108.05))
       : 0;
     setFactoryOpacity(compiler.group, workshopAlpha);
 
-    const scanWindow = activeTestWindow ?? null;
-    const scanIntro = scanWindow ? smootherstep(interval(time, scanWindow[0], scanWindow[0] + 0.55)) : 0;
-    const scanOutro = scanWindow ? 1 - smootherstep(interval(time, scanWindow[1] - 0.42, scanWindow[1])) : 0;
-    const scanAlpha = scanIntro * scanOutro;
-    setFactoryOpacity(proof.group, scanAlpha * 0.72);
-    proof.group.position.y = FACTORY_LAYOUT.shadow.position.y;
-    proof.group.scale.setScalar(1);
-    const shadowOutline = scanWindow
-      ? smootherstep(interval(time, scanWindow[0], scanWindow[0] + 0.34))
-      : 0;
-    const shadowLayerRise = scanWindow
-      ? smootherstep(interval(time, scanWindow[0] + 0.34, scanWindow[0] + 0.88))
-      : 0;
-    setVectorLayerBuild(proof.layer, {
-      outlineAmount: shadowOutline,
-      riseAmount: shadowLayerRise,
-      opacity: scanOutro,
-      outlineOpacity: scanOutro * (1 - smootherstep(interval(
-        time,
-        (scanWindow?.[0] ?? 0) + 0.34,
-        (scanWindow?.[0] ?? 0) + 0.72,
-      ))),
-      titleOpacity: 0,
-    });
-    setVectorCallout(shadowCallout, time, {
-      start: 58.68,
-      introEnd: 59.08,
-      titleStart: 59.32,
-      end: 60.45,
-      root: group,
-      camera,
-      targetObject: proof.layer.body,
-      targetLocalPoint: new THREE.Vector3(0, 0, FACTORY_LAYOUT.shadow.depth / 2 + 0.04),
-      angle: -THREE.MathUtils.degToRad(26.565),
-    });
-    const shadowDoorIntro = scanWindow
-      ? smootherstep(interval(time, scanWindow[0] + 0.82, scanWindow[0] + 1.22))
-      : 0;
-    const shadowLabelWrite = scanWindow
-      ? smootherstep(interval(time, scanWindow[0] + 1.02, scanWindow[0] + 1.42))
-      : 0;
-    const shadowDoorRise = scanWindow
-      ? smootherstep(interval(time, scanWindow[0] + 1.28, scanWindow[0] + 1.78))
-      : 0;
-    setFactoryDoorEmergence(proof.entryDoor, {
-      porchAmount: shadowDoorIntro,
-      labelAmount: shadowLabelWrite,
-      riseAmount: shadowDoorRise,
-      opacity: scanAlpha * 0.72,
-    });
-    proof.mockDoors.forEach((door, index) => {
-      const delay = index * 0.09;
-      setFactoryDoorEmergence(door, {
-        porchAmount: scanWindow
-          ? smootherstep(interval(time, scanWindow[0] + 0.94 + delay, scanWindow[0] + 1.28 + delay))
-          : 0,
-        labelAmount: scanWindow
-          ? smootherstep(interval(time, scanWindow[0] + 1.12 + delay, scanWindow[0] + 1.46 + delay))
-          : 0,
-        riseAmount: scanWindow
-          ? smootherstep(interval(time, scanWindow[0] + 1.34 + delay, scanWindow[0] + 1.78 + delay))
-          : 0,
-        opacity: scanAlpha * 0.72,
-      });
-    });
-    const shadowDoorOpen = scanWindow
-      ? smootherstep(interval(time, scanWindow[0] + 1.58, scanWindow[0] + 1.86))
-        * (1 - smootherstep(interval(time, scanWindow[1] - 0.38, scanWindow[1] - 0.12)))
-      : 0;
-    setFactoryDoorOpen(proof.entryDoor, shadowDoorOpen);
-    const shadowFlight = scanWindow
-      ? smootherstep(interval(
-        time,
-        scanWindow[0] + 1.72,
-        Math.min(scanWindow[0] + 2.55, scanWindow[1] - 0.38),
-      ))
-      : 0;
-    const shadowPlayerIntro = scanWindow
-      ? smootherstep(interval(time, scanWindow[0] + 1.48, scanWindow[0] + 1.7))
-      : 0;
-    proof.subject.visible = shadowPlayerIntro * scanOutro > 0.001;
-    const shadowPoint = proof.entryFlight.getPointAt(shadowFlight);
-    proof.subject.position.copy(shadowPoint);
-    const ghostSettled = smootherstep(interval(shadowFlight, 0.9, 1));
-    proof.subject.position.y += ghostSettled * Math.sin(time * Math.PI * 2.1) * 0.05;
-    const doorwaySqueeze = Math.max(0, 1 - Math.abs(shadowFlight - 0.59) / 0.18);
-    proof.subject.scale.setScalar(
-      THREE.MathUtils.lerp(0.82, 0.72, shadowFlight) - doorwaySqueeze * 0.12,
-    );
-    const attackIntro = scanWindow
-      ? smootherstep(interval(time, scanWindow[0] + 1.28, Math.min(scanWindow[0] + 1.72, scanWindow[1] - 0.48)))
-      : 0;
-    proof.attacks.forEach(({ route, impact }, index) => {
-      route.visible = attackIntro * scanOutro > 0.001;
-      impact.visible = route.visible;
-      impact.scale.setScalar(0.78 + Math.max(0, Math.sin((time - (scanWindow?.[0] ?? 0)) * 8.6 - index * 1.75)) * 0.42);
-    });
+    proof.setTime(time, camera, group);
 
     const fixProgress = smootherstep(interval(time, 54, 60));
     const fixAngle = fixProgress * Math.PI * 2;
@@ -793,7 +576,7 @@ export function createFactoryWorld() {
     twins.hashPlates[0].visible = time >= 60.3;
     setLabelText(
       twins.resultLabel,
-      time >= 74 ? "EQUAL" : time >= 60.8 && time < 66.95 ? "RED · BYTE DRIFT" : "BUILDING A/B",
+      time >= 69.35 ? "EQUAL" : time >= 60.8 && time < 66.95 ? "RED · BYTE DRIFT" : "BUILDING A/B",
     );
 
     group.traverse((object) => object.userData.setRouteTime?.(time));

@@ -30,12 +30,12 @@ function drawText(context, copy, x, y, {
 }
 
 function drawApprovalCard(surface, time) {
-  const pointerProgress = smoothstep(interval(time, 82.15, 84.25));
-  const clickDown = smoothstep(interval(time, 84.12, 84.25))
-    * (1 - smoothstep(interval(time, 84.25, 84.5)));
-  const pointerAlpha = windowAlpha(time, 82, 85.4, 0.3);
-  const approved = time >= 84.55;
-  const stampProgress = smootherstep(interval(time, 84.2, 85));
+  const pointerProgress = smoothstep(interval(time, 96.15, 98.25));
+  const clickDown = smoothstep(interval(time, 98.12, 98.25))
+    * (1 - smoothstep(interval(time, 98.25, 98.5)));
+  const pointerAlpha = windowAlpha(time, 96, 99.4, 0.3);
+  const approved = time >= 98.55;
+  const stampProgress = smootherstep(interval(time, 98.2, 99));
   const state = `${approved}|${Math.round(pointerProgress * 120)}|${Math.round(clickDown * 20)}|${Math.round(stampProgress * 30)}|${Math.round(pointerAlpha * 20)}`;
   if (surface.renderedState === state) return;
   surface.renderedState = state;
@@ -266,14 +266,14 @@ function createGrantRoute(tracker) {
 }
 
 function setGrantRoute(route, time) {
-  const grant = smootherstep(interval(time, 84.55, 85.25));
-  const revoke = smootherstep(interval(time, 92.15, 93));
+  const grant = smootherstep(interval(time, 98.55, 99.25));
+  const revoke = smootherstep(interval(time, 106.15, 107));
   const amount = grant * (1 - revoke);
   setVectorCableState(route, {
     progress: amount,
     time,
     persistent: amount >= 0.999,
-    active: amount >= 0.999 && time < 92.15,
+    active: amount >= 0.999 && time < 106.15,
   });
 }
 
@@ -299,17 +299,17 @@ export function createApprovalSequence(tracker, { guardMachine }) {
   const guardShift = new THREE.Vector3(0, 0, 2.4);
 
   function setTime(rawTime) {
-    const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 120);
-    const cardAlpha = windowAlpha(time, 81.8, 88, 0.7);
+    const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 134);
+    const cardAlpha = windowAlpha(time, 95.8, 102, 0.7);
     card.sprite.visible = cardAlpha > 0.001;
     card.material.opacity = cardAlpha;
     if (card.sprite.visible) drawApprovalCard(card, time);
 
-    const remoteAlpha = windowAlpha(time, 85, 87.2, 0.24);
+    const remoteAlpha = windowAlpha(time, 99, 101.2, 0.24);
     remoteDenied.sprite.visible = remoteAlpha > 0.001;
     remoteDenied.material.opacity = remoteAlpha;
 
-    const guardStep = smootherstep(interval(time, 84.55, 85.25));
+    const guardStep = smootherstep(interval(time, 98.55, 99.25));
     guardMachine.group.position.copy(guardBase).addScaledVector(guardShift, guardStep);
     setGrantRoute(grantRoute, time);
   }
