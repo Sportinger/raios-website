@@ -526,20 +526,6 @@ function setDeckFootprint(deck, scaleX, scaleZ) {
   deck.title.position.z = deck.depth * 0.5 * scaleZ + 0.04;
 }
 
-function createPrompt() {
-  const group = new THREE.Group();
-  const panel = createOutlinedBox(new THREE.Vector3(7.5, 0.12, 1.3), PALETTE.dark, PALETTE.blue);
-  panel.rotation.x = -Math.PI / 2;
-  const label = createLabel("> BUILD ME A MUSIC PLAYER", PALETTE.ink, 6.8, 60);
-  label.position.set(0, 0.09, 0);
-  label.material.depthTest = false;
-  const cursor = createOutlinedBox(new THREE.Vector3(0.055, 0.58, 0.04), PALETTE.blueHigh, PALETTE.blueHigh);
-  cursor.position.set(-3.22, 0, 0.08);
-  group.add(panel, label, cursor);
-  group.position.set(0, 4.2, 0);
-  return { group, cursor };
-}
-
 function createAgent() {
   const group = new THREE.Group();
   const shadow = new THREE.Mesh(
@@ -988,7 +974,6 @@ export function createFoundationWorld() {
   const group = new THREE.Group();
   group.name = "film-foundation-world";
 
-  const prompt = createPrompt();
   const kernel = createDeck({
     width: KERNEL_FOOTPRINT.compact.width,
     depth: KERNEL_FOOTPRINT.compact.depth,
@@ -1008,19 +993,14 @@ export function createFoundationWorld() {
     color: PALETTE.blueHigh,
     width: 5.4,
   });
-  const kernelCalloutDock = new THREE.Vector3(
-    FOUNDATION_LAYOUT.kernel[0] - KERNEL_FOOTPRINT.compact.width * 0.11 + 1.75,
-    0.5,
-    FOUNDATION_LAYOUT.kernel[2] + KERNEL_FOOTPRINT.compact.depth * 0.5 + 0.75,
-  );
   const kernelCalloutAnchor = new THREE.Vector3(
-    0.82,
-    -(KERNEL_FOOTPRINT.compact.depth - 0.08) * 0.5,
     0,
+    0,
+    KERNEL_FOOTPRINT.compact.depth * 0.5 + 0.04,
   );
   const genesis = createDeck({
     width: GENESIS_FOOTPRINT.width, depth: GENESIS_FOOTPRINT.depth, height: 0.34,
-    color: PALETTE.panel, edgeColor: 0x587b9e, label: "GENESIS DECK", labelColor: PALETTE.greenHigh,
+    color: PALETTE.panel, edgeColor: 0x587b9e, label: "GENESIS DECK", labelColor: PALETTE.ink,
   });
   place(genesis.group, FOUNDATION_LAYOUT.genesis);
   const genesisCallout = createLayerCallout({
@@ -1029,17 +1009,10 @@ export function createFoundationWorld() {
     color: PALETTE.green,
     width: 5.55,
   });
-  const genesisCalloutDock = new THREE.Vector3(
-    FOUNDATION_LAYOUT.genesisCompact[0] - KERNEL_FOOTPRINT.compact.width * 0.08 + 3.5,
-    0.55,
-    FOUNDATION_LAYOUT.genesisCompact[2]
-      + KERNEL_FOOTPRINT.compact.depth * (510 / 630) * 0.5
-      + 1.85,
-  );
   const genesisCalloutAnchor = new THREE.Vector3(
-    GENESIS_FOOTPRINT.width * 0.36,
-    -(GENESIS_FOOTPRINT.depth - 0.08) * 0.5,
     0,
+    0,
+    GENESIS_FOOTPRINT.depth * 0.5 + 0.04,
   );
 
   const agent = createAgent();
@@ -1078,7 +1051,7 @@ export function createFoundationWorld() {
 
   const builder = createDeck({
     width: BUILDER_FOOTPRINT.width, depth: BUILDER_FOOTPRINT.depth, height: 0.34,
-    color: 0x111c2b, edgeColor: PALETTE.blueHigh, label: "BUILDER DECK",
+    color: 0x111c2b, edgeColor: PALETTE.blueHigh, label: "BUILDER DECK", labelColor: PALETTE.ink,
   });
   place(builder.group, FOUNDATION_LAYOUT.builder);
   const builderHatch = createBuilderHatch(BUILDER_FOOTPRINT.width, BUILDER_FOOTPRINT.depth);
@@ -1090,11 +1063,10 @@ export function createFoundationWorld() {
     color: PALETTE.blueHigh,
     width: 5.65,
   });
-  const builderCalloutDock = new THREE.Vector3(7.78, 1.0, -3.15);
   const builderCalloutAnchor = new THREE.Vector3(
-    BUILDER_FOOTPRINT.width * 0.16,
-    -(BUILDER_FOOTPRINT.depth - 0.08) * 0.5,
     0,
+    0,
+    BUILDER_FOOTPRINT.depth * 0.5 + 0.04,
   );
 
   const production = createProduction();
@@ -1205,7 +1177,6 @@ export function createFoundationWorld() {
   shadowTitle.position.set(3.845, 2.1, -1.272);
 
   group.add(
-    prompt.group,
     kernel.group,
     kernelCallout.group,
     genesis.group,
@@ -1244,13 +1215,9 @@ export function createFoundationWorld() {
 
   function setTime(rawTime, camera) {
     const time = Math.min(120, Math.max(0, Number(rawTime) || 0));
-    const promptAlpha = time < 3.89 ? progress(time, 0.15, 0.8) * (1 - progress(time, 3.35, 3.89)) : 0;
-    setOpacity(prompt.group, promptAlpha);
-    prompt.cursor.visible = promptAlpha > 0.01 && Math.floor(time * 2) % 2 === 0;
-
     const kernelRise = timedProgress(time, FOUNDATION_TIMELINE.kernelRise);
     setDeckRise(kernel, kernelRise);
-    setOpacity(kernel.title, progress(time, 7.38, 8.28));
+    setOpacity(kernel.title, progress(time, 8.06, 8.28));
     const foundationExpansion = timedProgress(time, FOUNDATION_TIMELINE.agentRise);
     if (group.userData.presentationBaseX === undefined) {
       group.userData.presentationBaseX = group.position.x;
@@ -1302,9 +1269,8 @@ export function createFoundationWorld() {
       end: 8.28,
       root: group,
       camera,
-      targetObject: kernel.top,
+      targetObject: kernel.body,
       targetLocalPoint: kernelCalloutAnchor,
-      dockPosition: kernelCalloutDock,
       angle: -THREE.MathUtils.degToRad(26.565),
     });
     const compactGenesisWidth = KERNEL_FOOTPRINT.compact.width * (510 / 630);
@@ -1326,7 +1292,7 @@ export function createFoundationWorld() {
       FOUNDATION_LAYOUT.genesis[2] + genesisScreenDrop,
     );
     setDeckRise(genesis, genesisRise);
-    setOpacity(genesis.title, progress(time, 11.59, 12.59));
+    setOpacity(genesis.title, progress(time, 12.37, 12.59));
     setLayerCallout(genesisCallout, time, {
       start: 8.38,
       introEnd: 9.18,
@@ -1334,9 +1300,8 @@ export function createFoundationWorld() {
       end: 12.59,
       root: group,
       camera,
-      targetObject: genesis.top,
+      targetObject: genesis.body,
       targetLocalPoint: genesisCalloutAnchor,
-      dockPosition: genesisCalloutDock,
       angle: -THREE.MathUtils.degToRad(26.565),
     });
 
@@ -1476,7 +1441,7 @@ export function createFoundationWorld() {
     builderHatch.position.y = builder.height * builderRise + 0.025;
     const floorOnline = timedProgress(time, FOUNDATION_TIMELINE.builderFloorOnline);
     setFade(builderHatch, builderRise * (1 - floorOnline));
-    setOpacity(builder.title, progress(time, 32, 32.9));
+    setOpacity(builder.title, progress(time, 32.68, 32.9));
     setLayerCallout(builderCallout, time, {
       start: 28.25,
       introEnd: 29.05,
@@ -1484,9 +1449,8 @@ export function createFoundationWorld() {
       end: 32.9,
       root: group,
       camera,
-      targetObject: builder.top,
+      targetObject: builder.body,
       targetLocalPoint: builderCalloutAnchor,
-      dockPosition: builderCalloutDock,
       angle: -THREE.MathUtils.degToRad(26.565),
     });
 

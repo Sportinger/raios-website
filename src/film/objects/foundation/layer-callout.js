@@ -1,8 +1,8 @@
 import * as THREE from "three";
 
 const UNIT_Y = new THREE.Vector3(0, 1, 0);
-const CAMERA_PANEL_DISTANCE = 6;
-const CAMERA_PANEL_SCALE = 0.56;
+const CAMERA_PANEL_DISTANCE = 2.8;
+const CAMERA_PANEL_SCALE = 0.96;
 const DOCKED_PANEL_SCALE = 0.3;
 
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
@@ -159,7 +159,6 @@ export function setLayerCallout(callout, time, {
   camera,
   targetObject,
   targetLocalPoint,
-  dockPosition,
   angle,
 }) {
   const active = time >= start && time < end;
@@ -172,11 +171,13 @@ export function setLayerCallout(callout, time, {
   const titleTypeEnd = introEnd + introDuration * 0.18;
   const copyTypeStart = titleTypeEnd - 0.04;
   const copyTypeEnd = introEnd + introDuration * 0.82;
-  const moveEnd = Math.max(titleStart + 0.001, end - 0.22);
+  const moveEnd = Math.max(titleStart + 0.001, end - 0.38);
+  const stickEnd = Math.max(moveEnd + 0.001, end - 0.22);
   const panelOpen = progress(time, start, openEnd);
   const titleAmount = progress(time, titleTypeStart, titleTypeEnd);
   const copyAmount = progress(time, copyTypeStart, copyTypeEnd);
   const docking = progress(time, titleStart, moveEnd);
+  const stuck = progress(time, moveEnd, stickEnd);
   const fadeOut = progress(time, end - 0.22, end);
   const alpha = progress(time, start, start + 0.1) * (1 - fadeOut);
   const cursorVisible = (titleAmount < 1 || copyAmount < 1) && Math.floor(time * 8) % 2 === 0;
@@ -193,8 +194,14 @@ export function setLayerCallout(callout, time, {
   const screenRight = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0).normalize();
   const screenUp = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1).normalize();
   const cameraCenter = camera.position.clone().addScaledVector(viewDirection, CAMERA_PANEL_DISTANCE);
-  const dockWorld = dockPosition.clone().applyMatrix4(root.matrixWorld);
-  const cardCenterWorld = cameraCenter.clone().lerp(dockWorld, docking);
+  const targetWorld = targetLocalPoint.clone().applyMatrix4(targetObject.matrixWorld);
+  const curveControl = cameraCenter.clone().lerp(targetWorld, 0.48)
+    .addScaledVector(screenUp, 1.15)
+    .addScaledVector(screenRight, -0.45);
+  const inverseDocking = 1 - docking;
+  const cardCenterWorld = cameraCenter.clone().multiplyScalar(inverseDocking * inverseDocking)
+    .addScaledVector(curveControl, 2 * inverseDocking * docking)
+    .addScaledVector(targetWorld, docking * docking);
   const scaleFactor = THREE.MathUtils.lerp(CAMERA_PANEL_SCALE, DOCKED_PANEL_SCALE, docking);
   const zoomCompensation = camera.isOrthographicCamera
     ? THREE.MathUtils.lerp(1 / Math.max(0.01, camera.zoom), 1, docking)
@@ -215,7 +222,6 @@ export function setLayerCallout(callout, time, {
   callout.card.material.opacity = alpha;
   callout.card.material.rotation = angle * docking;
 
-  const targetWorld = targetLocalPoint.clone().applyMatrix4(targetObject.matrixWorld);
   const targetDelta = targetWorld.clone().sub(cardCenterWorld);
   const screenX = targetDelta.dot(screenRight);
   const screenY = targetDelta.dot(screenUp);
@@ -242,5 +248,6 @@ export function setLayerCallout(callout, time, {
   updateBeam(callout.secondSegment, elbowLocal, targetLocal);
   callout.targetDot.position.copy(targetLocal);
   const routeReveal = progress(time, openEnd, copyTypeEnd);
-  setRouteOpacity(callout.route, routeReveal * (1 - fadeOut));
+  const routeRetire = Math.max(stuck, fadeOut);
+  setRouteOpacity(callout.route, routeReveal * (1 - routeRetire));
 }
