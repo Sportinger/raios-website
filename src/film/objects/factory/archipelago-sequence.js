@@ -283,13 +283,9 @@ export function createArchipelagoSequence(tracker) {
     position: mapSvgPoint(596, 447, 0.22).toArray(),
     scale: 0.18,
     rotationY: Math.PI / 4,
+    label: "one door",
+    labelColor: 0xbdeacd,
   });
-  const doorLabel = createTextLabel(tracker, {
-    text: "one door", width: 1.35, height: 0.3,
-    color: 0xbdeacd, background: 0x03080a,
-    position: [0, 4.25, 0], fontSize: 44, billboard: true,
-  });
-  compactDoor.group.add(doorLabel);
   const compactLabel = createTextLabel(tracker, {
     text: "MUSIC PLAYER", width: 3.2, height: 0.48,
     color: 0xc5ccd5, background: 0x020608,

@@ -91,8 +91,6 @@ function createDomain(tracker) {
       scale: FACTORY_STANDARD_DOOR_SCALE,
       label: labels[index],
       labelColor: 0xa9bdad,
-      labelWidth: 1.45,
-      labelFontSize: 43,
     });
     group.add(door.group);
     return door;

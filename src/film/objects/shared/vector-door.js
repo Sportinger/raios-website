@@ -9,6 +9,9 @@ const smoothstep = (value) => {
 const trackGeometry = (tracker, geometry) => tracker?.geometry?.(geometry) ?? geometry;
 const trackMaterial = (tracker, material) => tracker?.material?.(material) ?? material;
 const trackTexture = (tracker, texture) => tracker?.texture?.(texture) ?? texture;
+const VECTOR_DOOR_LABEL_FONT = "Consolas, monospace";
+const VECTOR_DOOR_LABEL_FONT_SIZE = 190;
+const VECTOR_DOOR_LABEL_WIDTH = 1.05;
 
 function createMaterial(tracker, color, options = {}) {
   const material = trackMaterial(tracker, new THREE.MeshBasicMaterial({
@@ -348,8 +351,6 @@ export function createVectorDoorLabel({
   tracker,
   text,
   color = 0xf6c769,
-  width = 1.05,
-  fontSize = 68,
 } = {}) {
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
@@ -367,7 +368,11 @@ export function createVectorDoorLabel({
   material.userData.preserveTransparency = true;
   material.userData.vectorDoorBaseOpacity = 1;
   const label = new THREE.Sprite(material);
-  label.scale.set(width, width * (canvas.height / canvas.width), 1);
+  label.scale.set(
+    VECTOR_DOOR_LABEL_WIDTH,
+    VECTOR_DOOR_LABEL_WIDTH * (canvas.height / canvas.width),
+    1,
+  );
   label.renderOrder = 50;
   label.userData.labelTexture = texture;
   let renderedText = null;
@@ -375,14 +380,13 @@ export function createVectorDoorLabel({
     const copy = String(nextText);
     if (copy === renderedText) return;
     renderedText = copy;
-    const renderedFontSize = Math.min(190, fontSize * 2.8);
     context.clearRect(0, 0, canvas.width, canvas.height);
-    context.font = `800 ${renderedFontSize}px Consolas, monospace`;
+    context.font = `800 ${VECTOR_DOOR_LABEL_FONT_SIZE}px ${VECTOR_DOOR_LABEL_FONT}`;
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.letterSpacing = "4px";
     context.lineJoin = "round";
-    context.lineWidth = Math.max(12, renderedFontSize * 0.16);
+    context.lineWidth = VECTOR_DOOR_LABEL_FONT_SIZE * 0.16;
     context.strokeStyle = "#05080d";
     context.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
     context.strokeText(copy, canvas.width / 2, canvas.height / 2, 920);

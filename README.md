@@ -59,6 +59,8 @@ wird ausschließlich durch ihre Trägerfläche sowie `edge` (`front`, `back`,
 rechtwinklige Ausrichtung, den vollständig außerhalb liegenden Vorbau, die
 Öffnungsrichtung zum Vorbau und die mittige Labelposition ab. Szenen dürfen
 diese Werte nicht nachträglich per `position`, `rotation` oder `hinge` ändern.
+Font und Größe sämtlicher Türlabels werden ebenfalls ausschließlich dort
+definiert; Szenen liefern nur Text und Farbe.
 Nur bewusst freistehende Objekte wie die kompakte Finaltür verwenden die
 separat benannte `createFreestandingFactoryDoor`-API.
 

@@ -61,8 +61,6 @@ export function createFactoryDoorOnSurface(tracker, color, {
   scale = FACTORY_STANDARD_DOOR_SCALE,
   label,
   labelColor = 0xf6c769,
-  labelWidth = 1.05,
-  labelFontSize = 68,
 } = {}) {
   const door = createFactoryDoorMechanism(
     tracker,
@@ -76,8 +74,6 @@ export function createFactoryDoorOnSurface(tracker, color, {
       tracker,
       text: label,
       color: labelColor,
-      width: labelWidth,
-      fontSize: labelFontSize,
     }));
     door.label = door.mechanism.label;
   }
@@ -89,14 +85,25 @@ export function createFreestandingFactoryDoor(tracker, color, {
   scale = 1,
   rotationY = 0,
   porchSide = 1,
+  label,
+  labelColor = 0xf6c769,
 } = {}) {
-  return createFactoryDoorMechanism(
+  const door = createFactoryDoorMechanism(
     tracker,
     color,
     position,
     scale,
     { rotationY, porchSide },
   );
+  if (label) {
+    attachVectorDoorLabel(door.mechanism, createVectorDoorLabel({
+      tracker,
+      text: label,
+      color: labelColor,
+    }));
+    door.label = door.mechanism.label;
+  }
+  return door;
 }
 
 export function setFactoryDoorOpen(door, amount) {

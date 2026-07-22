@@ -358,7 +358,6 @@ function createProofScene(tracker) {
     scale: shadowDoorScale,
     label: "shadow.in",
     labelColor: 0xdcc3f6,
-    labelFontSize: 52,
   });
   group.add(entryDoor.group);
   const shadowTitle = createTextLabel(tracker, {
@@ -375,7 +374,6 @@ function createProofScene(tracker) {
       scale: shadowDoorScale,
       label,
       labelColor: 0xdcc3f6,
-      labelFontSize: 44,
     });
     group.add(door.group);
     return door;

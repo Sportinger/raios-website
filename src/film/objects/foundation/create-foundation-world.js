@@ -767,8 +767,6 @@ function createDoorAndKey(labelText = "net.https", {
   attachVectorDoorLabel(door, createVectorDoorLabel({
     text: labelText,
     color: labelColor,
-    width: 1.05,
-    fontSize: 68,
   }));
 
   const key = new THREE.Group();
