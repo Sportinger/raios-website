@@ -40,13 +40,17 @@ export function createFilmApp({
   stage,
   timecode,
   initialAnimationTime,
+  externalPlayback = false,
+  transparentBackground = false,
+  onRequestPlaybackTime,
 }) {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
-    alpha: false,
+    alpha: transparentBackground,
     powerPreference: "high-performance",
   });
+  if (transparentBackground) renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NoToneMapping;
   renderer.shadowMap.enabled = false;
@@ -62,7 +66,10 @@ export function createFilmApp({
   orbitControls.maxZoom = 4;
   orbitControls.minPolarAngle = 0.04;
   orbitControls.maxPolarAngle = Math.PI - 0.04;
-  const world = createFilmWorld();
+  const world = createFilmWorld({
+    showGrid: !transparentBackground,
+    transparentBackground,
+  });
   const viewport = canvas.closest(".film-viewport");
   const overlays = createFilmOverlays({ host: viewport });
   const narration = createFilmNarration({ host: viewport });
@@ -101,10 +108,14 @@ export function createFilmApp({
     playbackTime = clampPlaybackTime(time);
     animationTime = animationTimeAtPlaybackTime(playbackTime);
     if (syncScroll) {
-      const travel = Math.max(1, stage.offsetHeight - window.innerHeight);
-      window.scrollTo({
-        top: stage.offsetTop + travel * playbackTime / FILM_PLAYBACK_DURATION,
-      });
+      if (externalPlayback && typeof onRequestPlaybackTime === "function") {
+        onRequestPlaybackTime(playbackTime);
+      } else {
+        const travel = Math.max(1, stage.offsetHeight - window.innerHeight);
+        window.scrollTo({
+          top: stage.offsetTop + travel * playbackTime / FILM_PLAYBACK_DURATION,
+        });
+      }
     }
     narration.setTime(playbackTime, { source });
     updateUi();
@@ -167,7 +178,8 @@ export function createFilmApp({
 
   const syncFromScroll = () => {
     scrollFrame = 0;
-    if (playing || orbitEnabled || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (externalPlayback || playing || orbitEnabled
+      || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const travel = Math.max(1, stage.offsetHeight - window.innerHeight);
     setTime(
       (window.scrollY - stage.offsetTop) / travel * FILM_PLAYBACK_DURATION,
@@ -193,7 +205,7 @@ export function createFilmApp({
   playToggle.addEventListener("click", onPlayToggle);
   orbitToggle.addEventListener("click", onOrbitToggle);
   window.addEventListener("resize", resize, { passive: true });
-  window.addEventListener("scroll", onScroll, { passive: true });
+  if (!externalPlayback) window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("wheel", stopForUserInput, { passive: true });
   window.addEventListener("touchstart", stopForUserInput, { passive: true });
 
@@ -219,11 +231,22 @@ export function createFilmApp({
   frame = requestAnimationFrame(animate);
 
   return {
+    duration: FILM_PLAYBACK_DURATION,
+    getAnimationTime: () => animationTime,
+    getPlaybackTime: () => playbackTime,
+    setAnimationTime(time, { source = "seek" } = {}) {
+      setTime(playbackTimeAtAnimationTime(time), false, source);
+    },
+    setPlaybackTime(time, { source = "seek" } = {}) {
+      setTime(time, false, source);
+    },
+    setOrbitEnabled,
+    setPlaying,
     dispose() {
       cancelAnimationFrame(frame);
       if (scrollFrame) cancelAnimationFrame(scrollFrame);
       window.removeEventListener("resize", resize);
-      window.removeEventListener("scroll", onScroll);
+      if (!externalPlayback) window.removeEventListener("scroll", onScroll);
       window.removeEventListener("wheel", stopForUserInput);
       window.removeEventListener("touchstart", stopForUserInput);
       playToggle.removeEventListener("click", onPlayToggle);

@@ -55,6 +55,14 @@ modelliert die Animationssekunden `41–148`. Wiederholte Produktionspfade und d
 gemeinsame Konfiguration und wiederverwendbare Objektverträge statt duplizierter
 Szenenlogik.
 
+### Einbettung in die Vollwebsite
+
+`embedded-film.js` montiert denselben Film in einem Shadow DOM. Dadurch bleiben
+Styles und DOM-IDs von der produktiven Website getrennt. Die Einbettung steuert
+die Playback-Zeit über die öffentliche API von `createFilmApp()`, verwendet einen
+transparenten WebGL-Hintergrund und überlässt das durchlaufende Seitenraster der
+Website. Der eigenständige Film behält dagegen seinen eigenen Three.js-GridHelper.
+
 ### Sprecher und Audio
 
 Die fünfzehn vorhandenen Sprecherpassagen liegen unter
@@ -65,8 +73,8 @@ jeweilige Animationsfenster auf die echte Quelldauer der Aufnahme; bei PLAY
 läuft deshalb jede Stimme unverändert mit `1×`. Nach der ersten
 Nutzerinteraktion folgen die Stimmen auch der Scrollrichtung; bei rückwärts
 laufender Timeline werden die vorhandenen Reverse-Fassungen verwendet. Reduced
-Motion deaktiviert die Wiedergabe. Der vollständige Bestand sowie der noch
-aufzunehmende Text stehen in `NARRATION.md`.
+Motion deaktiviert die Wiedergabe. Der vollständige Bestand und alle
+Sprechtexte stehen in `NARRATION.md`; weitere Aufnahmen fehlen nicht.
 
 ### Layer- und Callout-Vertrag
 

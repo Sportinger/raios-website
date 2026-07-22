@@ -141,6 +141,8 @@ export function createFilmNarration({ host } = {}) {
   };
 
   host.addEventListener("pointerdown", unlock, { passive: true });
+  host.addEventListener("wheel", unlock, { passive: true });
+  host.addEventListener("touchstart", unlock, { passive: true });
   window.addEventListener("keydown", unlock, { passive: true });
   document.addEventListener("visibilitychange", onVisibilityChange);
   reducedMotion.addEventListener("change", onReducedMotionChange);
@@ -175,6 +177,8 @@ export function createFilmNarration({ host } = {}) {
     dispose() {
       cancelAnimationFrame(frame);
       host.removeEventListener("pointerdown", unlock);
+      host.removeEventListener("wheel", unlock);
+      host.removeEventListener("touchstart", unlock);
       window.removeEventListener("keydown", unlock);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       reducedMotion.removeEventListener("change", onReducedMotionChange);

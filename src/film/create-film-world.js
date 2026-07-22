@@ -4,16 +4,22 @@ import { FOUNDATION_PRESENTATION_SCALE } from "./layout-constants.js";
 import { createFoundationWorld } from "./objects/foundation/index.js";
 import { createFactoryWorld } from "./objects/factory/index.js";
 
-export function createFilmWorld() {
+export function createFilmWorld({
+  showGrid = true,
+  transparentBackground = false,
+} = {}) {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x010407);
+  scene.background = transparentBackground ? null : new THREE.Color(0x010407);
 
   const root = new THREE.Group();
   root.name = "factory-film-world";
-  const grid = new THREE.GridHelper(72, 72, 0x244c68, 0x102a3b);
-  grid.position.y = 0;
-  grid.material.transparent = true;
-  grid.material.opacity = 0.28;
+  if (showGrid) {
+    const grid = new THREE.GridHelper(72, 72, 0x244c68, 0x102a3b);
+    grid.position.y = 0;
+    grid.material.transparent = true;
+    grid.material.opacity = 0.28;
+    root.add(grid);
+  }
   const foundation = createFoundationWorld();
   const factory = createFactoryWorld({
     getPlayerWorldPosition: (target) => foundation.getPlayerWorldPosition(target),
@@ -27,7 +33,7 @@ export function createFilmWorld() {
   foundation.group.userData.presentationBaseZ = foundation.group.position.z;
   const factoryOffset = factory.group.userData.recommendedWorldOffset;
   factory.group.position.set(factoryOffset.x, factoryOffset.y, factoryOffset.z);
-  root.add(grid, foundation.group, factory.group);
+  root.add(foundation.group, factory.group);
   scene.add(root);
 
   return {
