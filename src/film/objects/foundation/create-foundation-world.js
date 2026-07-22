@@ -1049,14 +1049,10 @@ export function createFoundationWorld() {
     if (group.userData.presentationBaseZ === undefined) {
       group.userData.presentationBaseZ = group.position.z;
     }
-    const compactComposition = progress(time, 134, 137);
-    const finaleComposition = progress(time, 137, 145);
     group.position.x = group.userData.presentationBaseX
-      + FOUNDATION_LAYOUT.expansionOffset[0] * foundationExpansion
-      + 1.76 * compactComposition + 4.1 * finaleComposition;
+      + FOUNDATION_LAYOUT.expansionOffset[0] * foundationExpansion;
     group.position.z = group.userData.presentationBaseZ
-      + FOUNDATION_LAYOUT.expansionOffset[2] * foundationExpansion
-      + 3.45 * compactComposition + 4.1 * finaleComposition;
+      + FOUNDATION_LAYOUT.expansionOffset[2] * foundationExpansion;
     const kernelSquareExpansion = timedProgress(
       time,
       FOUNDATION_TIMELINE.kernelSquareExpansion,

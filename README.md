@@ -63,12 +63,16 @@ nicht mehr durch Verschieben oder Skalieren der gesamten Gruppe einblenden.
 Beim Outro läuft derselbe Vertrag rückwärts: Der Körper sinkt zuerst in seine
 Trägerfläche zurück, anschließend wird der verbleibende Grundriss gelöscht.
 
-Ab Kapitel 13 bleibt die Player-Domain an ihrer bestehenden Weltposition. Nur
-ihr X/Z-Footprint schrumpft zentriert über `setVectorLayerFootprint`; Höhe und
-Gruppenposition verändern sich nicht. Danach entstehen `60` App-Inseln in
-unterschiedlichen Breiten, Tiefen und Höhen nacheinander über denselben
-`vector-layer`-Lifecycle aus Grundriss und aufwachsendem Körper. Bereits
-entstandene Inseln driften anschließend nicht weiter.
+Ab Kapitel 13 bleibt die Player-Domain an ihrer bestehenden Weltposition neben
+Genesis. Nur ihr X/Z-Footprint schrumpft zentriert über
+`setVectorLayerFootprint` auf `18 %`; Höhe und Gruppenposition verändern sich
+nicht. Danach entstehen `60` App-Inseln ausschließlich auf der sichtbaren
+Rust-Kernel-Fläche, ohne Genesis oder die Player-Insel zu überdecken. Sie nutzen
+unterschiedliche Breiten, Tiefen und Höhen und bauen sich nacheinander über
+denselben `vector-layer`-Lifecycle aus Grundriss und aufwachsendem Körper auf.
+Das Archipelago besitzt keine verbindenden Kabel oder Signallinien. Bereits
+entstandene Inseln driften oder pulsieren anschließend nicht weiter; fertige
+Layerzustände werden zudem nicht in jedem Frame erneut aufgebaut.
 
 Die zugehörigen Erklärtafeln verwenden `objects/shared/vector-callout.js`.
 Dieses Modul öffnet das Panel vor der Kamera, schreibt Titel und Text, bewegt

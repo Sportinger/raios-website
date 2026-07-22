@@ -345,7 +345,7 @@ export function createLiveSequence(tracker) {
     setOpacity(domain.group, domainAlpha);
     domain.group.position.copy(DOMAIN_CENTER);
     domain.group.scale.setScalar(1);
-    const compactFootprint = THREE.MathUtils.lerp(1, 0.25, contraction);
+    const compactFootprint = THREE.MathUtils.lerp(1, 0.18, contraction);
     setVectorLayerFootprint(domain.layer, compactFootprint, compactFootprint);
     const domainOutline = smootherstep(interval(time, 116.8, 117.2));
     setVectorLayerBuild(domain.layer, {

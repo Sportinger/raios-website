@@ -6,24 +6,40 @@ import {
   createFreestandingFactoryDoor,
   setFactoryDoorOpen,
 } from "./door-primitives.js";
-import { createRoute, createTextLabel, createVectorBox } from "./primitives.js";
+import { createTextLabel, createVectorBox } from "./primitives.js";
 import { interval, smoothstep, smootherstep } from "./timeline.js";
-import {
-  setVectorCableTime,
-  VECTOR_CABLE_DIRECTIONS,
-} from "../shared/vector-cable.js";
 import {
   createVectorLayer,
   setVectorLayerLifecycle,
 } from "../shared/vector-layer.js";
 
-const ARCHIPELAGO_ANCHOR = Object.freeze({
+const PLAYER_ANCHOR = Object.freeze({
   x: FACTORY_LAYOUT.shadow.position.x,
   y: FACTORY_LAYOUT.shadow.position.y + FACTORY_LAYOUT.shadow.thickness,
   z: FACTORY_LAYOUT.shadow.position.z,
 });
+// Final Foundation kernel bounds expressed in Factory-local coordinates.
+// App layers use the kernel top as their base plane and stay inside its inset.
+const RUST_SURFACE = Object.freeze({
+  centerX: -7.02,
+  centerZ: 3.045,
+  width: 27.45,
+  depth: 27.45,
+  top: FACTORY_LAYOUT.shadow.position.y,
+});
+const GENESIS_CLEARANCE = Object.freeze({
+  centerX: PLAYER_ANCHOR.x,
+  centerZ: PLAYER_ANCHOR.z + 12.755,
+  width: 10.35,
+  depth: 10.35,
+});
+const PLAYER_CLEARANCE = Object.freeze({
+  centerX: PLAYER_ANCHOR.x,
+  centerZ: PLAYER_ANCHOR.z,
+  width: 2.7,
+  depth: 2.7,
+});
 const ARCHIPELAGO_TIMING = FILM_ACTION_TIMINGS.archipelago;
-const LATTICE_STEP = 4.4;
 const ISLAND_REVEAL_START = ARCHIPELAGO_TIMING.firstIslandAt;
 const ISLAND_STAGGER_SECONDS = ARCHIPELAGO_TIMING.islandStaggerSeconds;
 const ISLAND_BUILD_SECONDS = ARCHIPELAGO_TIMING.islandPopSeconds;
@@ -91,24 +107,44 @@ const APP_CATALOG = Object.freeze([
   ["AUTOMATION", "AUTO", FACTORY_PALETTE.violet],
 ]);
 
-function createRingSlots(count) {
-  const slots = [];
-  for (let ring = 1; slots.length < count; ring += 1) {
-    for (let x = -ring; x < ring && slots.length < count; x += 1) slots.push([x, -ring]);
-    for (let z = -ring; z < ring && slots.length < count; z += 1) slots.push([ring, z]);
-    for (let x = ring; x > -ring && slots.length < count; x -= 1) slots.push([x, ring]);
-    for (let z = ring; z > -ring && slots.length < count; z -= 1) slots.push([-ring, z]);
-  }
-  return slots;
+function overlapsClearance(x, z, clearance, margin = 1.35) {
+  return Math.abs(x - clearance.centerX) < clearance.width / 2 + margin
+    && Math.abs(z - clearance.centerZ) < clearance.depth / 2 + margin;
 }
 
-const ISLAND_SLOTS = createRingSlots(APP_CATALOG.length);
+function createRustSurfaceSlots(count) {
+  const columns = 10;
+  const rows = 9;
+  const spacingX = 2.6;
+  const spacingZ = 3;
+  const candidates = [];
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const x = RUST_SURFACE.centerX + (column - (columns - 1) / 2) * spacingX;
+      const z = RUST_SURFACE.centerZ + (row - (rows - 1) / 2) * spacingZ;
+      if (overlapsClearance(x, z, GENESIS_CLEARANCE)) continue;
+      if (overlapsClearance(x, z, PLAYER_CLEARANCE, 1.1)) continue;
+      candidates.push({
+        x,
+        z,
+        distance: Math.hypot(x - PLAYER_ANCHOR.x, z - PLAYER_ANCHOR.z),
+      });
+    }
+  }
+  candidates.sort((left, right) => left.distance - right.distance || left.z - right.z || left.x - right.x);
+  if (candidates.length < count) {
+    throw new Error("Rust surface does not provide enough non-overlapping app slots.");
+  }
+  return candidates.slice(0, count);
+}
+
+const ISLAND_SLOTS = createRustSurfaceSlots(APP_CATALOG.length);
 if (APP_CATALOG.length !== ARCHIPELAGO_TIMING.islandCount) {
   throw new Error("Archipelago app catalog and configured island count must match.");
 }
-const ISLAND_SIZE_PATTERN = Object.freeze([0.68, 0.86, 1.14, 0.76, 1.28, 0.95, 1.08, 0.72, 1.36, 0.84]);
+const ISLAND_SIZE_PATTERN = Object.freeze([0.72, 0.86, 1.06, 0.78, 1.18, 0.94, 1.1, 0.74, 1.2, 0.84]);
 const APP_DEFINITIONS = Object.freeze(APP_CATALOG.map(([labelCopy, iconCopy, accent], index) => {
-  const [gridX, gridZ] = ISLAND_SLOTS[index];
+  const slot = ISLAND_SLOTS[index];
   const widthScale = ISLAND_SIZE_PATTERN[index % ISLAND_SIZE_PATTERN.length];
   const depthScale = ISLAND_SIZE_PATTERN[(index * 3 + 4) % ISLAND_SIZE_PATTERN.length];
   return Object.freeze({
@@ -116,13 +152,13 @@ const APP_DEFINITIONS = Object.freeze(APP_CATALOG.map(([labelCopy, iconCopy, acc
     iconCopy,
     accent,
     start: ISLAND_REVEAL_START + index * ISLAND_STAGGER_SECONDS,
-    width: 2.75 * widthScale,
-    depth: 2.75 * depthScale,
+    width: 2.1 * widthScale,
+    depth: 2.1 * depthScale,
     height: 0.28 + 0.13 * ISLAND_SIZE_PATTERN[(index + 6) % ISLAND_SIZE_PATTERN.length],
     position: Object.freeze({
-      x: ARCHIPELAGO_ANCHOR.x + gridX * LATTICE_STEP,
-      y: ARCHIPELAGO_ANCHOR.y,
-      z: ARCHIPELAGO_ANCHOR.z + gridZ * LATTICE_STEP,
+      x: slot.x,
+      y: RUST_SURFACE.top,
+      z: slot.z,
     }),
   });
 }));
@@ -340,50 +376,18 @@ function createAppIsland(tracker, definition) {
     start,
     beacon,
     halo,
-    routePoint: new THREE.Vector3(position.x, position.y + height + 0.05, position.z),
   };
-}
-
-function createArchipelagoRoutes(tracker, islands) {
-  return Array.from({ length: 6 }, (_, routeIndex) => {
-    const linkedIslands = islands.filter((_, index) => index % 6 === routeIndex);
-    const routePoints = [
-      new THREE.Vector3(
-        ARCHIPELAGO_ANCHOR.x,
-        ARCHIPELAGO_ANCHOR.y + 0.08,
-        ARCHIPELAGO_ANCHOR.z,
-      ),
-      ...linkedIslands.map(({ routePoint }) => routePoint),
-    ].map((point) => point.toArray());
-    const route = createRoute(tracker, routePoints, 0x315f46, 0.014, {
-      direction: VECTOR_CABLE_DIRECTIONS.forward,
-    });
-    route.name = "archipelago-route";
-    const cable = route.userData.vectorCable;
-    route.userData.setRouteTime = undefined;
-    return { route, cable, start: linkedIslands[0].start + 0.24 };
-  });
 }
 
 export function createArchipelagoSequence(tracker) {
   const group = new THREE.Group();
   group.name = "compact-domain-and-app-archipelago";
 
-  const compactRoute = createRoute(tracker, [
-    [ARCHIPELAGO_ANCHOR.x, ARCHIPELAGO_ANCHOR.y + 0.12, ARCHIPELAGO_ANCHOR.z],
-    [ARCHIPELAGO_ANCHOR.x + 0.7, ARCHIPELAGO_ANCHOR.y + 0.18, ARCHIPELAGO_ANCHOR.z + 0.7],
-    [ARCHIPELAGO_ANCHOR.x + 1.35, ARCHIPELAGO_ANCHOR.y + 0.24, ARCHIPELAGO_ANCHOR.z + 1.35],
-    [ARCHIPELAGO_ANCHOR.x + 1.9, ARCHIPELAGO_ANCHOR.y + 0.12, ARCHIPELAGO_ANCHOR.z + 1.9],
-  ], FACTORY_PALETTE.green, 0.035);
-  compactRoute.name = "compact-domain-single-capability";
-  const compactCable = compactRoute.userData.vectorCable;
-  compactRoute.userData.setRouteTime = undefined;
-
   const compactDoor = createFreestandingFactoryDoor(tracker, FACTORY_PALETTE.green, {
     position: [
-      ARCHIPELAGO_ANCHOR.x + 1.9,
-      ARCHIPELAGO_ANCHOR.y + 0.12,
-      ARCHIPELAGO_ANCHOR.z + 1.9,
+      PLAYER_ANCHOR.x + 1.35,
+      PLAYER_ANCHOR.y + 0.06,
+      PLAYER_ANCHOR.z + 1.35,
     ],
     scale: 0.18,
     rotationY: Math.PI / 4,
@@ -393,37 +397,34 @@ export function createArchipelagoSequence(tracker) {
   const compactLabel = createTextLabel(tracker, {
     text: "MUSIC PLAYER", width: 3.2, height: 0.48,
     color: 0xc5ccd5, background: 0x020608,
-    position: [ARCHIPELAGO_ANCHOR.x + 1.35, 0.22, ARCHIPELAGO_ANCHOR.z + 1.35],
+    position: [PLAYER_ANCHOR.x + 0.95, PLAYER_ANCHOR.y + 0.01, PLAYER_ANCHOR.z + 0.95],
     fontSize: 48, billboard: true,
   });
   const compactCaption = createCompactCaption(tracker);
   compactCaption.sprite.position.set(
-    ARCHIPELAGO_ANCHOR.x + 6.55,
+    PLAYER_ANCHOR.x + 5.4,
     0.65,
-    ARCHIPELAGO_ANCHOR.z + 6.55,
+    PLAYER_ANCHOR.z + 5.4,
   );
 
   const islands = APP_DEFINITIONS.map((definition) => createAppIsland(tracker, definition));
-  const routes = createArchipelagoRoutes(tracker, islands);
   const counter = createCounter(tracker);
   counter.sprite.position.set(
-    ARCHIPELAGO_ANCHOR.x + 13.2,
+    RUST_SURFACE.centerX + 8.4,
     0.35,
-    ARCHIPELAGO_ANCHOR.z + 13.2,
+    RUST_SURFACE.centerZ + 10.8,
   );
   const title = createFinalTitle(tracker);
   title.sprite.position.set(
-    ARCHIPELAGO_ANCHOR.x - 16,
+    RUST_SURFACE.centerX - 12,
     4.8,
-    ARCHIPELAGO_ANCHOR.z - 16,
+    RUST_SURFACE.centerZ - 12,
   );
 
   group.add(
-    compactRoute,
     compactDoor.group,
     compactLabel,
     compactCaption.sprite,
-    ...routes.map(({ route }) => route),
     ...islands.map(({ group: island }) => island),
     counter.sprite,
     title.sprite,
@@ -432,22 +433,11 @@ export function createArchipelagoSequence(tracker) {
   function setTime(rawTime) {
     const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 148);
     group.position.set(0, 0, 0);
-    const connectionProgress = smootherstep(interval(
-      time,
-      ARCHIPELAGO_TIMING.connection.start,
-      ARCHIPELAGO_TIMING.connection.end,
-    ));
-    setOpacity(compactRoute, connectionProgress * (time >= 134.1 ? 1 : 0));
-    setVectorCableTime(compactCable, time, {
-      progress: connectionProgress,
-      persistent: true,
-      active: time >= 134.45,
-    });
 
     const doorRise = smootherstep(interval(time, 135, 136.2));
     compactDoor.group.visible = doorRise > 0.001;
     compactDoor.group.scale.setScalar(0.18 * Math.max(0.001, doorRise));
-    compactDoor.group.position.y = 0.22 - (1 - doorRise) * 0.9;
+    compactDoor.group.position.y = PLAYER_ANCHOR.y + 0.01 - (1 - doorRise) * 0.9;
     setFactoryDoorOpen(compactDoor, 0);
     const compactLabelAlpha = smoothstep(interval(time, 136.45, 136.75));
     setOpacity(compactLabel, compactLabelAlpha);
@@ -456,40 +446,32 @@ export function createArchipelagoSequence(tracker) {
     compactCaption.material.opacity = captionAlpha;
 
     let visibleApps = 0;
-    islands.forEach((island, index) => {
+    islands.forEach((island) => {
       const revealEnd = island.start + ISLAND_BUILD_SECONDS;
       const reveal = smootherstep(interval(time, island.start, revealEnd));
-      setVectorLayerLifecycle(island.layer, time, {
-        introStart: island.start,
-        introEnd: revealEnd,
-        opacity: 1,
-        outlineShare: 0.42,
-      });
+      const contentEnd = island.start + ISLAND_BUILD_SECONDS + 0.2;
+      const phase = time < island.start ? "before" : time < contentEnd ? "building" : "built";
       const contentReveal = smootherstep(interval(
         time,
         island.start + ISLAND_BUILD_SECONDS * 0.68,
-        island.start + ISLAND_BUILD_SECONDS + 0.2,
+        contentEnd,
       ));
-      island.content.position.y = -(1 - contentReveal) * 0.42;
-      island.content.scale.setScalar(0.72 + contentReveal * 0.28);
-      setOpacity(island.content, contentReveal);
-      const cycleStart = revealEnd;
-      const lit = smoothstep(interval(time, cycleStart, cycleStart + 0.35));
-      const beat = 1 + lit * 0.34 + Math.max(0, Math.sin((time - cycleStart) * 4.5)) * 0.08 * lit;
-      island.beacon.scale.setScalar(beat);
-      island.halo.scale.setScalar(0.7 + beat * 0.55);
-      island.halo.material.opacity = contentReveal * (0.08 + reveal * (0.12 + lit * 0.16));
+      if (phase === "building" || phase !== island.timelinePhase) {
+        setVectorLayerLifecycle(island.layer, time, {
+          introStart: island.start,
+          introEnd: revealEnd,
+          opacity: 1,
+          outlineShare: 0.42,
+        });
+        island.content.position.y = -(1 - contentReveal) * 0.32;
+        island.content.scale.setScalar(0.78 + contentReveal * 0.22);
+        setOpacity(island.content, contentReveal);
+        island.beacon.scale.setScalar(0.88 + contentReveal * 0.12);
+        island.halo.scale.setScalar(1.05 + contentReveal * 0.18);
+        island.halo.material.opacity = contentReveal * 0.2;
+        island.timelinePhase = phase;
+      }
       if (reveal >= 0.5) visibleApps += 1;
-    });
-
-    routes.forEach(({ route, cable, start }, index) => {
-      const reveal = smootherstep(interval(time, start, start + ARCHIPELAGO_TIMING.routeDrawSeconds));
-      setOpacity(route, reveal * 0.72);
-      setVectorCableTime(cable, time + index * 0.8, {
-        progress: reveal,
-        persistent: true,
-        active: reveal > 0.2,
-      });
     });
 
     const counterAlpha = smoothstep(interval(
@@ -509,5 +491,5 @@ export function createArchipelagoSequence(tracker) {
   }
 
   setTime(0);
-  return { group, setTime, compactAnchor: ARCHIPELAGO_ANCHOR };
+  return { group, setTime, compactAnchor: PLAYER_ANCHOR };
 }
