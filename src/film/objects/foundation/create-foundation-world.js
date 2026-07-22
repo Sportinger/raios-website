@@ -922,8 +922,8 @@ export function createFoundationWorld() {
   place(netTower.group, FOUNDATION_LAYOUT.netTower);
   netTower.group.scale.setScalar(1.18);
   const agentToDoor = createSignalRoute([
-    new THREE.Vector3(-0.55, 1.74 + DECK_HEIGHT_DELTA, 1.18),
-    cableSurfacePoint(FOUNDATION_SURFACES.genesis, -0.55, 1.18),
+    new THREE.Vector3(-1.1, 1.74 + DECK_HEIGHT_DELTA, 1.18),
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, -1.1, 1.18),
     cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.2, 2.05),
     cableSurfacePoint(FOUNDATION_SURFACES.genesis, internetPosition.x, internetPosition.z),
   ]);
