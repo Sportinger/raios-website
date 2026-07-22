@@ -55,13 +55,13 @@ export const FACTORY_LANES = Object.freeze([
     id: "compiler", title: "COMPILER",
     x: FACTORY_BUILDER_SURFACE.centerX + BUILDER_HALF_SIZE - COMPILER_CORNER_INSET,
     z: FACTORY_BUILDER_SURFACE.centerZ + BUILDER_HALF_SIZE - COMPILER_CORNER_INSET,
-    scale: 1, revealAt: 39, lampCount: 1,
+    scale: 1, revealAt: 39, lampCount: 1, progressLabel: "Compiling",
   }),
   Object.freeze({
     id: "verifier", title: "TESTER",
     x: FACTORY_BUILDER_SURFACE.centerX + BUILDER_HALF_SIZE - TESTER_CORNER_INSET,
     z: FACTORY_BUILDER_SURFACE.centerZ - BUILDER_HALF_SIZE + TESTER_CORNER_INSET,
-    scale: 1, revealAt: 41.6, lampCount: 1,
+    scale: 1, revealAt: 41.6, lampCount: 1, progressLabel: "Testing",
   }),
   Object.freeze({
     id: "guard", title: "GUARD",

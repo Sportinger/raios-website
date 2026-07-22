@@ -20,12 +20,7 @@ import {
   createTextLabel,
   createVectorBox,
 } from "./primitives.js";
-import {
-  attachWorkshopConsoleToMachine,
-  createWorkshopConsole,
-  createWorkshopMachine,
-  setWorkshopConsole,
-} from "./workshop-primitives.js";
+import { createWorkshopMachine } from "./workshop-primitives.js";
 import {
   createTwinVerifierPanel,
   createVerifierVerdict,
@@ -50,6 +45,7 @@ import { createVectorLayer, setVectorLayerBuild } from "../shared/vector-layer.j
 import {
   setVectorMachineBuild,
   setVectorMachineLampStates,
+  setVectorMachineProgress,
 } from "../shared/vector-machine.js";
 
 const setLabelText = (label, text) => label.userData.setText?.(text);
@@ -191,15 +187,6 @@ function createCompilerScene(tracker) {
   group.add(deck.group);
   const machines = FACTORY_LANES.map((lane) => createWorkshopMachine(tracker, lane));
   machines.forEach(({ group: machine }) => group.add(machine));
-  const compilerConsole = attachWorkshopConsoleToMachine(machines[0], createWorkshopConsole(tracker, {
-    width: 3.2,
-    initialCopy: "READY · ROUND 0/3",
-    version: "rustc 1.83.0-dev · NO NET",
-  }));
-  const verifierConsole = attachWorkshopConsoleToMachine(machines[1], createWorkshopConsole(tracker, {
-    width: 3,
-    initialCopy: "READY · NEXT ROUND 2/3",
-  }));
   const twinConsole = createTwinVerifierPanel(tracker);
   const verifierVerdict = createVerifierVerdict(tracker);
   group.add(
@@ -237,8 +224,6 @@ function createCompilerScene(tracker) {
     group,
     deck,
     machines,
-    compilerConsole,
-    verifierConsole,
     twinConsole,
     verifierVerdict,
     materialRoute,
@@ -541,11 +526,12 @@ export function createFactoryWorld() {
         )),
       });
     });
-    const firstCompile = smoothstep(interval(time, 42.25, 46));
-    const secondCompile = smoothstep(interval(time, 53.25, 55.4));
-    const thirdCompile = smoothstep(interval(time, 67.5, 69.35));
     const verifierSecond = smoothstep(interval(time, 57.8, 60.8));
     const verifierThird = smoothstep(interval(time, 71.2, 75.6));
+    const activeCompileWindow = [[42.25, 46], [53.25, 55.4], [67.5, 69.35]]
+      .find(([start, end]) => time >= start && time < end);
+    const activeTestWindow = [[57.8, 60.8], [71.2, 75.6]]
+      .find(([start, end]) => time >= start && time < end);
     const compilerLampState = time >= 46 && time < 53.25
       ? "failed"
       : time >= 67.5 && time < 69.35
@@ -573,60 +559,22 @@ export function createFactoryWorld() {
           : "pending",
       time >= 84.55 ? "passed" : "pending",
     ]);
-    const machineProgress = [
-      time < 52.55 ? firstCompile : time < 66.95 ? secondCompile : thirdCompile,
-      time < 66.95 ? verifierSecond : verifierThird,
-    ];
-    const compilerConsoleIntro = smootherstep(interval(time, 39.36, 40));
-    compiler.compilerConsole.group.visible = compilerConsoleIntro > 0.001;
-    compiler.compilerConsole.group.scale.setScalar(Math.max(0.001, compilerConsoleIntro));
-    const verifierConsoleIntro = smootherstep(interval(time, 41.96, 42.6));
-    compiler.verifierConsole.group.visible = verifierConsoleIntro > 0.001;
-    compiler.verifierConsole.group.scale.setScalar(Math.max(0.001, verifierConsoleIntro));
+    setVectorMachineProgress(compiler.machines[0], {
+      visible: Boolean(activeCompileWindow),
+      progress: activeCompileWindow
+        ? smoothstep(interval(time, activeCompileWindow[0], activeCompileWindow[1]))
+        : 0,
+    });
+    setVectorMachineProgress(compiler.machines[1], {
+      visible: Boolean(activeTestWindow),
+      progress: activeTestWindow
+        ? smoothstep(interval(time, activeTestWindow[0], activeTestWindow[1]))
+        : 0,
+    });
     compiler.sceneCaption.visible = false;
     // The canonical source-file route lives in Foundation so direct seeks and
     // reverse scrubbing cannot reveal a second, offset transport line.
     compiler.materialRoute.visible = false;
-    const compilerCopy = time < 42.25
-      ? "READY · ROUND 0/3"
-      : time < 46
-        ? `COMPILING · ROUND 1/3 · ${Math.round(firstCompile * 100)}%`
-        : time < 52.55
-          ? "FAILED · ROUND 1/3 · DIAG 01"
-          : time < 53.25
-            ? "READY · ROUND 2/3"
-            : time < 55.4
-              ? `COMPILING · ROUND 2/3 · ${Math.round(secondCompile * 100)}%`
-              : time < 66.95
-                ? "PASSED · ROUND 2/3"
-                : time < 67.5
-                  ? "READY · ROUND 3/3"
-                  : time < 69.35
-                  ? `COMPILING · ROUND 3/3 · ${Math.round(thirdCompile * 100)}%`
-                  : "PASSED · ROUND 3/3";
-    const verifierCopy = time < 57.8
-      ? "READY · NEXT ROUND 2/3"
-      : time < 60.8
-        ? `CHECKING · ROUND 2/3 · ${Math.round(verifierSecond * 100)}%`
-        : time < 66.95
-          ? "FAILED · ROUND 2/3 · DIAG 02"
-          : time < 71.2
-            ? "READY · NEXT ROUND 3/3"
-            : time < 75.6
-              ? `CHECKING · ROUND 3/3 · ${Math.round(verifierThird * 100)}%`
-              : "PASSED · ROUND 3/3";
-    setWorkshopConsole(
-      compiler.compilerConsole,
-      machineProgress[0],
-      compilerCopy,
-      time >= 46 && time < 52.55 ? "failed" : time >= 55.4 && time < 66.95 ? "passed" : "building",
-    );
-    setWorkshopConsole(
-      compiler.verifierConsole,
-      machineProgress[1],
-      verifierCopy,
-      time >= 60.8 && time < 66.95 ? "failed" : time >= 75.6 ? "passed" : "building",
-    );
     setLabelText(
       compiler.sceneCaption,
       time < 52
@@ -653,8 +601,6 @@ export function createFactoryWorld() {
     compilerBody.position.set(0, 0, 0);
     compilerBody.rotation.set(0, 0, 0);
     compilerBody.scale.set(1, 1, 1);
-    const activeCompileWindow = [[42.25, 46], [53.25, 55.4], [67.5, 69.35]]
-      .find(([start, end]) => time >= start && time < end);
     if (activeCompileWindow) {
       const [compileStart, compileEnd] = activeCompileWindow;
       const rampIn = smootherstep(interval(time, compileStart, compileStart + 0.16));
@@ -727,11 +673,7 @@ export function createFactoryWorld() {
       : 0;
     setFactoryOpacity(compiler.group, workshopAlpha);
 
-    const scanWindow = time >= 57.8 && time < 60.8
-      ? [57.8, 60.8]
-      : time >= 71.2 && time < 75.6
-        ? [71.2, 75.6]
-        : null;
+    const scanWindow = activeTestWindow ?? null;
     const scanIntro = scanWindow ? smootherstep(interval(time, scanWindow[0], scanWindow[0] + 0.55)) : 0;
     const scanOutro = scanWindow ? 1 - smootherstep(interval(time, scanWindow[1] - 0.42, scanWindow[1])) : 0;
     const scanAlpha = scanIntro * scanOutro;

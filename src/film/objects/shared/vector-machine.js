@@ -9,11 +9,27 @@ const VECTOR_MACHINE_LABEL_COLOR = 0xf1f7ff;
 const VECTOR_MACHINE_LABEL_FONT = "Consolas, monospace";
 const VECTOR_MACHINE_LABEL_FONT_SIZE = 170;
 const VECTOR_MACHINE_LABEL_WIDTH = 1.45;
+const VECTOR_MACHINE_PROGRESS_WIDTH = 3.15;
 const VECTOR_MACHINE_LAMP_COLORS = Object.freeze({
   pending: 0xf6c769,
   passed: 0x64c991,
   failed: 0xf05b57,
 });
+
+function roundedRectPath(context, x, y, width, height, radius) {
+  const corner = Math.min(radius, width * 0.5, height * 0.5);
+  context.beginPath();
+  context.moveTo(x + corner, y);
+  context.lineTo(x + width - corner, y);
+  context.quadraticCurveTo(x + width, y, x + width, y + corner);
+  context.lineTo(x + width, y + height - corner);
+  context.quadraticCurveTo(x + width, y + height, x + width - corner, y + height);
+  context.lineTo(x + corner, y + height);
+  context.quadraticCurveTo(x, y + height, x, y + height - corner);
+  context.lineTo(x, y + corner);
+  context.quadraticCurveTo(x, y, x + corner, y);
+  context.closePath();
+}
 
 function createMaterial(tracker, color, opacity = 1, options = {}) {
   const material = trackMaterial(tracker, new THREE.MeshBasicMaterial({
@@ -122,6 +138,84 @@ function createMachineLabel(tracker, text) {
   return label;
 }
 
+function createMachineProgressOverlay(tracker, initialLabel) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024;
+  canvas.height = 320;
+  const context = canvas.getContext("2d");
+  const texture = trackTexture(tracker, new THREE.CanvasTexture(canvas));
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  const material = trackMaterial(tracker, new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+  }));
+  material.userData.preserveTransparency = true;
+  material.userData.vectorMachineBaseOpacity = 1;
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.set(
+    VECTOR_MACHINE_PROGRESS_WIDTH,
+    VECTOR_MACHINE_PROGRESS_WIDTH * canvas.height / canvas.width,
+    1,
+  );
+  sprite.renderOrder = 78;
+  sprite.visible = false;
+
+  const overlay = {
+    sprite,
+    material,
+    texture,
+    context,
+    renderedState: null,
+    defaultLabel: initialLabel,
+  };
+  return overlay;
+}
+
+function drawMachineProgress(overlay, progress, label) {
+  const value = clamp01(progress);
+  const renderKey = `${label}:${Math.round(value * 1000)}`;
+  if (overlay.renderedState === renderKey) return;
+  overlay.renderedState = renderKey;
+
+  const { context, texture } = overlay;
+  context.clearRect(0, 0, 1024, 320);
+
+  const trackX = 70;
+  const trackY = 42;
+  const trackWidth = 884;
+  const trackHeight = 82;
+  roundedRectPath(context, trackX, trackY, trackWidth, trackHeight, 41);
+  context.fillStyle = "rgba(4, 12, 22, 0.94)";
+  context.fill();
+  context.lineWidth = 10;
+  context.strokeStyle = "#8bc5ff";
+  context.stroke();
+
+  const fillX = trackX + 15;
+  const fillY = trackY + 15;
+  const fillWidth = (trackWidth - 30) * value;
+  const fillHeight = trackHeight - 30;
+  if (fillWidth > 0.5) {
+    roundedRectPath(context, fillX, fillY, fillWidth, fillHeight, 26);
+    context.fillStyle = "#8bc5ff";
+    context.fill();
+  }
+
+  context.font = "700 74px Consolas, monospace";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.lineJoin = "round";
+  context.lineWidth = 13;
+  context.strokeStyle = "#05080d";
+  context.fillStyle = "#f1f7ff";
+  context.strokeText(label, 512, 225, 900);
+  context.fillText(label, 512, 225, 900);
+  texture.needsUpdate = true;
+}
+
 function createFootprintOutline(tracker, width, depth, color) {
   const halfWidth = width * 0.5;
   const halfDepth = depth * 0.5;
@@ -183,6 +277,7 @@ export function createVectorMachine({
   panelTopColor = 0x263a52,
   edgeColor = 0x8bc5ff,
   lampCount = 0,
+  progressLabel = null,
 } = {}) {
   const [width, height, depth] = size;
   const group = new THREE.Group();
@@ -231,6 +326,13 @@ export function createVectorMachine({
   solid.add(shadow, body);
   const outline = createFootprintOutline(tracker, width, depth, edgeColor);
   group.add(outline.group, solid);
+  const progressOverlay = progressLabel
+    ? createMachineProgressOverlay(tracker, progressLabel)
+    : null;
+  if (progressOverlay) {
+    progressOverlay.sprite.position.set(0, height + 1.02, 0);
+    group.add(progressOverlay.sprite);
+  }
   const machine = {
     group,
     solid,
@@ -241,12 +343,25 @@ export function createVectorMachine({
     titleLabel,
     lamps,
     lampMeshes,
+    progressOverlay,
     width,
     height,
     depth,
   };
   setVectorMachineBuild(machine, { outlineAmount: 0, riseAmount: 0 });
   return machine;
+}
+
+export function setVectorMachineProgress(machine, {
+  visible = false,
+  progress = 0,
+  label = machine?.progressOverlay?.defaultLabel ?? "",
+} = {}) {
+  const overlay = machine?.progressOverlay;
+  if (!overlay) return;
+  overlay.sprite.visible = Boolean(visible);
+  if (!visible) return;
+  drawMachineProgress(overlay, progress, label);
 }
 
 export function setVectorMachineLampStates(machine, states = []) {

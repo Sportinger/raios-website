@@ -85,12 +85,17 @@ stehen der Compiler in der unteren Ecke, der Tester in der rechten Ecke und der
 Guard direkt vor `/out`. Erst die Freigabeanimation bewegt den Guard auf
 derselben Ebene zur Seite.
 
-Nur Compiler und Tester besitzen eine Fortschrittsanzeige. Sie wird an die
-jeweilige Maschine angeheftet und sitzt deshalb bei jeder Kamerapose direkt
-über ihr. Beide Anzeigen rendern als heller, tiefenunabhängiger Vordergrundpass,
-damit Deck, Kabel, Workpiece und transparente Panels sie nicht überzeichnen.
-Guard und `PLAYER.WASM` erzeugen keine Progress-Bar und kein schwebendes
-Statuspanel.
+Die optionale Fortschrittsanzeige ist ebenfalls Teil von `vector-machine.js`
+und standardmäßig ausgeblendet. Sie wird über die gemeinsame Maschinen-API
+geschaltet und bleibt dadurch bei jeder Kamerapose direkt über ihrem Programm
+verankert. Der Compiler zeigt sie ausschließlich während des Kompilierens, der
+Tester ausschließlich während eines Tests; Guard, Agent und `PLAYER.WASM`
+erzeugen keine Progress-Bar. Die Anzeige besteht nur aus einer dicken,
+abgerundeten Bar und genau einem Tätigkeitswort darunter (`Compiling` oder
+`Testing`). Rundennummern, Prozenttexte, Versionszeilen und Statusmeldungen
+gehören nicht in das Overlay; Ergebnisse werden über die Maschinenlampen
+dargestellt. Die Anzeige rendert als heller, tiefenunabhängiger Vordergrundpass,
+damit Deck, Kabel und Workpiece sie nicht überzeichnen.
 
 `PLAYER.WASM` verwendet feste Dock-Positionen neben Tester, hinter Compiler und
 vor Guard. Es holt ein sichtbares Compiler-Paket am Compiler ab, nimmt beim
