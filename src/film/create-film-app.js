@@ -176,6 +176,10 @@ export function createFilmApp({
     filmCamera.resize(width, height);
     render();
   };
+  const resizeObserver = typeof ResizeObserver === "function"
+    ? new ResizeObserver(resize)
+    : null;
+  if (resizeObserver) resizeObserver.observe(viewport);
 
   const syncFromScroll = () => {
     scrollFrame = 0;
@@ -257,6 +261,7 @@ export function createFilmApp({
     dispose() {
       cancelAnimationFrame(frame);
       if (scrollFrame) cancelAnimationFrame(scrollFrame);
+      if (resizeObserver) resizeObserver.disconnect();
       window.removeEventListener("resize", resize);
       if (!externalPlayback) window.removeEventListener("scroll", onScroll);
       window.removeEventListener("wheel", stopForUserInput);
