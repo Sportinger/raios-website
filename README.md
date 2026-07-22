@@ -59,7 +59,9 @@ Szenenlogik.
 einen stabilen Transform-Träger im Mittelpunkt des vollständig ausgebauten
 Rust-Kernel-Layers. `setKernelRotationY(angle)` dreht diesen gesamten Verbund in
 Radiant, ohne die eigene Aufbau- und Footprint-Skalierung des Kernel-Meshes auf
-seine Geschwister zu übertragen.
+seine Geschwister zu übertragen. Zwischen Playback `00:28.29` und `00:40.72`
+dreht `create-film-app.js` den Verbund weich um `90°` im Uhrzeigersinn; davor
+steht er bei `0°`, danach bleibt er bei `90°`.
 
 ### Einbettung in die Vollwebsite
 
