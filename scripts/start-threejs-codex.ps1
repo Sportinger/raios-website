@@ -19,6 +19,8 @@ if ($currentBranch -ne "three.js") {
 }
 
 $npm = (Get-Command npm.cmd -ErrorAction Stop).Source
+$node = (Get-Command node.exe -ErrorAction Stop).Source
+$vite = Join-Path $repoRoot "node_modules/vite/bin/vite.js"
 $serverProcess = $null
 $serverUrl = $null
 $projectPattern = "raiOS.+Scroll Layers"
@@ -32,7 +34,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $repoRoot "node_modules/.bin/vite.cm
 }
 
 foreach ($port in 8091..8100) {
-    $candidateUrl = "http://localhost:$port/"
+    $candidateUrl = "http://127.0.0.1:$port/"
 
     $response = $null
 
@@ -61,12 +63,12 @@ foreach ($port in 8091..8100) {
 Start-Sleep -Milliseconds 250
 
 foreach ($port in 8091..8100) {
-    $candidateUrl = "http://localhost:$port/"
+    $candidateUrl = "http://127.0.0.1:$port/"
     $listener = Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue
     if (-not $listener) {
         $serverProcess = Start-Process `
-            -FilePath $npm `
-            -ArgumentList @("run", "dev", "--", "--port", "$port", "--strictPort") `
+            -FilePath $node `
+            -ArgumentList @($vite, "--host", "127.0.0.1", "--port", "$port", "--strictPort") `
             -WorkingDirectory $repoRoot `
             -WindowStyle Hidden `
             -PassThru
