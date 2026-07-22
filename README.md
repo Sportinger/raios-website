@@ -250,7 +250,12 @@ Die SVG-Kamera des Referenzfilms war ein 2D-Pan/Zoom mit `scale`, `focusX` und
 `focusY`. Der Nachbau übersetzt diese Werte auf eine echte orthografische Kamera
 mit einer räumlichen isometrischen Blickrichtung. Referenzformat, Widescreen-
 Korrektur, vertikaler Bias, die 18 Original-Keyframes, fünf zusätzliche
-Shadow-VM-Keyframes und deren Smoothstep-Interpolation bleiben erhalten.
+Shadow-VM-Keyframes und deren Smoothstep-Interpolation bleiben erhalten. Drei
+deterministische 3D-Kamerabögen umfahren den entstehenden Builder Layer, den
+fehlgeschlagenen Shadow-Probelauf und die drei erfolgreichen VM-Testakte;
+danach kehrt die Filmkamera jeweils in die kanonische Pose zurück. Die
+Signalringe des NET-Turms bleiben dabei als Billboards stets frontal zur Kamera
+ausgerichtet.
 `FREE ORBIT` aktiviert Drehen, Zoomen und Verschieben mit Maus oder Touch, ohne
 Playback oder Sprecher zu unterbrechen. Die Welt animiert weiter, während die
 frei gewählte Kamerapose erhalten bleibt. `EXIT ORBIT` oder ein Kapitelsprung
