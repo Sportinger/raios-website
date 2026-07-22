@@ -84,6 +84,10 @@ läuft deshalb jede Stimme unverändert mit `1×`. Scrollen scrubbt den Film
 bewusst stumm; die Stimmen laufen nur bei `PLAY`, pro Cue genau einmal und ohne
 Loop. Der sichtbare Audio-Schalter beginnt gemutet und entsperrt die Wiedergabe
 erst nach einem ausdrücklichen Klick. Reduced Motion deaktiviert die Wiedergabe.
+Bei hörbarem PLAY ist das tatsächliche Ende der Audiodatei maßgeblich: Erreicht
+die Animation zuerst ihre Cue-Grenze, hält sie am letzten Frame, bis der
+Browser den Track vollständig abgespielt hat. Satzenden werden dadurch nicht
+abgeschnitten; stummes Scrollen und direkte Sprünge bleiben zeitbasiert.
 Der vollständige Bestand und alle
 Sprechtexte stehen in `NARRATION.md`; weitere Aufnahmen fehlen nicht.
 
