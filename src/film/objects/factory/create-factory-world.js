@@ -37,9 +37,10 @@ import {
 import { createApprovalSequence } from "./approval-sequence.js";
 import { createArchipelagoSequence } from "./archipelago-sequence.js";
 import {
-  createFactoryDoor as createDoor,
+  createFactoryDoorOnSurface,
   FACTORY_STANDARD_DOOR_SCALE,
   setFactoryDoorEmergence,
+  setFactoryDoorOpen,
 } from "./door-primitives.js";
 import { createLiveSequence } from "./live-sequence.js";
 
@@ -85,15 +86,26 @@ function createBuilderScene(tracker, inert = false) {
     color: FACTORY_PALETTE.edge, background: FACTORY_PALETTE.ink,
     position: [0, 0.38, 5.08], fontSize: 54,
   });
-  const inputDoor = createDoor(tracker, FACTORY_PALETTE.cyan, [FACTORY_LAYOUT.inputDoor.x, deckLayout.thickness, FACTORY_LAYOUT.inputDoor.z], 0.52);
-  inputDoor.group.rotation.y = FACTORY_LAYOUT.inputDoor.yaw;
-  const outputDoor = createDoor(tracker, FACTORY_PALETTE.green, [FACTORY_LAYOUT.outputDoor.x, deckLayout.thickness, FACTORY_LAYOUT.outputDoor.z], 0.52);
-  outputDoor.group.rotation.y = FACTORY_LAYOUT.outputDoor.yaw;
-  const outLabel = createTextLabel(tracker, {
-    text: "/out", width: 1.25, height: 0.34, color: FACTORY_PALETTE.amber,
-    background: FACTORY_PALETTE.ink, position: [0, 4.18, 0], fontSize: 52,
+  const deckSurface = Object.freeze({
+    id: "factory-deck",
+    centerX: 0,
+    centerZ: 0,
+    width: deckLayout.width,
+    depth: deckLayout.depth,
+    top: deckLayout.thickness,
   });
-  outputDoor.group.add(outLabel);
+  const inputDoor = createFactoryDoorOnSurface(tracker, FACTORY_PALETTE.cyan, {
+    surface: deckSurface,
+    edge: FACTORY_LAYOUT.inputDoor.edge,
+    along: FACTORY_LAYOUT.inputDoor.along,
+  });
+  const outputDoor = createFactoryDoorOnSurface(tracker, FACTORY_PALETTE.green, {
+    surface: deckSurface,
+    edge: FACTORY_LAYOUT.outputDoor.edge,
+    along: FACTORY_LAYOUT.outputDoor.along,
+    label: "/out",
+    labelColor: FACTORY_PALETTE.amber,
+  });
   const sourceA = createVectorBox(tracker, {
     size: [1.2, 0.18, 1.6], color: FACTORY_PALETTE.amber,
     edgeColor: FACTORY_PALETTE.white, position: [-5.7, 1.02, 2.9],
@@ -330,42 +342,48 @@ function createProofScene(tracker) {
     group.add(createRoute(tracker, [[-shadowLayout.width / 2, gridTop, z], [shadowLayout.width / 2, gridTop, z]], 0xc594ff, 0.018));
   }
   const halfWidth = shadowLayout.width * 0.5;
-  const halfDepth = shadowLayout.depth * 0.5;
   const shadowDoorScale = FACTORY_STANDARD_DOOR_SCALE;
-  const entryDoorPosition = new THREE.Vector3(halfWidth, deckTop, -2.2);
-  const entryDoor = createDoor(
-    tracker,
-    0xd8acff,
-    entryDoorPosition.toArray(),
-    shadowDoorScale,
-    { rotationY: Math.PI / 2 },
-  );
+  const shadowSurface = Object.freeze({
+    id: "shadow",
+    centerX: 0,
+    centerZ: 0,
+    width: shadowLayout.width,
+    depth: shadowLayout.depth,
+    top: deckTop,
+  });
+  const entryDoor = createFactoryDoorOnSurface(tracker, 0xd8acff, {
+    surface: shadowSurface,
+    edge: "right",
+    along: -2.2,
+    scale: shadowDoorScale,
+    label: "shadow.in",
+    labelColor: 0xdcc3f6,
+    labelFontSize: 52,
+  });
   group.add(entryDoor.group);
   const shadowTitle = createTextLabel(tracker, {
     text: "SHADOW WORLD · DISPOSABLE · ZERO LIVE EFFECT", width: 7.8, height: 0.58,
     color: 0xd9b8ff, background: 0x12091e, position: [0, 0.38, 4.08], fontSize: 48,
   });
   group.add(shadowTitle);
-  const entryLabel = createTextLabel(tracker, {
-    text: "shadow.in", width: 1.7, height: 0.38,
-    color: 0xdcc3f6, background: 0x130b1c, position: [0, 4.15, 0], fontSize: 52, billboard: true,
-  });
-  entryDoor.group.add(entryLabel);
   const mockDoors = [-3.7, -1.35, 1].map((x, index) => {
-    const door = createDoor(tracker, 0xc28bff, [x, deckTop, halfDepth], shadowDoorScale);
-    const label = createTextLabel(tracker, {
-      text: ["fb.mock", "input.inject", "file.sandbox"][index],
-      width: 2.2, height: 0.36, color: 0xdcc3f6, background: 0x130b1c,
-      position: [0, 4.15, 0], fontSize: 44, billboard: true,
+    const label = ["fb.mock", "input.inject", "file.sandbox"][index];
+    const door = createFactoryDoorOnSurface(tracker, 0xc28bff, {
+      surface: shadowSurface,
+      edge: "front",
+      along: x,
+      scale: shadowDoorScale,
+      label,
+      labelColor: 0xdcc3f6,
+      labelFontSize: 44,
     });
-    door.group.add(label);
     group.add(door.group);
     return door;
   });
   const entryRoute = createRoute(tracker, [
     [halfWidth + 2, gridTop + 0.08, -3.5],
     [halfWidth + 0.8, gridTop + 0.08, -2.8],
-    [entryDoorPosition.x, gridTop + 0.08, entryDoorPosition.z],
+    [entryDoor.group.position.x, gridTop + 0.08, entryDoor.group.position.z],
     [2.5, gridTop + 0.08, -1.2],
     [0, gridTop + 0.08, 0],
   ], 0xc48eff, 0.055);
@@ -455,8 +473,8 @@ export function createFactoryWorld() {
     const deckRise = smootherstep(interval(time, 25.25, 28.45));
     builder.group.position.y = -2.8 + deckRise * 2.8;
     builder.hatch.scale.setScalar(0.72 + deckRise * 0.28);
-    builder.inputDoor.hinge.rotation.y = -smootherstep(interval(time, 27.4, 29.2)) * Math.PI * 0.62;
-    builder.outputDoor.hinge.rotation.y = 0;
+    setFactoryDoorOpen(builder.inputDoor, smootherstep(interval(time, 27.4, 29.2)));
+    setFactoryDoorOpen(builder.outputDoor, 0);
     builder.keyLabels[0].visible = time >= 30.2 && time <= 31.1;
     builder.keyLabels[1].visible = time >= 31.95 && time <= 32.85;
 
@@ -700,12 +718,10 @@ export function createFactoryWorld() {
         opacity: scanAlpha * 0.72,
       });
     });
-    // The reference entrance grows in place; its vector leaf never swings
-    // toward an edge-on camera angle during the scan.
-    proof.entryDoor.hinge.rotation.y = 0;
     const shadowEntry = scanWindow
       ? smootherstep(interval(time, scanWindow[0] + 0.48, Math.min(scanWindow[0] + 1.58, scanWindow[1] - 0.72)))
       : 0;
+    setFactoryDoorOpen(proof.entryDoor, shadowEntry);
     const shadowPlayerIntro = scanWindow
       ? smootherstep(interval(time, scanWindow[0] + 0.4, scanWindow[0] + 0.68))
       : 0;

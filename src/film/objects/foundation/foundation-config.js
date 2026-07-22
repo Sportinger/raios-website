@@ -2,13 +2,34 @@ import {
   FILM_DOOR_SCALE,
   FILM_LAYER_HEIGHT,
   FILM_QUADRANT_SIZE,
+  FOUNDATION_PRESENTATION_SCALE,
 } from "../../layout-constants.js";
 
 const point = (x, y, z) => Object.freeze([x, y, z]);
+const door = (support, edge, along) => Object.freeze({ support, edge, along });
 const window = (start, end) => Object.freeze({ start, end });
 
 export const FOUNDATION_LAYER_HEIGHT = FILM_LAYER_HEIGHT;
 export const FOUNDATION_DOOR_SCALE = FILM_DOOR_SCALE;
+
+export const FOUNDATION_SURFACES = Object.freeze({
+  genesis: Object.freeze({
+    id: "genesis",
+    centerX: -3.05 - (-1.9 / FOUNDATION_PRESENTATION_SCALE),
+    centerZ: -(1 / FOUNDATION_PRESENTATION_SCALE),
+    width: FILM_QUADRANT_SIZE,
+    depth: FILM_QUADRANT_SIZE,
+    top: FOUNDATION_LAYER_HEIGHT * 2,
+  }),
+  builder: Object.freeze({
+    id: "builder",
+    centerX: 6.72,
+    centerZ: -9.17,
+    width: FILM_QUADRANT_SIZE,
+    depth: FILM_QUADRANT_SIZE,
+    top: FOUNDATION_LAYER_HEIGHT * 2,
+  }),
+});
 
 export const FOUNDATION_LAYOUT = Object.freeze({
   kernel: point(-3.05, 0, 0),
@@ -16,13 +37,13 @@ export const FOUNDATION_LAYOUT = Object.freeze({
   genesisCompact: point(-3.05, FOUNDATION_LAYER_HEIGHT, 0),
   agentCompact: point(-2.0, FOUNDATION_LAYER_HEIGHT * 2, 0.87),
   keyForge: point(0.52, FOUNDATION_LAYER_HEIGHT * 2, -1.12),
-  netDoor: point(2.75, FOUNDATION_LAYER_HEIGHT, 2.45),
+  netDoor: door("genesis", "front", 1.4),
   netTower: point(8.65, FOUNDATION_LAYER_HEIGHT, 2.3),
   builder: point(6.72, FOUNDATION_LAYER_HEIGHT, -9.17),
-  buildDoor: point(2.833, FOUNDATION_LAYER_HEIGHT * 2, -1.08),
-  sysrootDoor: point(4.258, FOUNDATION_LAYER_HEIGHT * 2, -3.915),
-  srcDoor: point(6.008, FOUNDATION_LAYER_HEIGHT * 2, -3.929),
-  outDoor: point(3.308, FOUNDATION_LAYER_HEIGHT * 2, -8.284),
+  buildDoor: door("genesis", "right", 0.9),
+  sysrootDoor: door("builder", "front", -2),
+  srcDoor: door("builder", "front", 0.3),
+  outDoor: door("builder", "left", 0.8),
   production: point(6.72, FOUNDATION_LAYER_HEIGHT * 2, -9.17),
 });
 

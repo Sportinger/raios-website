@@ -45,7 +45,7 @@ export const FACTORY_LAYOUT = Object.freeze({
     // kernel after both authored root transforms have been applied.
     position: Object.freeze({ x: -14.37, y: -0.51, z: -2.36 }),
   }),
-  inputDoor: Object.freeze({ x: -6.1, z: -2.7, yaw: Math.PI / 5 }),
-  outputDoor: Object.freeze({ x: 6.1, z: -2.7, yaw: -Math.PI / 5 }),
+  inputDoor: Object.freeze({ edge: "left", along: -2.7 }),
+  outputDoor: Object.freeze({ edge: "right", along: -2.7 }),
   recommendedWorldOffset: Object.freeze({ x: 7.895, y: 1.59, z: -5.895 }),
 });

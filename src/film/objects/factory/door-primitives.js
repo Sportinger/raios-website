@@ -1,7 +1,11 @@
 import * as THREE from "three";
 import {
+  anchorVectorDoorToSurface,
+  attachVectorDoorLabel,
   createVectorDoor,
+  createVectorDoorLabel,
   setVectorDoorEmergence,
+  setVectorDoorOpen,
 } from "../shared/vector-door.js";
 import {
   FILM_DOOR_SCALE,
@@ -13,7 +17,7 @@ export const FACTORY_STANDARD_DOOR_SCALE = (
   FILM_DOOR_SCALE * FOUNDATION_PRESENTATION_SCALE / FACTORY_DOOR_MODEL_SCALE
 );
 
-export function createFactoryDoor(
+function createFactoryDoorMechanism(
   tracker,
   color,
   position = [0, 0, 0],
@@ -48,4 +52,53 @@ export function createFactoryDoor(
 export function setFactoryDoorEmergence(door, state) {
   door.group.scale.setScalar(door.baseScale);
   setVectorDoorEmergence(door.mechanism, state);
+}
+
+export function createFactoryDoorOnSurface(tracker, color, {
+  surface,
+  edge,
+  along = 0,
+  scale = FACTORY_STANDARD_DOOR_SCALE,
+  label,
+  labelColor = 0xf6c769,
+  labelWidth = 1.05,
+  labelFontSize = 68,
+} = {}) {
+  const door = createFactoryDoorMechanism(
+    tracker,
+    color,
+    [0, 0, 0],
+    scale,
+  );
+  anchorVectorDoorToSurface(door, { surface, edge, along });
+  if (label) {
+    attachVectorDoorLabel(door.mechanism, createVectorDoorLabel({
+      tracker,
+      text: label,
+      color: labelColor,
+      width: labelWidth,
+      fontSize: labelFontSize,
+    }));
+    door.label = door.mechanism.label;
+  }
+  return door;
+}
+
+export function createFreestandingFactoryDoor(tracker, color, {
+  position = [0, 0, 0],
+  scale = 1,
+  rotationY = 0,
+  porchSide = 1,
+} = {}) {
+  return createFactoryDoorMechanism(
+    tracker,
+    color,
+    position,
+    scale,
+    { rotationY, porchSide },
+  );
+}
+
+export function setFactoryDoorOpen(door, amount) {
+  setVectorDoorOpen(door.mechanism, amount);
 }

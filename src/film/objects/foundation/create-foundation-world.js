@@ -4,16 +4,21 @@ import {
   FOUNDATION_DOOR_SCALE,
   FOUNDATION_LAYER_HEIGHT,
   FOUNDATION_LAYOUT,
+  FOUNDATION_SURFACES,
   FOUNDATION_TIMELINE,
   GENESIS_FOOTPRINT,
   KERNEL_FOOTPRINT,
 } from "./foundation-config.js";
 import { createLayerCallout, setLayerCallout } from "./layer-callout.js";
 import {
+  anchorVectorDoorToSurface,
+  attachVectorDoorLabel,
   createSlidingFloorHatch,
   createVectorDoor,
+  createVectorDoorLabel,
   setSlidingFloorHatch,
   setVectorDoorEmergence,
+  setVectorDoorOpen,
 } from "../shared/vector-door.js";
 
 const PALETTE = Object.freeze({
@@ -41,6 +46,17 @@ const timedProgress = (time, timing) => progress(time, timing.start, timing.end)
 const place = (object, coordinates) => object.position.set(...coordinates);
 const FILM_CAMERA_DIRECTION = new THREE.Vector3(1, 0.8164965809, 1).normalize();
 const DECK_HEIGHT_DELTA = FOUNDATION_LAYER_HEIGHT - 0.34;
+const DECK_ROUTE_Y = FOUNDATION_SURFACES.genesis.top + 0.02;
+const DECK_KEY_ROUTE_Y = FOUNDATION_SURFACES.genesis.top + 0.79;
+const DECK_KEY_TARGET_Y = FOUNDATION_SURFACES.genesis.top + 0.76;
+
+function anchorFoundationDoor(door, placement) {
+  return anchorVectorDoorToSurface(door, {
+    surface: FOUNDATION_SURFACES[placement.support],
+    edge: placement.edge,
+    along: placement.along,
+  });
+}
 
 function createBeamBetween(start, end, radius, color, radialSegments = 8) {
   const direction = new THREE.Vector3().subVectors(end, start);
@@ -747,11 +763,13 @@ function createDoorAndKey(labelText = "net.https", {
     thresholdColor: 0xb6d9ff,
     rotationY: positiveSlope ? 0 : Math.PI / 2,
   });
-  const { group, frame, hatch, leafPivot } = door;
-  const label = createLabel(labelText, labelColor, 1.05, 68);
-  label.position.set(0, 0.12, 0.86);
-  label.material.depthTest = false;
-  frame.add(label);
+  const { group } = door;
+  attachVectorDoorLabel(door, createVectorDoorLabel({
+    text: labelText,
+    color: labelColor,
+    width: 1.05,
+    fontSize: 68,
+  }));
 
   const key = new THREE.Group();
   const ring = new THREE.Mesh(
@@ -1035,28 +1053,29 @@ export function createFoundationWorld() {
   place(keyForge.group, FOUNDATION_LAYOUT.keyForge);
   keyForge.group.scale.setScalar(1.5);
   const internet = createDoorAndKey("net.https");
-  place(internet.group, FOUNDATION_LAYOUT.netDoor);
+  anchorFoundationDoor(internet, FOUNDATION_LAYOUT.netDoor);
   internet.group.scale.setScalar(FOUNDATION_DOOR_SCALE);
+  const internetPosition = internet.group.position;
   const netTower = createNetTower();
   place(netTower.group, FOUNDATION_LAYOUT.netTower);
   netTower.group.scale.setScalar(1.18);
   const agentToDoor = createSignalRoute(new THREE.CatmullRomCurve3([
     new THREE.Vector3(-0.55, 1.74 + DECK_HEIGHT_DELTA, 1.18),
     new THREE.Vector3(0.38, 1.2, 1.42),
-    new THREE.Vector3(2.05, 1.13, 1.58),
-    new THREE.Vector3(2.58, 1.0, 2.4),
+    new THREE.Vector3(0.2, DECK_ROUTE_Y, 2.05),
+    new THREE.Vector3(internetPosition.x, DECK_ROUTE_Y, internetPosition.z),
   ], false, "centripetal"));
   const doorToNet = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(2.95, 0.94, 2.52),
-    new THREE.Vector3(5.1, 0.88, 2.25),
+    new THREE.Vector3(internetPosition.x, DECK_ROUTE_Y, internetPosition.z),
+    new THREE.Vector3(3.2, 1.2, 2.55),
     new THREE.Vector3(6.6, 0.78, 1.85),
     new THREE.Vector3(8.65, 0.58, 2.3),
   ], false, "centripetal"));
   const forgeToDoor = createSignalRoute(new THREE.CatmullRomCurve3([
     new THREE.Vector3(0.52, 2.17 + DECK_HEIGHT_DELTA, -1.12),
     new THREE.Vector3(1.12, 1.86, 0.02),
-    new THREE.Vector3(2.18, 1.34, 1.4),
-    new THREE.Vector3(2.75, 1.9, 2.45),
+    new THREE.Vector3(0.3, 1.95, 1.4),
+    new THREE.Vector3(internetPosition.x, DECK_KEY_ROUTE_Y, internetPosition.z),
   ], false, "centripetal"), PALETTE.green, 30, 0.45);
 
   const builder = createDeck({
@@ -1095,21 +1114,24 @@ export function createFoundationWorld() {
   genesisFailureDecal.position.set(0.473, 1.085 + DECK_HEIGHT_DELTA, -1.651);
   group.add(failureDecal, genesisFailureDecal);
   const buildDoor = createDoorAndKey("build.request", { keyTagText: "REQUEST" });
-  place(buildDoor.group, FOUNDATION_LAYOUT.buildDoor);
+  anchorFoundationDoor(buildDoor, FOUNDATION_LAYOUT.buildDoor);
   buildDoor.group.scale.setScalar(FOUNDATION_DOOR_SCALE);
   const sysrootDoor = createDoorAndKey("/sysroot", { positiveSlope: true, keyTagText: "READ" });
-  place(sysrootDoor.group, FOUNDATION_LAYOUT.sysrootDoor);
+  anchorFoundationDoor(sysrootDoor, FOUNDATION_LAYOUT.sysrootDoor);
   sysrootDoor.group.scale.setScalar(FOUNDATION_DOOR_SCALE);
   const srcDoor = createDoorAndKey("/src", { positiveSlope: true, keyTagText: "READ/WRITE" });
-  place(srcDoor.group, FOUNDATION_LAYOUT.srcDoor);
+  anchorFoundationDoor(srcDoor, FOUNDATION_LAYOUT.srcDoor);
   srcDoor.group.scale.setScalar(FOUNDATION_DOOR_SCALE);
   const outDoor = createDoorAndKey("/out", {
     edgeColor: 0xf06962,
     labelColor: PALETTE.muted,
     keyTagText: "EGRESS",
   });
-  place(outDoor.group, FOUNDATION_LAYOUT.outDoor);
+  anchorFoundationDoor(outDoor, FOUNDATION_LAYOUT.outDoor);
   outDoor.group.scale.setScalar(FOUNDATION_DOOR_SCALE);
+  const buildDoorPosition = buildDoor.group.position;
+  const sysrootDoorPosition = sysrootDoor.group.position;
+  const srcDoorPosition = srcDoor.group.position;
 
   const buildKey = buildDoor.key;
   const sysrootKey = sysrootDoor.key;
@@ -1120,58 +1142,58 @@ export function createFoundationWorld() {
   outDoor.key.visible = false;
 
   const buildLine = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.537, 1.08 + DECK_HEIGHT_DELTA, 1.862),
-    new THREE.Vector3(1.894, 1.08 + DECK_HEIGHT_DELTA, 1.536),
-    new THREE.Vector3(2.274, 1.08 + DECK_HEIGHT_DELTA, 0.125),
-    new THREE.Vector3(2.857, 1.08 + DECK_HEIGHT_DELTA, -1.055),
+    new THREE.Vector3(0.537, DECK_ROUTE_Y, 1.862),
+    new THREE.Vector3(1.05, DECK_ROUTE_Y, 1.35),
+    new THREE.Vector3(1.42, DECK_ROUTE_Y, 0.72),
+    new THREE.Vector3(buildDoorPosition.x, DECK_ROUTE_Y, buildDoorPosition.z),
   ], false, "centripetal"), PALETTE.blueHigh);
   const requestToSysroot = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(2.857, 1.08 + DECK_HEIGHT_DELTA, -1.055),
-    new THREE.Vector3(3.427, 1.08 + DECK_HEIGHT_DELTA, -1.625),
-    new THREE.Vector3(3.861, 1.08 + DECK_HEIGHT_DELTA, -2.819),
-    new THREE.Vector3(4.282, 1.08 + DECK_HEIGHT_DELTA, -3.891),
+    new THREE.Vector3(buildDoorPosition.x, DECK_ROUTE_Y, buildDoorPosition.z),
+    new THREE.Vector3(2.55, DECK_ROUTE_Y, -1.15),
+    new THREE.Vector3(3.55, DECK_ROUTE_Y, -3.65),
+    new THREE.Vector3(sysrootDoorPosition.x, DECK_ROUTE_Y, sysrootDoorPosition.z),
   ], false, "centripetal"), PALETTE.blueHigh);
   const sysrootToSrc = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(4.282, 1.08 + DECK_HEIGHT_DELTA, -3.891),
-    new THREE.Vector3(4.743, 1.08 + DECK_HEIGHT_DELTA, -3.972),
-    new THREE.Vector3(5.503, 1.08 + DECK_HEIGHT_DELTA, -3.864),
-    new THREE.Vector3(6.032, 1.08 + DECK_HEIGHT_DELTA, -3.904),
+    new THREE.Vector3(sysrootDoorPosition.x, DECK_ROUTE_Y, sysrootDoorPosition.z),
+    new THREE.Vector3(5.4, DECK_ROUTE_Y, -5.8),
+    new THREE.Vector3(6.35, DECK_ROUTE_Y, -5.8),
+    new THREE.Vector3(srcDoorPosition.x, DECK_ROUTE_Y, srcDoorPosition.z),
   ], false, "centripetal"), PALETTE.blueHigh);
   const srcToWorkpiece = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(6.032, 1.08 + DECK_HEIGHT_DELTA, -3.904),
-    new THREE.Vector3(6.399, 1.08 + DECK_HEIGHT_DELTA, -4.922),
-    new THREE.Vector3(6.494, 1.08 + DECK_HEIGHT_DELTA, -6.374),
+    new THREE.Vector3(srcDoorPosition.x, DECK_ROUTE_Y, srcDoorPosition.z),
+    new THREE.Vector3(7.0, DECK_ROUTE_Y, -6.55),
+    new THREE.Vector3(6.82, DECK_ROUTE_Y, -7.75),
     new THREE.Vector3(
       FOUNDATION_LAYOUT.production[0],
-      1.08 + DECK_HEIGHT_DELTA,
+      DECK_ROUTE_Y,
       FOUNDATION_LAYOUT.production[2],
     ),
   ], false, "centripetal"), PALETTE.blueHigh);
   const materialPath = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.537, 1.18 + DECK_HEIGHT_DELTA, 1.862),
-    new THREE.Vector3(2.857, 1.18 + DECK_HEIGHT_DELTA, -1.055),
-    new THREE.Vector3(4.282, 1.18 + DECK_HEIGHT_DELTA, -3.891),
-    new THREE.Vector3(6.032, 1.18 + DECK_HEIGHT_DELTA, -3.904),
+    new THREE.Vector3(0.537, DECK_ROUTE_Y + 0.1, 1.862),
+    new THREE.Vector3(buildDoorPosition.x, DECK_ROUTE_Y + 0.1, buildDoorPosition.z),
+    new THREE.Vector3(sysrootDoorPosition.x, DECK_ROUTE_Y + 0.1, sysrootDoorPosition.z),
+    new THREE.Vector3(srcDoorPosition.x, DECK_ROUTE_Y + 0.1, srcDoorPosition.z),
     new THREE.Vector3(
       FOUNDATION_LAYOUT.production[0],
-      1.18 + DECK_HEIGHT_DELTA,
+      DECK_ROUTE_Y + 0.1,
       FOUNDATION_LAYOUT.production[2],
     ),
   ], false, "centripetal");
   const forgeToBuild = createSignalRoute(new THREE.CatmullRomCurve3([
     new THREE.Vector3(0.52, 2.17 + DECK_HEIGHT_DELTA, -1.12),
     new THREE.Vector3(1.38, 2.25, -0.82),
-    new THREE.Vector3(2.833, 1.85 + DECK_HEIGHT_DELTA, -1.08),
+    new THREE.Vector3(buildDoorPosition.x, DECK_KEY_ROUTE_Y, buildDoorPosition.z),
   ], false, "centripetal"), PALETTE.green, 22, 0.45);
   const forgeToSysroot = createSignalRoute(new THREE.CatmullRomCurve3([
     new THREE.Vector3(0.52, 2.17 + DECK_HEIGHT_DELTA, -1.12),
     new THREE.Vector3(1.45, 2.42, -3.28),
-    new THREE.Vector3(4.258, 1.85 + DECK_HEIGHT_DELTA, -3.915),
+    new THREE.Vector3(sysrootDoorPosition.x, DECK_KEY_ROUTE_Y, sysrootDoorPosition.z),
   ], false, "centripetal"), PALETTE.green, 28, 0.45);
   const forgeToSrc = createSignalRoute(new THREE.CatmullRomCurve3([
     new THREE.Vector3(0.52, 2.17 + DECK_HEIGHT_DELTA, -1.12),
     new THREE.Vector3(2.35, 2.38, -3.25),
-    new THREE.Vector3(6.008, 1.85 + DECK_HEIGHT_DELTA, -3.929),
+    new THREE.Vector3(srcDoorPosition.x, DECK_KEY_ROUTE_Y, srcDoorPosition.z),
   ], false, "centripetal"), PALETTE.green, 32, 0.45);
 
   const sourceCaption = createWideLabel(
@@ -1416,11 +1438,11 @@ export function createFoundationWorld() {
       FOUNDATION_TIMELINE.netDoorRise,
       networkWindowAlpha,
     );
-    internet.leafPivot.rotation.y = Math.PI * 0.62 * progress(
+    setVectorDoorOpen(internet, progress(
       time,
       FOUNDATION_TIMELINE.netKey.insert,
       FOUNDATION_TIMELINE.netKey.insert + 0.9,
-    );
+    ));
     const forgeRise = timedProgress(time, FOUNDATION_TIMELINE.keyForgeRise);
     keyForge.group.position.y = FOUNDATION_LAYOUT.keyForge[1] - (1 - forgeRise) * 0.42;
     keyForge.group.scale.y = 1.5 * Math.max(0.001, forgeRise);
@@ -1536,11 +1558,11 @@ export function createFoundationWorld() {
       FOUNDATION_TIMELINE.buildDoorRise,
       buildRequestWindowAlpha,
     );
-    buildDoor.leafPivot.rotation.y = Math.PI * 0.62 * progress(
+    setVectorDoorOpen(buildDoor, progress(
       time,
       FOUNDATION_TIMELINE.buildKey.insert,
       FOUNDATION_TIMELINE.buildKey.insert + 0.9,
-    );
+    ));
 
     setEmergingDoor(
       sysrootDoor,
@@ -1560,17 +1582,17 @@ export function createFoundationWorld() {
       FOUNDATION_TIMELINE.outDoorRise,
       1 - progress(time, 94.29, 94.62),
     );
-    sysrootDoor.leafPivot.rotation.y = Math.PI * 0.62 * progress(
+    setVectorDoorOpen(sysrootDoor, progress(
       time,
       FOUNDATION_TIMELINE.sysrootKey.insert,
       FOUNDATION_TIMELINE.sysrootKey.insert + 0.9,
-    );
-    srcDoor.leafPivot.rotation.y = Math.PI * 0.62 * progress(
+    ));
+    setVectorDoorOpen(srcDoor, progress(
       time,
       FOUNDATION_TIMELINE.srcKey.insert,
       FOUNDATION_TIMELINE.srcKey.insert + 0.9,
-    );
-    outDoor.leafPivot.rotation.y = Math.PI * 0.62 * progress(time, 85.25, 86.15);
+    ));
+    setVectorDoorOpen(outDoor, progress(time, 85.25, 86.15));
 
     setRouteProgress(
       requestToSysroot,
@@ -1601,7 +1623,7 @@ export function createFoundationWorld() {
       time,
       FOUNDATION_TIMELINE.buildKey,
       keyStart,
-      new THREE.Vector3(2.833, 1.82 + DECK_HEIGHT_DELTA, -1.08),
+      new THREE.Vector3(buildDoorPosition.x, DECK_KEY_TARGET_Y, buildDoorPosition.z),
       0.7,
     );
     setCapabilityKey(
@@ -1609,7 +1631,7 @@ export function createFoundationWorld() {
       time,
       FOUNDATION_TIMELINE.sysrootKey,
       keyStart,
-      new THREE.Vector3(4.258, 1.82 + DECK_HEIGHT_DELTA, -3.915),
+      new THREE.Vector3(sysrootDoorPosition.x, DECK_KEY_TARGET_Y, sysrootDoorPosition.z),
       0.72,
     );
     setCapabilityKey(
@@ -1617,7 +1639,7 @@ export function createFoundationWorld() {
       time,
       FOUNDATION_TIMELINE.srcKey,
       keyStart,
-      new THREE.Vector3(6.008, 1.82 + DECK_HEIGHT_DELTA, -3.929),
+      new THREE.Vector3(srcDoorPosition.x, DECK_KEY_TARGET_Y, srcDoorPosition.z),
       0.72,
     );
     const setKeyRoute = (route, timing) => {

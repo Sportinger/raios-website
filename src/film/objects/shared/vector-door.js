@@ -8,6 +8,7 @@ const smoothstep = (value) => {
 
 const trackGeometry = (tracker, geometry) => tracker?.geometry?.(geometry) ?? geometry;
 const trackMaterial = (tracker, material) => tracker?.material?.(material) ?? material;
+const trackTexture = (tracker, texture) => tracker?.texture?.(texture) ?? texture;
 
 function createMaterial(tracker, color, options = {}) {
   const material = trackMaterial(tracker, new THREE.MeshBasicMaterial({
@@ -293,9 +294,129 @@ export function createVectorDoor({
     leafPivot,
     hinge: leafPivot,
     leaf,
+    rotationY,
     porchOffset,
     porchSide,
   };
+}
+
+export function anchorVectorDoorToSurface(door, {
+  surface,
+  edge,
+  along = 0,
+} = {}) {
+  if (!door?.group || !Number.isFinite(surface?.top)) {
+    throw new TypeError("A vector door requires a support surface with a finite top.");
+  }
+  const mechanism = door.mechanism ?? door;
+  const hasBounds = Number.isFinite(surface.centerX)
+    && Number.isFinite(surface.centerZ)
+    && Number.isFinite(surface.width)
+    && Number.isFinite(surface.depth);
+  if (!hasBounds || !["front", "back", "left", "right"].includes(edge)) {
+    throw new TypeError("A surface door requires bounded surface geometry and a valid edge.");
+  }
+  const edgeState = {
+    front: { x: surface.centerX + along, z: surface.centerZ + surface.depth / 2, rotationY: 0, porchSide: 1 },
+    back: { x: surface.centerX + along, z: surface.centerZ - surface.depth / 2, rotationY: 0, porchSide: -1 },
+    right: { x: surface.centerX + surface.width / 2, z: surface.centerZ + along, rotationY: Math.PI / 2, porchSide: 1 },
+    left: { x: surface.centerX - surface.width / 2, z: surface.centerZ + along, rotationY: Math.PI / 2, porchSide: -1 },
+  }[edge];
+  mechanism.rotationY = edgeState.rotationY;
+  mechanism.porchSide = edgeState.porchSide;
+  mechanism.frame.rotation.y = edgeState.rotationY;
+  mechanism.hatch.group.rotation.y = edgeState.rotationY;
+  mechanism.hatch.group.position.set(
+    Math.sin(edgeState.rotationY) * mechanism.porchOffset * edgeState.porchSide,
+    0,
+    Math.cos(edgeState.rotationY) * mechanism.porchOffset * edgeState.porchSide,
+  );
+  if (mechanism.label) {
+    positionVectorDoorLabel(mechanism, mechanism.label);
+  }
+  door.group.position.set(edgeState.x, surface.top, edgeState.z);
+  door.supportSurface = surface;
+  door.supportEdge = edge;
+  door.edgeOffset = along;
+  mechanism.supportSurface = surface;
+  mechanism.supportEdge = edge;
+  mechanism.edgeOffset = along;
+  return door;
+}
+
+export function createVectorDoorLabel({
+  tracker,
+  text,
+  color = 0xf6c769,
+  width = 1.05,
+  fontSize = 68,
+} = {}) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024;
+  canvas.height = 256;
+  const context = canvas.getContext("2d");
+  const texture = trackTexture(tracker, new THREE.CanvasTexture(canvas));
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  const material = trackMaterial(tracker, new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+  }));
+  material.userData.preserveTransparency = true;
+  material.userData.vectorDoorBaseOpacity = 1;
+  const label = new THREE.Sprite(material);
+  label.scale.set(width, width * (canvas.height / canvas.width), 1);
+  label.renderOrder = 50;
+  label.userData.labelTexture = texture;
+  let renderedText = null;
+  const drawText = (nextText) => {
+    const copy = String(nextText);
+    if (copy === renderedText) return;
+    renderedText = copy;
+    const renderedFontSize = Math.min(190, fontSize * 2.8);
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.font = `800 ${renderedFontSize}px Consolas, monospace`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.letterSpacing = "4px";
+    context.lineJoin = "round";
+    context.lineWidth = Math.max(12, renderedFontSize * 0.16);
+    context.strokeStyle = "#05080d";
+    context.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
+    context.strokeText(copy, canvas.width / 2, canvas.height / 2, 920);
+    context.fillText(copy, canvas.width / 2, canvas.height / 2, 920);
+    texture.needsUpdate = true;
+  };
+  label.userData.setText = drawText;
+  drawText(text);
+  return label;
+}
+
+function positionVectorDoorLabel(door, label, {
+  height = 0.12,
+  offset = door.porchOffset + 0.04,
+} = {}) {
+  label.position.set(
+    Math.sin(door.rotationY) * offset * door.porchSide,
+    height,
+    Math.cos(door.rotationY) * offset * door.porchSide,
+  );
+}
+
+export function attachVectorDoorLabel(door, label, options = {}) {
+  positionVectorDoorLabel(door, label, options);
+  door.group.add(label);
+  door.label = label;
+  return label;
+}
+
+export function setVectorDoorOpen(door, amount, maxAngle = Math.PI * 0.62) {
+  const open = clamp01(amount);
+  // A negative local swing moves the leaf toward the positive porch normal.
+  // porchSide reverses both the landing and the swing as one invariant.
+  door.leafPivot.rotation.y = -door.porchSide * maxAngle * open;
 }
 
 export function setVectorDoorEmergence(door, {
@@ -311,4 +432,8 @@ export function setVectorDoorEmergence(door, {
   door.frame.position.y = THREE.MathUtils.lerp(undergroundY, 0, rise);
   door.frame.scale.y = 1;
   setVectorOpacity(door.frame, frameOpacity);
+  if (door.label) {
+    const labelOpacity = smoothstep((rise - 0.72) / 0.28) * clamp01(opacity);
+    setVectorOpacity(door.label, labelOpacity);
+  }
 }

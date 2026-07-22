@@ -51,6 +51,17 @@ Die Foundation-Welt deckt die Sekunden `0–41` ab. Die Factory-Welt modelliert
 die Sekunden `41–120`. Wiederholte Produktionspfade und das Insel-Finale nutzen
 Konfiguration beziehungsweise `THREE.InstancedMesh` statt duplizierter Szenen.
 
+### Türvertrag
+
+Alle regulären Filmtüren verwenden `objects/shared/vector-door.js`. Eine Tür
+wird ausschließlich durch ihre Trägerfläche sowie `edge` (`front`, `back`,
+`left`, `right`) und `along` beschrieben. Das Modul leitet daraus Höhe,
+rechtwinklige Ausrichtung, den vollständig außerhalb liegenden Vorbau, die
+Öffnungsrichtung zum Vorbau und die mittige Labelposition ab. Szenen dürfen
+diese Werte nicht nachträglich per `position`, `rotation` oder `hinge` ändern.
+Nur bewusst freistehende Objekte wie die kompakte Finaltür verwenden die
+separat benannte `createFreestandingFactoryDoor`-API.
+
 ## Kamera
 
 Die SVG-Kamera des Referenzfilms war ein 2D-Pan/Zoom mit `scale`, `focusX` und

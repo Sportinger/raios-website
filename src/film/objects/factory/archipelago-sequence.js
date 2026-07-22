@@ -1,7 +1,10 @@
 import * as THREE from "three";
 import { createCanvasSprite, roundedRect } from "./canvas-primitives.js";
 import { FACTORY_PALETTE } from "./config.js";
-import { createFactoryDoor } from "./door-primitives.js";
+import {
+  createFreestandingFactoryDoor,
+  setFactoryDoorOpen,
+} from "./door-primitives.js";
 import { createRoute, createTextLabel, createVectorBox } from "./primitives.js";
 import { interval, smoothstep, smootherstep } from "./timeline.js";
 
@@ -276,8 +279,11 @@ export function createArchipelagoSequence(tracker) {
   const compactPulse = new THREE.Mesh(tracker.geometry(new THREE.SphereGeometry(0.1, 12, 8)), compactPulseMaterial);
   compactRoute.add(compactPulse);
 
-  const compactDoor = createFactoryDoor(tracker, FACTORY_PALETTE.green, mapSvgPoint(596, 447, 0.22).toArray(), 0.18);
-  compactDoor.group.rotation.y = Math.PI / 4;
+  const compactDoor = createFreestandingFactoryDoor(tracker, FACTORY_PALETTE.green, {
+    position: mapSvgPoint(596, 447, 0.22).toArray(),
+    scale: 0.18,
+    rotationY: Math.PI / 4,
+  });
   const doorLabel = createTextLabel(tracker, {
     text: "one door", width: 1.35, height: 0.3,
     color: 0xbdeacd, background: 0x03080a,
@@ -324,7 +330,7 @@ export function createArchipelagoSequence(tracker) {
     compactDoor.group.visible = doorRise > 0.001;
     compactDoor.group.scale.setScalar(0.18 * Math.max(0.001, doorRise));
     compactDoor.group.position.y = 0.22 - (1 - doorRise) * 0.9;
-    compactDoor.hinge.rotation.y = 0;
+    setFactoryDoorOpen(compactDoor, 0);
     const compactLabelAlpha = smoothstep(interval(time, 108.45, 108.75));
     setOpacity(compactLabel, compactLabelAlpha);
     const captionAlpha = windowAlpha(time, 106, 112.7, 0.7);
