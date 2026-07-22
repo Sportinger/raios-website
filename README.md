@@ -55,6 +55,12 @@ modelliert die Animationssekunden `41–148`. Wiederholte Produktionspfade und d
 gemeinsame Konfiguration und wiederverwendbare Objektverträge statt duplizierter
 Szenenlogik.
 
+`create-film-world.js` hängt Raster, Foundation und Factory gemeinsam unter
+einen stabilen Transform-Träger im Mittelpunkt des vollständig ausgebauten
+Rust-Kernel-Layers. `setKernelRotationY(angle)` dreht diesen gesamten Verbund in
+Radiant, ohne die eigene Aufbau- und Footprint-Skalierung des Kernel-Meshes auf
+seine Geschwister zu übertragen.
+
 ### Einbettung in die Vollwebsite
 
 `embedded-film.js` montiert denselben Film in einem Shadow DOM. Dadurch bleiben

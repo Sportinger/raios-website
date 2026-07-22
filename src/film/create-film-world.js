@@ -1,6 +1,9 @@
 import * as THREE from "three";
 import { disposeObject3D } from "../shared/dispose-object-3d.js";
-import { FOUNDATION_PRESENTATION_SCALE } from "./layout-constants.js";
+import {
+  FOUNDATION_PRESENTATION_SCALE,
+  RUST_KERNEL_ASSEMBLY_PIVOT,
+} from "./layout-constants.js";
 import { createFoundationWorld } from "./objects/foundation/index.js";
 import { createFactoryWorld } from "./objects/factory/index.js";
 
@@ -13,12 +16,22 @@ export function createFilmWorld({
 
   const root = new THREE.Group();
   root.name = "factory-film-world";
+  const kernelAssembly = new THREE.Group();
+  kernelAssembly.name = "rust-kernel-assembly";
+  kernelAssembly.position.fromArray(RUST_KERNEL_ASSEMBLY_PIVOT);
+  const kernelAttachedContent = new THREE.Group();
+  kernelAttachedContent.name = "rust-kernel-attached-content";
+  kernelAttachedContent.position
+    .fromArray(RUST_KERNEL_ASSEMBLY_PIVOT)
+    .multiplyScalar(-1);
+  kernelAssembly.add(kernelAttachedContent);
+  root.add(kernelAssembly);
   if (showGrid) {
     const grid = new THREE.GridHelper(72, 72, 0x244c68, 0x102a3b);
     grid.position.y = 0;
     grid.material.transparent = true;
     grid.material.opacity = 0.28;
-    root.add(grid);
+    kernelAttachedContent.add(grid);
   }
   const foundation = createFoundationWorld();
   const factory = createFactoryWorld({
@@ -33,7 +46,7 @@ export function createFilmWorld({
   foundation.group.userData.presentationBaseZ = foundation.group.position.z;
   const factoryOffset = factory.group.userData.recommendedWorldOffset;
   factory.group.position.set(factoryOffset.x, factoryOffset.y, factoryOffset.z);
-  root.add(foundation.group, factory.group);
+  kernelAttachedContent.add(foundation.group, factory.group);
   scene.add(root);
 
   return {
@@ -41,6 +54,11 @@ export function createFilmWorld({
     setTime(time, camera) {
       foundation.setTime(time, camera);
       factory.setTime(time, camera);
+    },
+    setKernelRotationY(angle) {
+      const nextAngle = Number(angle);
+      kernelAssembly.rotation.y = Number.isFinite(nextAngle) ? nextAngle : 0;
+      kernelAssembly.updateMatrixWorld(true);
     },
     dispose() {
       foundation.dispose();
