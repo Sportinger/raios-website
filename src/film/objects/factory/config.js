@@ -15,7 +15,7 @@ export const FACTORY_PALETTE = Object.freeze({
 export const FACTORY_SCENES = Object.freeze({
   builder: Object.freeze({ start: 25, end: 33 }),
   inert: Object.freeze({ start: 33, end: 41 }),
-  compiler: Object.freeze({ start: 39, end: 80 }),
+  compiler: Object.freeze({ start: 39, end: 96 }),
   feedback: Object.freeze({ start: 52, end: 62 }),
   twins: Object.freeze({ start: 62, end: 72 }),
   proof: Object.freeze({ start: 72, end: 80 }),

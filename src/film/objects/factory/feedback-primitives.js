@@ -1,37 +1,17 @@
 import * as THREE from "three";
 import { FACTORY_PALETTE } from "./config.js";
-
-function createCanvasSprite(tracker, width, height, worldWidth, worldHeight) {
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const context = canvas.getContext("2d");
-  const texture = tracker.texture(new THREE.CanvasTexture(canvas));
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.minFilter = THREE.LinearFilter;
-  const material = tracker.material(new THREE.SpriteMaterial({
-    map: texture,
-    transparent: true,
-    depthTest: false,
-    depthWrite: false,
-  }));
-  material.userData.preserveTransparency = true;
-  const sprite = new THREE.Sprite(material);
-  sprite.scale.set(worldWidth, worldHeight, 1);
-  sprite.renderOrder = 49;
-  return { canvas, context, texture, material, sprite };
-}
-
-function roundedRect(context, x, y, width, height, radius) {
-  context.beginPath();
-  context.roundRect(x, y, width, height, radius);
-}
+import { createCanvasSprite, roundedRect } from "./canvas-primitives.js";
 
 export function createTwinVerifierPanel(tracker) {
   const group = new THREE.Group();
   group.name = "verifier-twin-console";
   group.position.set(2.2, -0.62, -2.38);
-  const surface = createCanvasSprite(tracker, 768, 640, 4.36, 3.64);
+  const surface = createCanvasSprite(tracker, {
+    pixelWidth: 768,
+    pixelHeight: 640,
+    worldWidth: 4.36,
+    worldHeight: 3.64,
+  });
   group.add(surface.sprite);
 
   let renderedState = "";
@@ -110,7 +90,12 @@ export function createVerifierVerdict(tracker) {
   const group = new THREE.Group();
   group.name = "verifier-verdict";
   group.position.set(3.27, 1.15, -3.07);
-  const surface = createCanvasSprite(tracker, 384, 384, 0.95, 0.95);
+  const surface = createCanvasSprite(tracker, {
+    pixelWidth: 384,
+    pixelHeight: 384,
+    worldWidth: 0.95,
+    worldHeight: 0.95,
+  });
   let renderedVerdict = "";
   const draw = (verdict) => {
     if (verdict === renderedVerdict) return;
@@ -158,7 +143,12 @@ export function createGuardStatusPanel(tracker) {
   const group = new THREE.Group();
   group.name = "guard-status-panel";
   group.position.set(-5.74, 4.2, 2.85);
-  const surface = createCanvasSprite(tracker, 1024, 256, 5.3, 1.33);
+  const surface = createCanvasSprite(tracker, {
+    pixelWidth: 1024,
+    pixelHeight: 256,
+    worldWidth: 5.3,
+    worldHeight: 1.33,
+  });
   group.add(surface.sprite);
   let renderedCopy = "";
   const draw = (copy) => {

@@ -1708,8 +1708,12 @@ export function createFoundationWorld() {
 
     const workpieceRise = timedProgress(time, FOUNDATION_TIMELINE.workpieceRise);
     production.workpiece.visible = workpieceRise > 0.001;
-    production.workpiece.position.y = -(1 - workpieceRise) * 0.35;
-    production.workpiece.scale.setScalar(Math.max(0.001, THREE.MathUtils.lerp(0.54, 1, workpieceRise)));
+    const residentRise = progress(time, 89.2, 92);
+    production.workpiece.position.y = -(1 - workpieceRise) * 0.35 + residentRise;
+    production.workpiece.scale.setScalar(Math.max(
+      0.001,
+      THREE.MathUtils.lerp(0.54, 1, workpieceRise) * THREE.MathUtils.lerp(1, 0.93, residentRise),
+    ));
     const workpieceFrames = [
       { at: 34, x: 0, z: 0 },
       { at: 41, x: 0, z: 0 },
@@ -1729,6 +1733,9 @@ export function createFoundationWorld() {
       { at: 77.7, x: 0.29, z: -0.145 },
       { at: 79.8, x: 0.072, z: 0.362 },
       { at: 88, x: 0.072, z: 0.362 },
+      { at: 89.6, x: -1.816, z: -0.312 },
+      { at: 92, x: -6.108, z: 1.912 },
+      { at: 106, x: -6.108, z: 1.912 },
     ];
     const beforeFrame = workpieceFrames.reduce(
       (best, frame) => (frame.at <= time ? frame : best),
@@ -1738,7 +1745,9 @@ export function createFoundationWorld() {
     const workpieceMove = beforeFrame === afterFrame ? 1 : progress(time, beforeFrame.at, afterFrame.at);
     production.workpiece.position.x = THREE.MathUtils.lerp(beforeFrame.x, afterFrame.x, workpieceMove);
     production.workpiece.position.z = THREE.MathUtils.lerp(beforeFrame.z, afterFrame.z, workpieceMove);
-    const workpieceCopy = time >= 84.55
+    const workpieceCopy = time >= 92
+      ? "PLAYER.WASM"
+      : time >= 84.55
       ? "PLAYER.WASM · AUTHORIZED"
       : time >= 77.7
         ? "PLAYER.WASM · 3 PROOFS"
@@ -1832,6 +1841,9 @@ export function createFoundationWorld() {
       shadowTitle,
       progress(time, 33.4, 33.9) * (1 - progress(time, 88, 88.5)),
     );
+    const builderRelease = progress(time, 94.62, 95.8);
+    builder.group.position.y = FOUNDATION_LAYOUT.builder[1] - builderRelease * 0.58;
+    setFade(builder.group, builderRise * (1 - builderRelease));
     return time;
   }
 

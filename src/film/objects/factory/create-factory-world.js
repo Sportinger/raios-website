@@ -35,6 +35,9 @@ import {
   setTwinVerifierPanel,
   setVerifierVerdict,
 } from "./feedback-primitives.js";
+import { createApprovalSequence } from "./approval-sequence.js";
+import { createFactoryDoor as createDoor } from "./door-primitives.js";
+import { createLiveSequence } from "./live-sequence.js";
 
 const setYScale = (object, scale) => {
   object.scale.y = Math.max(0.001, scale);
@@ -115,37 +118,6 @@ function createMachine(tracker, lane) {
   group.add(glow, label, progressRail, progressFill, progressCaption);
   if (versionCaption) group.add(versionCaption);
   return { group, aperture, status, progressRail, progressFill, progressCaption, versionCaption, glow };
-}
-
-function createDoor(tracker, color, position = [0, 0, 0], scale = 1) {
-  const group = new THREE.Group();
-  group.name = "factory-door";
-  group.position.set(...position);
-  group.scale.setScalar(scale);
-  const left = createVectorBox(tracker, {
-    size: [0.22, 3.8, 0.42], color: FACTORY_PALETTE.panel,
-    edgeColor: color, position: [-1.38, 1.9, 0],
-  });
-  const right = createVectorBox(tracker, {
-    size: [0.22, 3.8, 0.42], color: FACTORY_PALETTE.panel,
-    edgeColor: color, position: [1.38, 1.9, 0],
-  });
-  const lintel = createVectorBox(tracker, {
-    size: [2.98, 0.24, 0.42], color: FACTORY_PALETTE.panel,
-    edgeColor: color, position: [0, 3.72, 0],
-  });
-  const threshold = createVectorBox(tracker, {
-    size: [2.98, 0.14, 0.7], color, position: [0, 0.07, 0],
-  });
-  const hinge = new THREE.Group();
-  hinge.position.set(-1.22, 0, 0.04);
-  const leaf = createVectorBox(tracker, {
-    size: [2.42, 3.35, 0.2], color: FACTORY_PALETTE.panelLight,
-    edgeColor: color, position: [1.21, 1.77, 0],
-  });
-  hinge.add(leaf);
-  group.add(left, right, lintel, threshold, hinge);
-  return { group, hinge, leaf };
 }
 
 function createBuilderScene(tracker, inert = false) {
@@ -649,6 +621,11 @@ export function createFactoryWorld() {
   const builder = createBuilderScene(tracker, false);
   const inert = createBuilderScene(tracker, true);
   const compiler = createCompilerScene(tracker);
+  const approvalSequence = createApprovalSequence(tracker, {
+    guardMachine: compiler.machines[2],
+    guardChecklist: compiler.checklist,
+  });
+  const liveSequence = createLiveSequence(tracker);
   const feedback = createFeedbackScene(tracker);
   const twins = createTwinScene(tracker);
   const proof = createProofScene(tracker);
@@ -665,7 +642,7 @@ export function createFactoryWorld() {
     scene.group.name = `factory-${id}`;
     group.add(scene.group);
   });
-  group.add(guardStatus.group);
+  group.add(guardStatus.group, approvalSequence.group, liveSequence.group);
 
   const matrix = new THREE.Matrix4();
   const position = new THREE.Vector3();
@@ -688,6 +665,9 @@ export function createFactoryWorld() {
     // The placeholder orbital Guard is not part of the reference film. The
     // persistent workshop Guard remains the canonical machine.
     guard.group.visible = false;
+    approval.group.visible = false;
+    running.group.visible = false;
+    compact.group.visible = false;
 
     const deckRise = smootherstep(interval(time, 25.25, 28.45));
     builder.group.position.y = -2.8 + deckRise * 2.8;
@@ -884,6 +864,13 @@ export function createFactoryWorld() {
               ? "ALL BINDINGS MATCH · OPENING"
               : "GUARD · LIVE DOOR OPEN";
     setGuardStatusPanel(guardStatus, guardStatusCopy, guardStatusAlpha);
+    approvalSequence.setTime(time);
+    liveSequence.setTime(time);
+    const compilerWindow = time >= FACTORY_SCENES.compiler.start && time < FACTORY_SCENES.compiler.end;
+    const workshopAlpha = compilerWindow
+      ? 1 - smootherstep(interval(time, 92.75, 94.05))
+      : 0;
+    setFactoryOpacity(compiler.group, workshopAlpha);
 
     const scanWindow = time >= 57.8 && time < 60.8
       ? [57.8, 60.8]
