@@ -1314,14 +1314,16 @@ export function createFoundationWorld() {
       ) / KERNEL_FOOTPRINT.compact.depth,
       foundationExpansion,
     );
+    const foundationScaleX = Math.max(0.0001, Math.abs(group.scale.x));
+    const foundationScaleZ = Math.max(0.0001, Math.abs(group.scale.z));
     kernel.group.position.set(
       FOUNDATION_LAYOUT.kernel[0]
         + KERNEL_FOOTPRINT.compact.width * (kernelScaleX - 1) * 0.5
-        - FOUNDATION_LAYOUT.expansionOffset[0] * foundationExpansion,
+        - FOUNDATION_LAYOUT.expansionOffset[0] * foundationExpansion / foundationScaleX,
       FOUNDATION_LAYOUT.kernel[1],
       FOUNDATION_LAYOUT.kernel[2]
         + KERNEL_FOOTPRINT.compact.depth * (kernelScaleZ - 1) * 0.5
-        - FOUNDATION_LAYOUT.expansionOffset[2] * foundationExpansion,
+        - FOUNDATION_LAYOUT.expansionOffset[2] * foundationExpansion / foundationScaleZ,
     );
     setDeckFootprint(kernel, kernelScaleX, kernelScaleZ);
     kernel.title.position.x = -KERNEL_FOOTPRINT.compact.width * (kernelScaleX - 1) * 0.5;
