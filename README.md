@@ -110,6 +110,10 @@ laufen mit `cableDoorLandingDrop` zunächst über den vollständigen Vorbau und
 erst an dessen Außenkante nach unten. Technische Fillets runden alle möglichen
 Waypoints mit engem Radius ab. Signalpulse starten erst, wenn die Leitung
 vollständig aufgebaut und verbunden ist.
+Der Eintritt in die Shadow VM ist ausdrücklich kein Signalweg: Eine sichtbare
+lilafarbene `PLAYER.WASM · GHOST COPY` bewegt sich als echtes 3D-Objekt durch
+die geöffnete `shadow.in`-Tür. Dafür darf weder Kabel noch Puls gezeichnet
+werden.
 
 ## Kamera
 

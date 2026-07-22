@@ -44,7 +44,6 @@ import {
 } from "./door-primitives.js";
 import { createLiveSequence } from "./live-sequence.js";
 import {
-  cableDoorLandingDrop,
   cableSurfacePoint,
   VECTOR_CABLE_DIRECTIONS,
 } from "../shared/vector-cable.js";
@@ -371,19 +370,19 @@ function createProofScene(tracker) {
     gridOpacity: 0.32,
   });
   const subject = createVectorBox(tracker, {
-    size: [1.5, 1.2, 1.5], color: 0x171125,
-    edgeColor: 0xc28bff, position: [0, 1.35, 0],
+    size: [1.5, 1.2, 1.5], color: 0x6b448b,
+    edgeColor: 0xe0b8ff, position: [0, 0, 0],
   });
+  subject.name = "player-wasm-ghost-copy";
   subject.add(createTextLabel(tracker, {
     text: "PLAYER.WASM · GHOST COPY", width: 2.6, height: 0.38,
-    color: 0xe7d6fa, background: 0x12091e, position: [0, 0.85, 0.78], fontSize: 42, billboard: true,
+    color: 0xf2e7ff, background: 0x351d4e, position: [0, 0.85, 0.78], fontSize: 42, billboard: true,
   }));
   group.add(layer.group, subject);
   const deckTop = shadowLayout.thickness;
   const halfWidth = shadowLayout.width * 0.5;
   const shadowDoorScale = FACTORY_STANDARD_DOOR_SCALE;
   const shadowSurface = layer.surface;
-  const shadowUnderlaySurface = Object.freeze({ id: "shadow-underlay", top: 0 });
   const entryDoor = createFactoryDoorOnSurface(tracker, 0xd8acff, {
     surface: shadowSurface,
     edge: "right",
@@ -406,13 +405,22 @@ function createProofScene(tracker) {
     group.add(door.group);
     return door;
   });
-  const entryRoute = createRoute(tracker, [
-    cableSurfacePoint(shadowUnderlaySurface, halfWidth + 2, -3.5, 0.08),
-    ...cableDoorLandingDrop(entryDoor, shadowUnderlaySurface, { clearance: 0.08 }).reverse(),
-    cableSurfacePoint(shadowSurface, 2.5, -1.2, 0.08),
-    cableSurfacePoint(shadowSurface, 0, 0, 0.08),
-  ], 0xc48eff, 0.055);
-  group.add(entryRoute);
+  // This is an object trajectory, not a cable. The ghost copy approaches from
+  // the Builder quadrant, passes the physical shadow.in threshold, then
+  // settles inside the disposable VM. No line or pulse is rendered for it.
+  const ghostFlightY = deckTop + 0.68;
+  const entryFlight = new THREE.CatmullRomCurve3([
+    // Exact settled PLAYER.WASM position transformed into this Shadow group.
+    new THREE.Vector3(13.19, ghostFlightY, -0.22),
+    new THREE.Vector3(11.2, ghostFlightY, -0.4),
+    new THREE.Vector3(9, ghostFlightY, -0.8),
+    new THREE.Vector3(7.1, ghostFlightY, -1.55),
+    new THREE.Vector3(halfWidth + 0.85, ghostFlightY, -2.05),
+    new THREE.Vector3(halfWidth + 0.05, ghostFlightY, -2.2),
+    new THREE.Vector3(halfWidth - 0.7, ghostFlightY, -2.05),
+    new THREE.Vector3(2.5, ghostFlightY, -1.2),
+    new THREE.Vector3(0, ghostFlightY, 0),
+  ], false, "centripetal", 0.45);
   const attacks = [
     [[-8, 1.2, -2.6], [-5.8, 1.2, -1.6]],
     [[8, 1.2, -2.8], [5.8, 1.2, -1.8]],
@@ -443,7 +451,7 @@ function createProofScene(tracker) {
     spikes.setMatrixAt(index, matrix);
   }
   group.add(spikes);
-  return { group, layer, subject, spikes, entryDoor, mockDoors, entryRoute, attacks };
+  return { group, layer, subject, spikes, entryDoor, mockDoors, entryFlight, attacks };
 }
 
 export function createFactoryWorld() {
@@ -790,18 +798,30 @@ export function createFactoryWorld() {
         opacity: scanAlpha * 0.72,
       });
     });
-    const shadowEntry = scanWindow
-      ? smootherstep(interval(time, scanWindow[0] + 1.42, Math.min(scanWindow[0] + 2.18, scanWindow[1] - 0.42)))
+    const shadowDoorOpen = scanWindow
+      ? smootherstep(interval(time, scanWindow[0] + 1.58, scanWindow[0] + 1.86))
+        * (1 - smootherstep(interval(time, scanWindow[1] - 0.38, scanWindow[1] - 0.12)))
       : 0;
-    setFactoryDoorOpen(proof.entryDoor, shadowEntry);
+    setFactoryDoorOpen(proof.entryDoor, shadowDoorOpen);
+    const shadowFlight = scanWindow
+      ? smootherstep(interval(
+        time,
+        scanWindow[0] + 1.72,
+        Math.min(scanWindow[0] + 2.55, scanWindow[1] - 0.38),
+      ))
+      : 0;
     const shadowPlayerIntro = scanWindow
-      ? smootherstep(interval(time, scanWindow[0] + 1.18, scanWindow[0] + 1.5))
+      ? smootherstep(interval(time, scanWindow[0] + 1.48, scanWindow[0] + 1.7))
       : 0;
     proof.subject.visible = shadowPlayerIntro * scanOutro > 0.001;
-    const shadowPoint = proof.entryRoute.userData.curve.getPointAt(shadowEntry);
+    const shadowPoint = proof.entryFlight.getPointAt(shadowFlight);
     proof.subject.position.copy(shadowPoint);
-    proof.subject.position.y += 0.2 + (shadowEntry >= 0.999 ? Math.sin(time * Math.PI * 2.1) * 0.05 : 0);
-    proof.subject.scale.setScalar(0.82 - shadowEntry * 0.1);
+    const ghostSettled = smootherstep(interval(shadowFlight, 0.9, 1));
+    proof.subject.position.y += ghostSettled * Math.sin(time * Math.PI * 2.1) * 0.05;
+    const doorwaySqueeze = Math.max(0, 1 - Math.abs(shadowFlight - 0.59) / 0.18);
+    proof.subject.scale.setScalar(
+      THREE.MathUtils.lerp(0.82, 0.72, shadowFlight) - doorwaySqueeze * 0.12,
+    );
     const attackIntro = scanWindow
       ? smootherstep(interval(time, scanWindow[0] + 1.28, Math.min(scanWindow[0] + 1.72, scanWindow[1] - 0.48)))
       : 0;
