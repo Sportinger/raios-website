@@ -64,8 +64,8 @@ export function createFilmApp({
 
   const render = () => {
     if (!orbitEnabled) filmCamera.setTime(currentTime);
-    world.setTime(currentTime);
     if (orbitEnabled) orbitControls.update();
+    world.setTime(currentTime, filmCamera.camera);
     renderer.render(world.scene, filmCamera.camera);
   };
 

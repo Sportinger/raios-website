@@ -6,6 +6,7 @@ import {
   GENESIS_FOOTPRINT,
   KERNEL_FOOTPRINT,
 } from "./foundation-config.js";
+import { createLayerCallout, setLayerCallout } from "./layer-callout.js";
 
 const PALETTE = Object.freeze({
   ink: 0xf1f7ff,
@@ -407,119 +408,6 @@ function createGlow(color, width = 2.4, height = width) {
   sprite.scale.set(width, height, 1);
   sprite.userData.labelTexture = texture;
   return sprite;
-}
-
-function createLayerCallout({ title, copy, color, width = 7 }) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 1200;
-  canvas.height = 300;
-  const context = canvas.getContext("2d");
-  const stroke = `#${color.toString(16).padStart(6, "0")}`;
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  context.beginPath();
-  context.roundRect(10, 10, 1180, 280, 34);
-  context.fillStyle = "rgba(12, 21, 33, 0.94)";
-  context.fill();
-  context.lineWidth = 8;
-  context.strokeStyle = stroke;
-  context.stroke();
-  context.beginPath();
-  context.moveTo(46, 48);
-  context.lineTo(46, 252);
-  context.lineWidth = 18;
-  context.lineCap = "round";
-  context.strokeStyle = stroke;
-  context.stroke();
-  context.beginPath();
-  context.moveTo(102, 150);
-  context.lineTo(1110, 150);
-  context.lineWidth = 4;
-  context.strokeStyle = `${stroke}88`;
-  context.stroke();
-  context.font = "900 58px Consolas, monospace";
-  context.textAlign = "left";
-  context.textBaseline = "middle";
-  context.fillStyle = "#eef5ff";
-  context.fillText(title, 102, 94);
-  context.font = "800 35px Consolas, monospace";
-  context.fillStyle = "#9fb2c9";
-  context.fillText(copy, 102, 212);
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.minFilter = THREE.LinearFilter;
-  const material = new THREE.SpriteMaterial({
-    map: texture,
-    transparent: true,
-    depthTest: false,
-    depthWrite: false,
-  });
-  material.userData.preserveTransparency = true;
-  const card = new THREE.Sprite(material);
-  const height = width * canvas.height / canvas.width;
-  card.scale.set(width, height, 1);
-  card.renderOrder = 80;
-
-  const route = new THREE.Group();
-  const target = new THREE.Vector3();
-  const anchor = new THREE.Vector3();
-  const elbow = new THREE.Vector3();
-  const targetDot = new THREE.Mesh(
-    new THREE.SphereGeometry(0.07, 10, 6),
-    new THREE.MeshBasicMaterial({ color }),
-  );
-  route.add(targetDot);
-  const group = new THREE.Group();
-  group.add(route, card);
-  return {
-    group,
-    card,
-    route,
-    targetDot,
-    texture,
-    width,
-    height,
-    anchor,
-    elbow,
-    target,
-    routeReady: false,
-  };
-}
-
-function setCalloutRoute(callout, anchor, elbow, target, color) {
-  if (callout.routeReady) return;
-  callout.anchor.copy(anchor);
-  callout.elbow.copy(elbow);
-  callout.target.copy(target);
-  callout.route.add(
-    createBeamBetween(anchor, elbow, 0.018, color, 6),
-    createBeamBetween(elbow, target, 0.018, color, 6),
-  );
-  callout.targetDot.position.copy(target);
-  callout.routeReady = true;
-}
-
-function setLayerCallout(callout, time, {
-  start,
-  introEnd,
-  dockStart,
-  titleStart,
-  end,
-  basePosition,
-  dockPosition,
-  angle,
-}) {
-  const reveal = progress(time, start, introEnd);
-  const exit = progress(time, titleStart, end);
-  const docking = progress(time, dockStart, end);
-  const alpha = reveal * (1 - exit);
-  callout.group.visible = alpha > 0.001;
-  callout.card.material.opacity = alpha;
-  setFade(callout.route, reveal * (1 - progress(time, end - 0.18, end)));
-  callout.card.position.lerpVectors(basePosition, dockPosition, docking);
-  const scale = THREE.MathUtils.lerp(0.94 + reveal * 0.06, 0.38, docking);
-  callout.card.scale.set(callout.width * scale, callout.height * scale, 1);
-  callout.card.material.rotation = angle * docking;
 }
 
 function createOutlinedBox(size, color, edgeColor = PALETTE.blueHigh) {
@@ -1120,22 +1008,15 @@ export function createFoundationWorld() {
     color: PALETTE.blueHigh,
     width: 5.4,
   });
-  const kernelCalloutPosition = new THREE.Vector3(
-    FOUNDATION_LAYOUT.kernel[0] + 0.1,
-    0.8,
-    FOUNDATION_LAYOUT.kernel[2] - 0.1,
-  );
-  const kernelCalloutTarget = new THREE.Vector3(
+  const kernelCalloutDock = new THREE.Vector3(
     FOUNDATION_LAYOUT.kernel[0] - KERNEL_FOOTPRINT.compact.width * 0.11 + 1.75,
-    0.76,
-    FOUNDATION_LAYOUT.kernel[2] + KERNEL_FOOTPRINT.compact.depth * 0.5 + 1,
+    0.5,
+    FOUNDATION_LAYOUT.kernel[2] + KERNEL_FOOTPRINT.compact.depth * 0.5 + 0.75,
   );
-  setCalloutRoute(
-    kernelCallout,
-    new THREE.Vector3(kernelCalloutPosition.x - 0.2, 0.73, kernelCalloutPosition.z + 0.12),
-    new THREE.Vector3(kernelCalloutPosition.x - 0.58, 0.62, kernelCalloutPosition.z + 1.35),
-    kernelCalloutTarget,
-    PALETTE.blueHigh,
+  const kernelCalloutAnchor = new THREE.Vector3(
+    0.82,
+    -(KERNEL_FOOTPRINT.compact.depth - 0.08) * 0.5,
+    0,
   );
   const genesis = createDeck({
     width: GENESIS_FOOTPRINT.width, depth: GENESIS_FOOTPRINT.depth, height: 0.34,
@@ -1148,24 +1029,17 @@ export function createFoundationWorld() {
     color: PALETTE.green,
     width: 5.55,
   });
-  const genesisCalloutPosition = new THREE.Vector3(
-    FOUNDATION_LAYOUT.genesisCompact[0] + 0.2,
-    0.65,
-    FOUNDATION_LAYOUT.genesisCompact[2] - 0.2,
-  );
-  const genesisCalloutTarget = new THREE.Vector3(
+  const genesisCalloutDock = new THREE.Vector3(
     FOUNDATION_LAYOUT.genesisCompact[0] - KERNEL_FOOTPRINT.compact.width * 0.08 + 3.5,
-    1.1,
+    0.55,
     FOUNDATION_LAYOUT.genesisCompact[2]
       + KERNEL_FOOTPRINT.compact.depth * (510 / 630) * 0.5
-      + 2.65,
+      + 1.85,
   );
-  setCalloutRoute(
-    genesisCallout,
-    new THREE.Vector3(genesisCalloutPosition.x - 0.1, 0.75, genesisCalloutPosition.z + 0.1),
-    new THREE.Vector3(genesisCalloutPosition.x - 0.48, 0.92, genesisCalloutPosition.z + 1.25),
-    genesisCalloutTarget,
-    PALETTE.green,
+  const genesisCalloutAnchor = new THREE.Vector3(
+    GENESIS_FOOTPRINT.width * 0.36,
+    -(GENESIS_FOOTPRINT.depth - 0.08) * 0.5,
+    0,
   );
 
   const agent = createAgent();
@@ -1216,14 +1090,11 @@ export function createFoundationWorld() {
     color: PALETTE.blueHigh,
     width: 5.65,
   });
-  const builderCalloutPosition = new THREE.Vector3(3.842, 2.1, -2.503);
-  const builderCalloutTarget = new THREE.Vector3(8.102, 1.08, -2.911);
-  setCalloutRoute(
-    builderCallout,
-    new THREE.Vector3(3.45, 1.92, -2.25),
-    new THREE.Vector3(5.86, 1.46, -2.55),
-    builderCalloutTarget,
-    PALETTE.blueHigh,
+  const builderCalloutDock = new THREE.Vector3(7.78, 1.0, -3.15);
+  const builderCalloutAnchor = new THREE.Vector3(
+    BUILDER_FOOTPRINT.width * 0.16,
+    -(BUILDER_FOOTPRINT.depth - 0.08) * 0.5,
+    0,
   );
 
   const production = createProduction();
@@ -1371,7 +1242,7 @@ export function createFoundationWorld() {
     shadowTitle,
   );
 
-  function setTime(rawTime) {
+  function setTime(rawTime, camera) {
     const time = Math.min(120, Math.max(0, Number(rawTime) || 0));
     const promptAlpha = time < 3.89 ? progress(time, 0.15, 0.8) * (1 - progress(time, 3.35, 3.89)) : 0;
     setOpacity(prompt.group, promptAlpha);
@@ -1380,16 +1251,6 @@ export function createFoundationWorld() {
     const kernelRise = timedProgress(time, FOUNDATION_TIMELINE.kernelRise);
     setDeckRise(kernel, kernelRise);
     setOpacity(kernel.title, progress(time, 7.38, 8.28));
-    setLayerCallout(kernelCallout, time, {
-      start: 3.99,
-      introEnd: 4.79,
-      dockStart: 6.63,
-      titleStart: 7.38,
-      end: 8.28,
-      basePosition: kernelCalloutPosition,
-      dockPosition: kernelCalloutTarget.clone().add(new THREE.Vector3(0.85, -0.26, -0.25)),
-      angle: -THREE.MathUtils.degToRad(26.565),
-    });
     const foundationExpansion = timedProgress(time, FOUNDATION_TIMELINE.agentRise);
     if (group.userData.presentationBaseX === undefined) {
       group.userData.presentationBaseX = group.position.x;
@@ -1434,6 +1295,18 @@ export function createFoundationWorld() {
     kernel.group.position.x += 2.3 * kernelFinalExpansion;
     setDeckFootprint(kernel, kernelScaleX, kernelScaleZ);
     kernel.title.position.x = 2.3 * foundationExpansion;
+    setLayerCallout(kernelCallout, time, {
+      start: 3.99,
+      introEnd: 4.79,
+      titleStart: 7.38,
+      end: 8.28,
+      root: group,
+      camera,
+      targetObject: kernel.top,
+      targetLocalPoint: kernelCalloutAnchor,
+      dockPosition: kernelCalloutDock,
+      angle: -THREE.MathUtils.degToRad(26.565),
+    });
     const compactGenesisWidth = KERNEL_FOOTPRINT.compact.width * (510 / 630);
     const compactGenesisDepth = KERNEL_FOOTPRINT.compact.depth * (510 / 630);
     setDeckFootprint(
@@ -1457,11 +1330,13 @@ export function createFoundationWorld() {
     setLayerCallout(genesisCallout, time, {
       start: 8.38,
       introEnd: 9.18,
-      dockStart: 10.58,
       titleStart: 11.59,
       end: 12.59,
-      basePosition: genesisCalloutPosition,
-      dockPosition: genesisCalloutTarget.clone().add(new THREE.Vector3(0.72, -0.55, -0.18)),
+      root: group,
+      camera,
+      targetObject: genesis.top,
+      targetLocalPoint: genesisCalloutAnchor,
+      dockPosition: genesisCalloutDock,
       angle: -THREE.MathUtils.degToRad(26.565),
     });
 
@@ -1605,11 +1480,13 @@ export function createFoundationWorld() {
     setLayerCallout(builderCallout, time, {
       start: 28.25,
       introEnd: 29.05,
-      dockStart: 31.45,
       titleStart: 32,
       end: 32.9,
-      basePosition: builderCalloutPosition,
-      dockPosition: builderCalloutTarget.clone().add(new THREE.Vector3(-0.28, 0.28, -0.25)),
+      root: group,
+      camera,
+      targetObject: builder.top,
+      targetLocalPoint: builderCalloutAnchor,
+      dockPosition: builderCalloutDock,
       angle: -THREE.MathUtils.degToRad(26.565),
     });
 
