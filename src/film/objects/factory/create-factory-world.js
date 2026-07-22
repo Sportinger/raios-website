@@ -43,6 +43,10 @@ import {
   setFactoryDoorOpen,
 } from "./door-primitives.js";
 import { createLiveSequence } from "./live-sequence.js";
+import {
+  cableSurfacePoint,
+  VECTOR_CABLE_DIRECTIONS,
+} from "../shared/vector-cable.js";
 
 const setLabelText = (label, text) => label.userData.setText?.(text);
 
@@ -151,10 +155,27 @@ function createBuilderScene(tracker, inert = false) {
   ];
   keyLabels.forEach((label) => { label.visible = false; });
   const route = createRoute(tracker, [
-    [-5.7, 1, 2.9], [-2.8, 1.05, 2], [0, 1.05, 0], [3.2, 1.05, -1.2], [6.1, 1.05, -2.7],
+    cableSurfacePoint(deckSurface, -5.7, 2.9),
+    cableSurfacePoint(deckSurface, -2.8, 2),
+    cableSurfacePoint(deckSurface, 0, 0),
+    cableSurfacePoint(deckSurface, 3.2, -1.2),
+    cableSurfacePoint(deckSurface, 6.1, -2.7),
   ], inert ? FACTORY_PALETTE.amber : FACTORY_PALETTE.cyan, 0.065);
   group.add(hatch, title, caption, ...keyLabels, inputDoor.group, outputDoor.group, sourceA, sourceB, workpiece, route);
-  return { group, deck, hatch, caption, keyLabels, inputDoor, outputDoor, sourceA, sourceB, workpiece, route };
+  return {
+    group,
+    deck,
+    hatch,
+    caption,
+    keyLabels,
+    inputDoor,
+    outputDoor,
+    sourceA,
+    sourceB,
+    workpiece,
+    route,
+    supportSurface: deckSurface,
+  };
 }
 
 function createCompilerScene(tracker) {
@@ -185,7 +206,11 @@ function createCompilerScene(tracker) {
     verifierVerdict.group,
   );
   const materialRoute = createRoute(tracker, [
-    [-3.2, 0.9, 2.7], [-1.4, 0.9, 2.2], [0, 0.9, 1.6], [2.55, 0.9, -1.2], [-2.2, 0.9, -1.55],
+    cableSurfacePoint(deck.supportSurface, -3.2, 2.7),
+    cableSurfacePoint(deck.supportSurface, -1.4, 2.2),
+    cableSurfacePoint(deck.supportSurface, 0, 1.6),
+    cableSurfacePoint(deck.supportSurface, 2.55, -1.2),
+    cableSurfacePoint(deck.supportSurface, -2.2, -1.55),
   ], FACTORY_PALETTE.blue, 0.075);
   const sceneCaption = createTextLabel(tracker, {
     text: "ROUND 1/3 · COMPILER GATE", width: 11.5, height: 0.58,
@@ -279,7 +304,13 @@ function createTwinScene(tracker) {
     group.add(pod);
     return pod;
   });
-  const bridge = createRoute(tracker, [[-1.1, 1.2, 0], [0, 2, 0], [1.1, 1.2, 0]], FACTORY_PALETTE.green, 0.14);
+  const bridge = createRoute(
+    tracker,
+    [[-1.1, 1.2, 0], [0, 2, 0], [1.1, 1.2, 0]],
+    FACTORY_PALETTE.green,
+    0.14,
+    { direction: VECTOR_CABLE_DIRECTIONS.bidirectional },
+  );
   const seal = createRing(tracker, 1.05, FACTORY_PALETTE.green, 0.11);
   seal.position.y = 3.4;
   const progressRails = [-3.2, 3.2].map((x) => {
@@ -374,11 +405,16 @@ function createProofScene(tracker) {
     return door;
   });
   const entryRoute = createRoute(tracker, [
-    [halfWidth + 2, gridTop + 0.08, -3.5],
-    [halfWidth + 0.8, gridTop + 0.08, -2.8],
-    [entryDoor.group.position.x, gridTop + 0.08, entryDoor.group.position.z],
-    [2.5, gridTop + 0.08, -1.2],
-    [0, gridTop + 0.08, 0],
+    cableSurfacePoint(shadowSurface, halfWidth + 2, -3.5, 0.08),
+    cableSurfacePoint(shadowSurface, halfWidth + 0.8, -2.8, 0.08),
+    cableSurfacePoint(
+      shadowSurface,
+      entryDoor.group.position.x,
+      entryDoor.group.position.z,
+      0.08,
+    ),
+    cableSurfacePoint(shadowSurface, 2.5, -1.2, 0.08),
+    cableSurfacePoint(shadowSurface, 0, 0, 0.08),
   ], 0xc48eff, 0.055);
   group.add(entryRoute);
   const attacks = [

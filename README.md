@@ -68,6 +68,16 @@ eigenständige Objekte wie den NET-Turm verwendet, nicht für Türen.
 Nur bewusst freistehende Objekte wie die kompakte Finaltür verwenden die
 separat benannte `createFreestandingFactoryDoor`-API.
 
+### Kabelvertrag
+
+Signal- und Materialleitungen verwenden `objects/shared/vector-cable.js`.
+Bodenpunkte referenzieren eine Trägerfläche statt einer frei geschätzten
+Y-Position. Bei einem Layerwechsel erzeugt `cableEdgeDrop` einen sichtbaren
+Weg über die Außenkante und senkrecht an ihrer Seite hinab beziehungsweise
+hinauf; Kabel dürfen deshalb nicht diagonal in einer Ebene verschwinden. Jede
+Leitung besitzt explizit die Richtung `forward`, `reverse`, `bidirectional`
+oder `none`. `none` ist statischen Deckrastern vorbehalten.
+
 ## Kamera
 
 Die SVG-Kamera des Referenzfilms war ein 2D-Pan/Zoom mit `scale`, `focusX` und

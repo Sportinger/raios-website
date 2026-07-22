@@ -20,6 +20,13 @@ import {
   setVectorDoorEmergence,
   setVectorDoorOpen,
 } from "../shared/vector-door.js";
+import {
+  cableEdgeDrop,
+  cableSurfacePoint,
+  createVectorCable,
+  setVectorCableState,
+  VECTOR_CABLE_DIRECTIONS,
+} from "../shared/vector-cable.js";
 
 const PALETTE = Object.freeze({
   ink: 0xf1f7ff,
@@ -47,7 +54,6 @@ const place = (object, coordinates) => object.position.set(...coordinates);
 const FILM_CAMERA_DIRECTION = new THREE.Vector3(1, 0.8164965809, 1).normalize();
 const DECK_HEIGHT_DELTA = FOUNDATION_LAYER_HEIGHT - 0.34;
 const DECK_ROUTE_Y = FOUNDATION_SURFACES.genesis.top + 0.02;
-const DECK_KEY_ROUTE_Y = FOUNDATION_SURFACES.genesis.top + 0.79;
 const DECK_KEY_TARGET_Y = FOUNDATION_SURFACES.genesis.top + 0.76;
 
 function anchorFoundationDoor(door, placement) {
@@ -898,57 +904,35 @@ function createProduction() {
   };
 }
 
-function createSignalRoute(curve, color = PALETTE.blue, samples = 30, thickness = 1) {
-  const points = curve.getPoints(samples);
-  const group = new THREE.Group();
-  const routeSegments = [];
-  for (let index = 1; index < points.length; index += 1) {
-    const segment = new THREE.Group();
-    const underlay = createBeamBetween(
-      points[index - 1],
-      points[index],
-      0.03 * thickness,
-      PALETTE.lineDark,
-      7,
-    );
-    const dash = createBeamBetween(
-      points[index - 1],
-      points[index],
-      0.045 * thickness,
-      color,
-      7,
-    );
-    segment.add(underlay, dash);
-    routeSegments.push({ segment, underlay, dash });
-    group.add(segment);
-  }
-  const pulse = new THREE.Mesh(
-    new THREE.SphereGeometry(0.09 * thickness, 10, 7),
-    new THREE.MeshBasicMaterial({ color }),
-  );
-  const glow = createGlow(color, 0.84 * thickness, 0.84 * thickness);
-  group.add(pulse, glow);
-  return { group, curve, routeSegments, pulse, glow };
+function createSignalRoute(
+  points,
+  color = PALETTE.blue,
+  samples = 30,
+  thickness = 1,
+  direction = VECTOR_CABLE_DIRECTIONS.forward,
+) {
+  return createVectorCable({
+    points,
+    color,
+    underlayColor: PALETTE.lineDark,
+    radius: 0.045 * thickness,
+    underlayRadius: 0.03 * thickness,
+    dashLength: Math.max(0.13, 4.2 / Math.max(12, samples) * 1.8),
+    dashGap: Math.max(0.11, 4.2 / Math.max(12, samples) * 1.45),
+    direction,
+    pulseRadius: 0.09 * thickness,
+    speed: 0.42,
+    name: "foundation-signal-cable",
+  });
 }
 
 function setRouteProgress(route, amount, time, persistent = false) {
-  const value = clamp01(amount);
-  route.group.visible = value > 0.001;
-  const visibleSegments = Math.ceil(route.routeSegments.length * value);
-  const dashOffset = Math.floor(time * 12) % 8;
-  route.routeSegments.forEach(({ segment, dash }, index) => {
-    const revealed = index < visibleSegments;
-    segment.visible = revealed;
-    dash.visible = revealed && ((index + dashOffset) % 8 < 3);
+  setVectorCableState(route, {
+    progress: amount,
+    time,
+    persistent,
+    active: true,
   });
-  const pulseProgress = persistent && value >= 0.999
-    ? ((time * 0.42) % 1 + 1) % 1
-    : value;
-  const position = route.curve.getPointAt(clamp01(pulseProgress));
-  route.pulse.position.copy(position);
-  route.glow.position.copy(position);
-  route.pulse.visible = value > 0.02;
-  route.glow.visible = route.pulse.visible;
 }
 
 function setCapabilityKey(key, time, timing, start, end, finalScale = 0.72) {
@@ -1057,24 +1041,29 @@ export function createFoundationWorld() {
   const netTower = createNetTower();
   place(netTower.group, FOUNDATION_LAYOUT.netTower);
   netTower.group.scale.setScalar(1.18);
-  const agentToDoor = createSignalRoute(new THREE.CatmullRomCurve3([
+  const agentToDoor = createSignalRoute([
     new THREE.Vector3(-0.55, 1.74 + DECK_HEIGHT_DELTA, 1.18),
-    new THREE.Vector3(0.38, 1.2, 1.42),
-    new THREE.Vector3(0.2, DECK_ROUTE_Y, 2.05),
-    new THREE.Vector3(internetPosition.x, DECK_ROUTE_Y, internetPosition.z),
-  ], false, "centripetal"));
-  const doorToNet = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(internetPosition.x, DECK_ROUTE_Y, internetPosition.z),
-    new THREE.Vector3(3.2, 1.2, 2.55),
-    new THREE.Vector3(6.6, 0.78, 1.85),
-    new THREE.Vector3(8.65, 0.58, 2.3),
-  ], false, "centripetal"));
-  const forgeToDoor = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.52, 2.17 + DECK_HEIGHT_DELTA, -1.12),
-    new THREE.Vector3(1.12, 1.86, 0.02),
-    new THREE.Vector3(0.3, 1.95, 1.4),
-    new THREE.Vector3(internetPosition.x, DECK_KEY_ROUTE_Y, internetPosition.z),
-  ], false, "centripetal"), PALETTE.green, 30, 0.45);
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, -0.55, 1.18),
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.2, 2.05),
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, internetPosition.x, internetPosition.z),
+  ]);
+  const doorToNet = createSignalRoute([
+    ...cableEdgeDrop(
+      FOUNDATION_SURFACES.genesis,
+      FOUNDATION_SURFACES.kernel,
+      FOUNDATION_LAYOUT.netDoor.edge,
+      FOUNDATION_LAYOUT.netDoor.along,
+    ),
+    cableSurfacePoint(FOUNDATION_SURFACES.kernel, 3.2, 2.84),
+    cableSurfacePoint(FOUNDATION_SURFACES.kernel, 6.6, 2.1),
+    cableSurfacePoint(FOUNDATION_SURFACES.kernel, 8.65, 2.3),
+  ], PALETTE.blue, 30, 1, VECTOR_CABLE_DIRECTIONS.bidirectional);
+  const forgeToDoor = createSignalRoute([
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.52, -1.12),
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.55, 0.15),
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.75, 1.4),
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, internetPosition.x, internetPosition.z),
+  ], PALETTE.green, 30, 0.45);
 
   const builder = createDeck({
     width: BUILDER_FOOTPRINT.width,
@@ -1139,34 +1128,44 @@ export function createFoundationWorld() {
   srcDoor.group.remove(srcKey);
   outDoor.key.visible = false;
 
-  const buildLine = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.537, DECK_ROUTE_Y, 1.862),
-    new THREE.Vector3(1.05, DECK_ROUTE_Y, 1.35),
-    new THREE.Vector3(1.42, DECK_ROUTE_Y, 0.72),
-    new THREE.Vector3(buildDoorPosition.x, DECK_ROUTE_Y, buildDoorPosition.z),
-  ], false, "centripetal"), PALETTE.blueHigh);
-  const requestToSysroot = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(buildDoorPosition.x, DECK_ROUTE_Y, buildDoorPosition.z),
-    new THREE.Vector3(2.55, DECK_ROUTE_Y, -1.15),
-    new THREE.Vector3(3.55, DECK_ROUTE_Y, -3.65),
-    new THREE.Vector3(sysrootDoorPosition.x, DECK_ROUTE_Y, sysrootDoorPosition.z),
-  ], false, "centripetal"), PALETTE.blueHigh);
-  const sysrootToSrc = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(sysrootDoorPosition.x, DECK_ROUTE_Y, sysrootDoorPosition.z),
-    new THREE.Vector3(5.4, DECK_ROUTE_Y, -5.8),
-    new THREE.Vector3(6.35, DECK_ROUTE_Y, -5.8),
-    new THREE.Vector3(srcDoorPosition.x, DECK_ROUTE_Y, srcDoorPosition.z),
-  ], false, "centripetal"), PALETTE.blueHigh);
-  const srcToWorkpiece = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(srcDoorPosition.x, DECK_ROUTE_Y, srcDoorPosition.z),
-    new THREE.Vector3(7.0, DECK_ROUTE_Y, -6.55),
-    new THREE.Vector3(6.82, DECK_ROUTE_Y, -7.75),
-    new THREE.Vector3(
+  const buildLine = createSignalRoute([
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.537, 1.862),
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 1.05, 1.35),
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 1.42, 0.72),
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, buildDoorPosition.x, buildDoorPosition.z),
+  ], PALETTE.blueHigh);
+  const requestToSysroot = createSignalRoute([
+    ...cableEdgeDrop(
+      FOUNDATION_SURFACES.genesis,
+      FOUNDATION_SURFACES.kernel,
+      FOUNDATION_LAYOUT.buildDoor.edge,
+      FOUNDATION_LAYOUT.buildDoor.along,
+    ),
+    cableSurfacePoint(FOUNDATION_SURFACES.kernel, 3.1, -1.8),
+    cableSurfacePoint(FOUNDATION_SURFACES.kernel, 4.1, -4.6),
+    ...cableEdgeDrop(
+      FOUNDATION_SURFACES.builder,
+      FOUNDATION_SURFACES.kernel,
+      FOUNDATION_LAYOUT.sysrootDoor.edge,
+      FOUNDATION_LAYOUT.sysrootDoor.along,
+    ).reverse(),
+  ], PALETTE.blueHigh);
+  const sysrootToSrc = createSignalRoute([
+    cableSurfacePoint(FOUNDATION_SURFACES.builder, sysrootDoorPosition.x, sysrootDoorPosition.z),
+    cableSurfacePoint(FOUNDATION_SURFACES.builder, 5.4, -5.8),
+    cableSurfacePoint(FOUNDATION_SURFACES.builder, 6.35, -5.8),
+    cableSurfacePoint(FOUNDATION_SURFACES.builder, srcDoorPosition.x, srcDoorPosition.z),
+  ], PALETTE.blueHigh);
+  const srcToWorkpiece = createSignalRoute([
+    cableSurfacePoint(FOUNDATION_SURFACES.builder, srcDoorPosition.x, srcDoorPosition.z),
+    cableSurfacePoint(FOUNDATION_SURFACES.builder, 7.0, -6.55),
+    cableSurfacePoint(FOUNDATION_SURFACES.builder, 6.82, -7.75),
+    cableSurfacePoint(
+      FOUNDATION_SURFACES.builder,
       FOUNDATION_LAYOUT.production[0],
-      DECK_ROUTE_Y,
       FOUNDATION_LAYOUT.production[2],
     ),
-  ], false, "centripetal"), PALETTE.blueHigh);
+  ], PALETTE.blueHigh);
   const materialPath = new THREE.CatmullRomCurve3([
     new THREE.Vector3(0.537, DECK_ROUTE_Y + 0.1, 1.862),
     new THREE.Vector3(buildDoorPosition.x, DECK_ROUTE_Y + 0.1, buildDoorPosition.z),
@@ -1178,21 +1177,43 @@ export function createFoundationWorld() {
       FOUNDATION_LAYOUT.production[2],
     ),
   ], false, "centripetal");
-  const forgeToBuild = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.52, 2.17 + DECK_HEIGHT_DELTA, -1.12),
-    new THREE.Vector3(1.38, 2.25, -0.82),
-    new THREE.Vector3(buildDoorPosition.x, DECK_KEY_ROUTE_Y, buildDoorPosition.z),
-  ], false, "centripetal"), PALETTE.green, 22, 0.45);
-  const forgeToSysroot = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.52, 2.17 + DECK_HEIGHT_DELTA, -1.12),
-    new THREE.Vector3(1.45, 2.42, -3.28),
-    new THREE.Vector3(sysrootDoorPosition.x, DECK_KEY_ROUTE_Y, sysrootDoorPosition.z),
-  ], false, "centripetal"), PALETTE.green, 28, 0.45);
-  const forgeToSrc = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.52, 2.17 + DECK_HEIGHT_DELTA, -1.12),
-    new THREE.Vector3(2.35, 2.38, -3.25),
-    new THREE.Vector3(srcDoorPosition.x, DECK_KEY_ROUTE_Y, srcDoorPosition.z),
-  ], false, "centripetal"), PALETTE.green, 32, 0.45);
+  const forgeToBuild = createSignalRoute([
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.52, -1.12),
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 1.38, -0.82),
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, buildDoorPosition.x, buildDoorPosition.z),
+  ], PALETTE.green, 22, 0.45);
+  const forgeToSysroot = createSignalRoute([
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.52, -1.12),
+    ...cableEdgeDrop(
+      FOUNDATION_SURFACES.genesis,
+      FOUNDATION_SURFACES.kernel,
+      FOUNDATION_LAYOUT.buildDoor.edge,
+      FOUNDATION_LAYOUT.buildDoor.along,
+    ),
+    cableSurfacePoint(FOUNDATION_SURFACES.kernel, 3.5, -3.4),
+    ...cableEdgeDrop(
+      FOUNDATION_SURFACES.builder,
+      FOUNDATION_SURFACES.kernel,
+      FOUNDATION_LAYOUT.sysrootDoor.edge,
+      FOUNDATION_LAYOUT.sysrootDoor.along,
+    ).reverse(),
+  ], PALETTE.green, 28, 0.45);
+  const forgeToSrc = createSignalRoute([
+    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.52, -1.12),
+    ...cableEdgeDrop(
+      FOUNDATION_SURFACES.genesis,
+      FOUNDATION_SURFACES.kernel,
+      FOUNDATION_LAYOUT.buildDoor.edge,
+      FOUNDATION_LAYOUT.buildDoor.along,
+    ),
+    cableSurfacePoint(FOUNDATION_SURFACES.kernel, 4.9, -3.7),
+    ...cableEdgeDrop(
+      FOUNDATION_SURFACES.builder,
+      FOUNDATION_SURFACES.kernel,
+      FOUNDATION_LAYOUT.srcDoor.edge,
+      FOUNDATION_LAYOUT.srcDoor.along,
+    ).reverse(),
+  ], PALETTE.green, 32, 0.45);
 
   const sourceCaption = createWideLabel(
     "SOURCE FILES \u00b7 AGENT \u2192 /sysroot \u2192 /src",

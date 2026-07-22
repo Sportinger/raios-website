@@ -1,6 +1,11 @@
 import * as THREE from "three";
 import { createCanvasSprite, roundedRect } from "./canvas-primitives.js";
 import { interval, smoothstep, smootherstep } from "./timeline.js";
+import {
+  createVectorCable,
+  setVectorCableState,
+  VECTOR_CABLE_DIRECTIONS,
+} from "../shared/vector-cable.js";
 
 const CARD_LOGICAL_WIDTH = 674;
 const CARD_LOGICAL_HEIGHT = 516;
@@ -240,53 +245,36 @@ function createRemoteDenied(tracker) {
   return surface;
 }
 
-function createBeam(tracker, start, end, radius, color) {
-  const direction = new THREE.Vector3().subVectors(end, start);
-  const geometry = tracker.geometry(new THREE.CylinderGeometry(radius, radius, direction.length(), 7));
-  const material = tracker.material(new THREE.MeshBasicMaterial({ color }));
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.copy(start).add(end).multiplyScalar(0.5);
-  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
-  return mesh;
-}
-
 function createGrantRoute(tracker) {
-  const group = new THREE.Group();
-  group.name = "guard-live-grant-route";
-  const curve = new THREE.CatmullRomCurve3([
+  return createVectorCable({
+    tracker,
+    points: [
     new THREE.Vector3(-7.465, 1.16, 2.436),
-    new THREE.Vector3(-5.85, 2.05, 0.7),
+    new THREE.Vector3(-7.465, 0.76, 2.436),
+    new THREE.Vector3(-5.85, 0.76, 0.7),
+    new THREE.Vector3(-3.865, 0.76, -1.164),
     new THREE.Vector3(-3.865, 2.56, -1.164),
-  ], false, "centripetal");
-  const points = curve.getPoints(28);
-  const segments = [];
-  for (let index = 1; index < points.length; index += 1) {
-    const segment = new THREE.Group();
-    segment.add(createBeam(tracker, points[index - 1], points[index], 0.045, 0x173828));
-    const dash = createBeam(tracker, points[index - 1], points[index], 0.066, 0x69e498);
-    segment.add(dash);
-    segments.push({ segment, dash });
-    group.add(segment);
-  }
-  const pulseMaterial = tracker.material(new THREE.MeshBasicMaterial({ color: 0xd9ffe7 }));
-  const pulse = new THREE.Mesh(tracker.geometry(new THREE.SphereGeometry(0.12, 12, 8)), pulseMaterial);
-  group.add(pulse);
-  return { group, curve, segments, pulse };
+    ],
+    color: 0x69e498,
+    underlayColor: 0x173828,
+    radius: 0.066,
+    underlayRadius: 0.045,
+    direction: VECTOR_CABLE_DIRECTIONS.forward,
+    pulseRadius: 0.12,
+    name: "guard-live-grant-route",
+  });
 }
 
 function setGrantRoute(route, time) {
   const grant = smootherstep(interval(time, 84.55, 85.25));
   const revoke = smootherstep(interval(time, 92.15, 93));
   const amount = grant * (1 - revoke);
-  route.group.visible = amount > 0.001;
-  const visibleSegments = Math.ceil(route.segments.length * amount);
-  const dashOffset = Math.floor(time * 12) % 8;
-  route.segments.forEach(({ segment, dash }, index) => {
-    segment.visible = index < visibleSegments;
-    dash.visible = segment.visible && ((index + dashOffset) % 8 < 4);
+  setVectorCableState(route, {
+    progress: amount,
+    time,
+    persistent: amount >= 0.999,
+    active: time >= 84.55 && time < 85.25,
   });
-  route.curve.getPointAt(grant, route.pulse.position);
-  route.pulse.visible = time >= 84.55 && time < 85.25;
 }
 
 export function createApprovalSequence(tracker, { guardMachine, guardChecklist }) {

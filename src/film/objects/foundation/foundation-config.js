@@ -13,6 +13,10 @@ export const FOUNDATION_LAYER_HEIGHT = FILM_LAYER_HEIGHT;
 export const FOUNDATION_DOOR_SCALE = FILM_DOOR_SCALE;
 
 export const FOUNDATION_SURFACES = Object.freeze({
+  kernel: Object.freeze({
+    id: "kernel",
+    top: FOUNDATION_LAYER_HEIGHT,
+  }),
   genesis: Object.freeze({
     id: "genesis",
     centerX: -3.05 - (-1.9 / FOUNDATION_PRESENTATION_SCALE),
@@ -37,7 +41,7 @@ export const FOUNDATION_LAYOUT = Object.freeze({
   genesisCompact: point(-3.05, FOUNDATION_LAYER_HEIGHT, 0),
   agentCompact: point(-2.0, FOUNDATION_LAYER_HEIGHT * 2, 0.87),
   keyForge: point(0.52, FOUNDATION_LAYER_HEIGHT * 2, -1.12),
-  netDoor: door("genesis", "front", 1.4),
+  netDoor: door("genesis", "right", 2.65),
   netTower: point(8.65, FOUNDATION_LAYER_HEIGHT, 2.3),
   builder: point(6.72, FOUNDATION_LAYER_HEIGHT, -9.17),
   buildDoor: door("genesis", "right", 0.9),

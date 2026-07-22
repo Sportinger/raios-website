@@ -9,6 +9,11 @@ import {
 } from "./door-primitives.js";
 import { createRoute, createTextLabel, createVectorBox } from "./primitives.js";
 import { interval, smoothstep, smootherstep } from "./timeline.js";
+import {
+  cableEdgeDrop,
+  cableSurfacePoint,
+  VECTOR_CABLE_DIRECTIONS,
+} from "../shared/vector-cable.js";
 
 const DOMAIN_CENTER = new THREE.Vector3(
   FACTORY_LAYOUT.shadow.position.x,
@@ -18,6 +23,7 @@ const DOMAIN_CENTER = new THREE.Vector3(
 const COMPACT_DOMAIN_CENTER = new THREE.Vector3(-0.25, 1.5, 14.09);
 const AGENT_PORT = new THREE.Vector3(-11.695, 0.18, 13.45);
 const DOMAIN_DOOR_X = Object.freeze([-4.48, -1.48, 1.52]);
+const LIVE_KERNEL_SURFACE = Object.freeze({ id: "live-kernel", top: AGENT_PORT.y - 0.04 });
 
 function windowAlpha(time, start, end, fade) {
   return smoothstep(interval(time, start, start + fade))
@@ -83,6 +89,14 @@ function createDomain(tracker) {
     depth,
     top: 0,
   });
+  const routeSurface = Object.freeze({
+    id: "player-domain-world",
+    centerX: DOMAIN_CENTER.x,
+    centerZ: DOMAIN_CENTER.z,
+    width,
+    depth,
+    top: DOMAIN_CENTER.y,
+  });
   const doors = DOMAIN_DOOR_X.map((x, index) => {
     const door = createFactoryDoorOnSurface(tracker, FACTORY_PALETTE.edge, {
       surface: domainSurface,
@@ -95,24 +109,38 @@ function createDomain(tracker) {
     group.add(door.group);
     return door;
   });
-  return { group, surface, slab, title, doors, supportSurface: domainSurface };
+  return {
+    group,
+    surface,
+    slab,
+    title,
+    doors,
+    supportSurface: domainSurface,
+    routeSurface,
+  };
 }
 
 function createDomainRoutes(tracker, domain) {
   return domain.doors.map((door, index) => {
-    const doorPosition = DOMAIN_CENTER.clone().add(door.group.position);
     const end = DOMAIN_CENTER.clone();
     end.x += door.group.position.x * 0.2;
     end.y += 0.1;
     end.z += 0.12;
     const route = createRoute(tracker, [
       AGENT_PORT.toArray(),
-      [-11.0 + index * 0.34, 0.3, 9.4 - index * 0.42],
-      [doorPosition.x, doorPosition.y + 0.1, doorPosition.z],
-      end.toArray(),
-    ], FACTORY_PALETTE.green, 0.025);
+      cableSurfacePoint(LIVE_KERNEL_SURFACE, AGENT_PORT.x, AGENT_PORT.z),
+      cableSurfacePoint(LIVE_KERNEL_SURFACE, -11.0 + index * 0.34, 9.4 - index * 0.42),
+      ...cableEdgeDrop(
+        domain.routeSurface,
+        LIVE_KERNEL_SURFACE,
+        "front",
+        door.group.position.x,
+      ).reverse(),
+      cableSurfacePoint(domain.routeSurface, end.x, end.z),
+    ], FACTORY_PALETTE.green, 0.035, {
+      direction: VECTOR_CABLE_DIRECTIONS.bidirectional,
+    });
     route.name = `player-capability-route-${index + 1}`;
-    route.children[0].material.color.setHex(0x69d997);
     return route;
   });
 }

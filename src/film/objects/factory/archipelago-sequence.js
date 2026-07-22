@@ -7,6 +7,10 @@ import {
 } from "./door-primitives.js";
 import { createRoute, createTextLabel, createVectorBox } from "./primitives.js";
 import { interval, smoothstep, smootherstep } from "./timeline.js";
+import {
+  setVectorCableTime,
+  VECTOR_CABLE_DIRECTIONS,
+} from "../shared/vector-cable.js";
 
 const COMPACT_ANCHOR = Object.freeze({ x: -0.25, y: 0.28, z: 14.09 });
 const SVG_ANCHOR = Object.freeze({ x: 600, y: 410 });
@@ -255,12 +259,13 @@ function createAppIsland(tracker, definition) {
 function createArchipelagoRoutes(tracker) {
   return ROUTE_DEFINITIONS.map(([start, points]) => {
     const routePoints = points.map(([x, y]) => mapSvgPoint(x, y, 0.12).toArray());
-    const route = createRoute(tracker, routePoints, 0x315f46, 0.014);
+    const route = createRoute(tracker, routePoints, 0x315f46, 0.014, {
+      direction: VECTOR_CABLE_DIRECTIONS.forward,
+    });
     route.name = "archipelago-route";
-    const pulseMaterial = tracker.material(new THREE.MeshBasicMaterial({ color: 0x6be29a }));
-    const pulse = new THREE.Mesh(tracker.geometry(new THREE.SphereGeometry(0.07, 10, 7)), pulseMaterial);
-    route.add(pulse);
-    return { route, pulse, start, curve: route.userData.curve };
+    const cable = route.userData.vectorCable;
+    route.userData.setRouteTime = undefined;
+    return { route, cable, start };
   });
 }
 
@@ -275,9 +280,8 @@ export function createArchipelagoSequence(tracker) {
     mapSvgPoint(596, 447, 0.2).toArray(),
   ], FACTORY_PALETTE.green, 0.035);
   compactRoute.name = "compact-domain-single-capability";
-  const compactPulseMaterial = tracker.material(new THREE.MeshBasicMaterial({ color: 0x8affb3 }));
-  const compactPulse = new THREE.Mesh(tracker.geometry(new THREE.SphereGeometry(0.1, 12, 8)), compactPulseMaterial);
-  compactRoute.add(compactPulse);
+  const compactCable = compactRoute.userData.vectorCable;
+  compactRoute.userData.setRouteTime = undefined;
 
   const compactDoor = createFreestandingFactoryDoor(tracker, FACTORY_PALETTE.green, {
     position: mapSvgPoint(596, 447, 0.22).toArray(),
@@ -319,8 +323,11 @@ export function createArchipelagoSequence(tracker) {
     group.position.set(3.2 * finaleDrift, 0, 3.2 * finaleDrift);
     const connectionProgress = smootherstep(interval(time, 106.45, 109.1));
     setOpacity(compactRoute, connectionProgress * (time >= 106.1 ? 1 : 0));
-    compactPulse.position.copy(compactRoute.userData.curve.getPointAt((time * 0.18) % 1));
-    compactPulse.visible = time >= 106.45;
+    setVectorCableTime(compactCable, time, {
+      progress: connectionProgress,
+      persistent: true,
+      active: time >= 106.45,
+    });
 
     const doorRise = smootherstep(interval(time, 107, 108.2));
     compactDoor.group.visible = doorRise > 0.001;
@@ -351,13 +358,14 @@ export function createArchipelagoSequence(tracker) {
       if (reveal >= 0.5) visibleApps += 1;
     });
 
-    routes.forEach(({ route, pulse, start, curve }, index) => {
+    routes.forEach(({ route, cable, start }, index) => {
       const reveal = smootherstep(interval(time, start, start + 0.88));
       setOpacity(route, reveal * 0.72);
-      const rawPhase = (time - start) * 0.16 + index * 0.13;
-      const phase = ((rawPhase % 1) + 1) % 1;
-      pulse.position.copy(curve.getPointAt(phase));
-      pulse.visible = reveal > 0.2;
+      setVectorCableTime(cable, time + index * 0.8, {
+        progress: reveal,
+        persistent: true,
+        active: reveal > 0.2,
+      });
     });
 
     const counterAlpha = smoothstep(interval(time, 111.75, 112.45));

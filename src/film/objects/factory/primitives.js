@@ -2,6 +2,12 @@ import * as THREE from "three";
 import { LineSegments2 } from "three/addons/lines/LineSegments2.js";
 import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
+import {
+  createVectorCable,
+  setVectorCableState,
+  setVectorCableTime,
+  VECTOR_CABLE_DIRECTIONS,
+} from "../shared/vector-cable.js";
 
 const OUTLINE_WIDTH = 0.045;
 
@@ -76,45 +82,38 @@ export function createVectorBox(tracker, {
   return group;
 }
 
-export function createRoute(tracker, points, color, width = 0.08) {
-  const curve = new THREE.CatmullRomCurve3(points.map((point) => new THREE.Vector3(...point)));
-  const group = new THREE.Group();
-  group.name = "factory-signal-route";
-  group.userData.curve = curve;
-  const baseGeometry = tracker.geometry(new THREE.TubeGeometry(curve, 48, width, 6, false));
+export function createRoute(tracker, points, color, width = 0.08, {
+  direction,
+} = {}) {
+  const animated = width >= 0.03
+    || (direction !== undefined && direction !== VECTOR_CABLE_DIRECTIONS.none);
   const baseColor = new THREE.Color(color).multiplyScalar(0.2);
-  const baseMaterial = createFlatMaterial(tracker, baseColor);
-  group.add(new THREE.Mesh(baseGeometry, baseMaterial));
-
-  const animated = width >= 0.03;
-  const dashes = [];
-  if (animated) {
-    const dashGeometry = tracker.geometry(new THREE.CylinderGeometry(width * 1.22, width * 1.22, 1, 6));
-    const dashMaterial = createFlatMaterial(tracker, color);
-    for (let index = 0; index < 9; index += 1) {
-      const dash = new THREE.Mesh(dashGeometry, dashMaterial);
-      dash.renderOrder = 12;
-      group.add(dash);
-      dashes.push(dash);
-    }
-  }
-
-  const point = new THREE.Vector3();
-  const tangent = new THREE.Vector3();
-  const up = new THREE.Vector3(0, 1, 0);
-  const quaternion = new THREE.Quaternion();
-  const routeLength = curve.getLength();
+  const cable = createVectorCable({
+    tracker,
+    points,
+    color: animated ? color : baseColor,
+    underlayColor: baseColor,
+    radius: animated ? width * 1.22 : width,
+    underlayRadius: width,
+    dashed: animated,
+    direction: direction ?? (animated
+      ? VECTOR_CABLE_DIRECTIONS.forward
+      : VECTOR_CABLE_DIRECTIONS.none),
+    pulseRadius: width * 1.5,
+    speed: 0.16,
+    name: "factory-signal-route",
+  });
+  const { group } = cable;
+  group.name = "factory-signal-route";
   group.userData.setRouteTime = (time) => {
-    dashes.forEach((dash, index) => {
-      const phase = ((time * 0.16 + index / dashes.length) % 1 + 1) % 1;
-      curve.getPointAt(phase, point);
-      curve.getTangentAt(phase, tangent).normalize();
-      quaternion.setFromUnitVectors(up, tangent);
-      dash.position.copy(point);
-      dash.quaternion.copy(quaternion);
-      dash.scale.set(1, Math.max(width * 6, routeLength * 0.038), 1);
-    });
+    setVectorCableTime(cable, time, { active: animated });
   };
+  setVectorCableState(cable, {
+    progress: 1,
+    time: 0,
+    persistent: true,
+    active: animated,
+  });
   group.userData.setRouteTime(0);
   return group;
 }
