@@ -10,7 +10,7 @@ export function createFilmWorld() {
   const root = new THREE.Group();
   root.name = "factory-film-world";
   const grid = new THREE.GridHelper(72, 72, 0x244c68, 0x102a3b);
-  grid.position.y = -0.04;
+  grid.position.y = 0;
   grid.material.transparent = true;
   grid.material.opacity = 0.28;
   const foundation = createFoundationWorld();
