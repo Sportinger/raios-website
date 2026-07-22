@@ -12,6 +12,7 @@ import { createChapterNavigation } from "../ui/chapter-navigation/create-chapter
 import { createGlassControls } from "../ui/glass-controls/index.js";
 import { createPlaybackControls } from "../ui/playback-controls/index.js";
 import { createScrollDebug } from "../ui/scroll-debug/index.js";
+import { createCameraDirector } from "../dev/camera-director/index.js";
 import { intervalProgress, smootherstep } from "../animation/progress.js";
 
 const SCROLL_VIEWPORTS_PER_WEIGHT = 620;
@@ -67,6 +68,7 @@ export function createApp({
   let orbitEnabled = false;
   let currentProgress = 0;
   let playbackControls = null;
+  let cameraDirector = null;
   const scrollDebug = createScrollDebug({
     container: scrollDebugContainer,
     items: story.navigationItems,
@@ -143,6 +145,7 @@ export function createApp({
       backgroundProgress.toFixed(4),
     );
     updateStory(storyProgress, motionPreference.matches ? 0 : animationTime);
+    cameraDirector?.apply(storyProgress);
     chapterNavigation?.setProgress(storyProgress);
     scrollDebug.setProgress(storyProgress);
     renderScene();
@@ -161,6 +164,9 @@ export function createApp({
     playbackControls?.setPlaying(autoplayPlaying);
   };
   const setOrbitEnabled = (enabled) => {
+    if (enabled && cameraDirector?.getState().editing) {
+      cameraDirector.setEditing(false);
+    }
     orbitEnabled = enabled;
     orbitControls.enabled = enabled;
     if (enabled) {
@@ -178,6 +184,25 @@ export function createApp({
     onToggle: setAutoplayPlaying,
   });
   playbackControls.setDisabled(motionPreference.matches);
+  if (new URLSearchParams(window.location.search).get("camera-editor") === "1") {
+    cameraDirector = createCameraDirector({
+      camera,
+      canvas,
+      navigationItems: story.navigationItems,
+      onEditingChange: (editing) => {
+        if (editing) {
+          setAutoplayPlaying(false);
+          setOrbitEnabled(false);
+        } else {
+          renderAt(scrollDriver.getProgress());
+        }
+      },
+      onSeek: (progress) => {
+        scrollDriver.scrollToProgress(progress, "auto");
+        renderAt(progress);
+      },
+    });
+  }
   chapterNavigation = createChapterNavigation({
     container: navigationContainer,
     items: story.navigationItems,
@@ -222,6 +247,7 @@ export function createApp({
     const frameSeconds = Math.min(0.05, (timestamp - previousAnimationTimestamp) / 1000);
     previousAnimationTimestamp = timestamp;
     animationTime = (timestamp - animationStartedAt) / 1000;
+    cameraDirector?.update(frameSeconds);
     if (autoplayPlaying) {
       const travelEnd = stage.offsetTop + stage.offsetHeight - window.innerHeight;
       const nextScrollY = Math.min(
@@ -239,6 +265,7 @@ export function createApp({
       : currentProgress;
     updateStory(storyProgress, motionPreference.matches ? 0 : animationTime);
     if (orbitEnabled) orbitControls.update();
+    cameraDirector?.apply(storyProgress);
     renderScene();
     animationFrame = window.requestAnimationFrame(animate);
   };
@@ -249,6 +276,7 @@ export function createApp({
       window.cancelAnimationFrame(animationFrame);
       unsubscribeMotion();
       chapterNavigation.dispose();
+      cameraDirector?.dispose();
       glassControls.dispose();
       playbackControls.dispose();
       orbitControls.dispose();

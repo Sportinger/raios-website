@@ -102,11 +102,13 @@ if ($serverProcess) {
     }
 }
 
-Start-Process $serverUrl
+$directorUrl = "$serverUrl`?camera-editor=1"
+Start-Process $directorUrl
 
 $Host.UI.RawUI.WindowTitle = "raiOS Three.js - Codex YOLO"
 Write-Host ""
 Write-Host "Three.js: $serverUrl" -ForegroundColor Cyan
+Write-Host "Camera Director: $directorUrl" -ForegroundColor Cyan
 Write-Host "Codex startet mit deaktivierter Sandbox und ohne Rueckfragen." -ForegroundColor Yellow
 Write-Host ""
 
