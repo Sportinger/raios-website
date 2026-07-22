@@ -1,3 +1,9 @@
+import {
+  FILM_LAYER_HEIGHT,
+  FILM_QUADRANT_SIZE,
+  FOUNDATION_PRESENTATION_SCALE,
+} from "../../layout-constants.js";
+
 export const FACTORY_PALETTE = Object.freeze({
   ink: 0x07111d,
   panel: 0x13243a,
@@ -30,7 +36,15 @@ export const FACTORY_LANES = Object.freeze([
 export const FACTORY_LAYOUT = Object.freeze({
   deck: Object.freeze({ width: 16, depth: 10, thickness: 0.72, gridStep: 2 }),
   hatch: Object.freeze({ width: 5.2, depth: 3.6 }),
-  shadow: Object.freeze({ width: 13, depth: 8.4, thickness: 0.72, gridStep: 2 }),
+  shadow: Object.freeze({
+    width: FILM_QUADRANT_SIZE * FOUNDATION_PRESENTATION_SCALE,
+    depth: FILM_QUADRANT_SIZE * FOUNDATION_PRESENTATION_SCALE,
+    thickness: FILM_LAYER_HEIGHT * FOUNDATION_PRESENTATION_SCALE,
+    gridStep: 2.1,
+    // Aligns this Factory-owned deck with the upper cell of the Foundation
+    // kernel after both authored root transforms have been applied.
+    position: Object.freeze({ x: -14.37, y: -0.51, z: -2.36 }),
+  }),
   inputDoor: Object.freeze({ x: -6.1, z: -2.7, yaw: Math.PI / 5 }),
   outputDoor: Object.freeze({ x: 6.1, z: -2.7, yaw: -Math.PI / 5 }),
   recommendedWorldOffset: Object.freeze({ x: 7.895, y: 1.59, z: -5.895 }),

@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { disposeObject3D } from "../shared/dispose-object-3d.js";
+import { FOUNDATION_PRESENTATION_SCALE } from "./layout-constants.js";
 import { createFoundationWorld } from "./objects/foundation/index.js";
 import { createFactoryWorld } from "./objects/factory/index.js";
 
@@ -18,7 +19,7 @@ export function createFilmWorld() {
   // The native meshes use compact modeling units. This authored transform maps
   // the Foundation set back onto the original SVG composition while preserving
   // real depth for a future orbit camera.
-  foundation.group.scale.setScalar(1.5);
+  foundation.group.scale.setScalar(FOUNDATION_PRESENTATION_SCALE);
   foundation.group.position.set(-1.9, 0, 4.5);
   foundation.group.userData.presentationBaseX = foundation.group.position.x;
   foundation.group.userData.presentationBaseZ = foundation.group.position.z;

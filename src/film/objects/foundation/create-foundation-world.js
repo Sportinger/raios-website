@@ -8,6 +8,12 @@ import {
   KERNEL_FOOTPRINT,
 } from "./foundation-config.js";
 import { createLayerCallout, setLayerCallout } from "./layer-callout.js";
+import {
+  createSlidingFloorHatch,
+  createVectorDoor,
+  setSlidingFloorHatch,
+  setVectorDoorEmergence,
+} from "../shared/vector-door.js";
 
 const PALETTE = Object.freeze({
   ink: 0xf1f7ff,
@@ -562,67 +568,6 @@ function setFootprintOutline(outline, drawAmount, opacity = 1) {
   });
 }
 
-function createSlidingFloorHatch({
-  width = 1.08,
-  depth = 1.08,
-  color = PALETTE.blueHigh,
-  rotationY = 0,
-} = {}) {
-  const group = new THREE.Group();
-  group.rotation.y = rotationY;
-  const outline = createFootprintOutline(width, depth, color);
-  const recess = new THREE.Mesh(
-    new THREE.BoxGeometry(width * 0.94, 0.035, depth * 0.94),
-    new THREE.MeshBasicMaterial({ color: 0x03070d }),
-  );
-  recess.position.y = 0.012;
-  const panels = new THREE.Group();
-  const panelWidth = width * 0.48;
-  const panelDepth = depth * 0.94;
-  const leftPanel = createOutlinedBox(
-    new THREE.Vector3(panelWidth, 0.05, panelDepth),
-    0x101d2b,
-    color,
-  );
-  const rightPanel = createOutlinedBox(
-    new THREE.Vector3(panelWidth, 0.05, panelDepth),
-    0x101d2b,
-    color,
-  );
-  leftPanel.position.set(-width * 0.245, 0.05, 0);
-  rightPanel.position.set(width * 0.245, 0.05, 0);
-  panels.add(leftPanel, rightPanel);
-  group.add(recess, outline.group, panels);
-  return {
-    group,
-    outline,
-    recess,
-    panels,
-    leftPanel,
-    rightPanel,
-    panelClosedX: width * 0.245,
-    panelTravel: width * 0.62,
-  };
-}
-
-function setSlidingFloorHatch(hatch, outlineAmount, openAmount, opacity = 1) {
-  const outlineDraw = clamp01(outlineAmount);
-  const open = clamp01(openAmount);
-  const alpha = clamp01(opacity);
-  hatch.group.visible = (outlineDraw > 0.001 || open > 0.001) && alpha > 0.001;
-  setFootprintOutline(hatch.outline, outlineDraw, alpha);
-  setFade(hatch.recess, alpha);
-  hatch.recess.visible = open > 0.001 && alpha > 0.001;
-  const panelRetract = smoothstep((open - 0.18) / 0.68);
-  const panelAlpha = alpha * (1 - panelRetract);
-  setFade(hatch.panels, panelAlpha);
-  hatch.panels.visible = (outlineDraw > 0.999 || open > 0.001) && panelAlpha > 0.001;
-  const panelOffset = hatch.panelClosedX + hatch.panelTravel * open;
-  const panelY = 0.05 - panelRetract * 0.1;
-  hatch.leftPanel.position.set(-panelOffset, panelY, 0);
-  hatch.rightPanel.position.set(panelOffset, panelY, 0);
-}
-
 function createAgent() {
   const group = new THREE.Group();
   const solid = new THREE.Group();
@@ -792,61 +737,20 @@ function createDoorAndKey(labelText = "net.https", {
   labelColor = PALETTE.amber,
   keyTagText = "CAP: NET.HTTPS",
   } = {}) {
-  const group = new THREE.Group();
-  const frame = new THREE.Group();
-  const frameMaterial = new THREE.MeshBasicMaterial({ color: edgeColor });
-  const verticalGeometry = new THREE.BoxGeometry(0.12, 1.55, 0.16);
-  const lintelGeometry = new THREE.BoxGeometry(1.18, 0.12, 0.16);
-  const left = new THREE.Mesh(verticalGeometry, frameMaterial);
-  const right = new THREE.Mesh(verticalGeometry, frameMaterial);
-  const lintel = new THREE.Mesh(lintelGeometry, frameMaterial);
-  const threshold = new THREE.Mesh(
-    new THREE.BoxGeometry(1.18, 0.075, 0.18),
-    new THREE.MeshBasicMaterial({ color: 0xb6d9ff }),
-  );
-  left.position.set(-0.53, 0.775, 0);
-  right.position.set(0.53, 0.775, 0);
-  lintel.position.set(0, 1.49, 0);
-  threshold.position.set(0, 0.1, 0);
-  const doorVoid = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.94, 1.36),
-    new THREE.MeshBasicMaterial({ color: 0x04080e, transparent: true, opacity: 0.7, side: THREE.DoubleSide }),
-  );
-  doorVoid.position.set(0, 0.78, -0.055);
-  const leafPivot = new THREE.Group();
-  leafPivot.position.set(-0.47, 0.75, 0);
-  const leaf = createOutlinedBox(new THREE.Vector3(0.92, 1.36, 0.08), PALETTE.panel, PALETTE.blue);
-  leaf.position.x = 0.46;
-  const inset = createOutlinedBox(new THREE.Vector3(0.68, 0.94, 0.04), 0x0b1420, PALETTE.lineDark);
-  inset.position.set(0, 0, 0.062);
-  const handle = new THREE.Mesh(
-    new THREE.SphereGeometry(0.045, 8, 5),
-    new THREE.MeshBasicMaterial({ color: PALETTE.amber }),
-  );
-  handle.position.set(0.33, 0, 0.09);
-  leaf.add(inset, handle);
-  leafPivot.add(leaf);
-  const hinges = new THREE.Group();
-  [0.32, 1.16].forEach((height) => {
-    const hinge = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.035, 0.035, 0.16, 8),
-      new THREE.MeshBasicMaterial({ color: PALETTE.amber }),
-    );
-    hinge.position.set(-0.55, height, 0.1);
-    hinges.add(hinge);
+  const door = createVectorDoor({
+    edgeColor,
+    panelColor: PALETTE.panel,
+    panelEdgeColor: PALETTE.blue,
+    lineDark: PALETTE.lineDark,
+    amber: PALETTE.amber,
+    thresholdColor: 0xb6d9ff,
+    rotationY: positiveSlope ? 0 : Math.PI / 2,
   });
-  frame.add(doorVoid, left, right, lintel, threshold, leafPivot, hinges);
+  const { group, frame, hatch, leafPivot } = door;
   const label = createLabel(labelText, labelColor, 1.05, 68);
   label.position.set(0, 0.12, 0.86);
   label.material.depthTest = false;
   frame.add(label);
-  frame.rotation.y = positiveSlope ? 0 : Math.PI / 2;
-  const hatch = createSlidingFloorHatch({
-    width: 1.56,
-    depth: 1.56,
-    color: edgeColor,
-    rotationY: frame.rotation.y,
-  });
 
   const key = new THREE.Group();
   const ring = new THREE.Mesh(
@@ -867,8 +771,8 @@ function createDoorAndKey(labelText = "net.https", {
   keyTag.position.set(0.32, 0.38, 0);
   key.add(keyTag);
   key.position.set(-1.85, 0.74, -2.25);
-  group.add(hatch.group, frame, key);
-  return { group, frame, hatch, leafPivot, key };
+  group.add(key);
+  return { ...door, key };
 }
 
 function setEmergingDoor(door, time, timing, opacity = 1) {
@@ -878,13 +782,13 @@ function setEmergingDoor(door, time, timing, opacity = 1) {
   const outlineDraw = progress(time, timing.start, outlineEnd);
   const hatchOpen = progress(time, outlineEnd, hatchEnd);
   const rise = progress(time, hatchEnd, timing.end);
-  setSlidingFloorHatch(door.hatch, outlineDraw, hatchOpen, opacity);
-  door.frame.position.y = THREE.MathUtils.lerp(-1.62, 0, rise);
-  door.frame.scale.y = 1;
-  setFade(
-    door.frame,
-    progress(time, hatchEnd, hatchEnd + duration * 0.16) * clamp01(opacity),
-  );
+  setVectorDoorEmergence(door, {
+    outlineAmount: outlineDraw,
+    openAmount: hatchOpen,
+    riseAmount: rise,
+    opacity,
+    frameOpacity: progress(time, hatchEnd, hatchEnd + duration * 0.16) * clamp01(opacity),
+  });
 }
 
 function createBuilderHatch(width, depth) {

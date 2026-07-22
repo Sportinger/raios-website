@@ -1,7 +1,9 @@
+import { FILM_LAYER_HEIGHT, FILM_QUADRANT_SIZE } from "../../layout-constants.js";
+
 const point = (x, y, z) => Object.freeze([x, y, z]);
 const window = (start, end) => Object.freeze({ start, end });
 
-export const FOUNDATION_LAYER_HEIGHT = 0.72;
+export const FOUNDATION_LAYER_HEIGHT = FILM_LAYER_HEIGHT;
 
 export const FOUNDATION_LAYOUT = Object.freeze({
   kernel: point(-3.05, 0, 0),
@@ -26,8 +28,8 @@ export const KERNEL_FOOTPRINT = Object.freeze({
 });
 
 export const GENESIS_FOOTPRINT = Object.freeze({
-  width: 6.9,
-  depth: 6.9,
+  width: FILM_QUADRANT_SIZE,
+  depth: FILM_QUADRANT_SIZE,
 });
 
 export const BUILDER_FOOTPRINT = GENESIS_FOOTPRINT;

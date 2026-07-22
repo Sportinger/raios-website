@@ -36,7 +36,10 @@ import {
 } from "./feedback-primitives.js";
 import { createApprovalSequence } from "./approval-sequence.js";
 import { createArchipelagoSequence } from "./archipelago-sequence.js";
-import { createFactoryDoor as createDoor } from "./door-primitives.js";
+import {
+  createFactoryDoor as createDoor,
+  setFactoryDoorEmergence,
+} from "./door-primitives.js";
 import { createLiveSequence } from "./live-sequence.js";
 
 const setLabelText = (label, text) => label.userData.setText?.(text);
@@ -317,13 +320,14 @@ function createProofScene(tracker) {
     color: 0xe7d6fa, background: 0x12091e, position: [0, 0.85, 0.78], fontSize: 42, billboard: true,
   }));
   group.add(cellar, subject);
+  const deckTop = shadowLayout.thickness + 0.02;
   for (let x = -5; x <= 5; x += shadowLayout.gridStep) {
-    group.add(createRoute(tracker, [[x, 0.75, -shadowLayout.depth / 2], [x, 0.75, shadowLayout.depth / 2]], 0xc594ff, 0.018));
+    group.add(createRoute(tracker, [[x, deckTop, -shadowLayout.depth / 2], [x, deckTop, shadowLayout.depth / 2]], 0xc594ff, 0.018));
   }
   for (let z = -3; z <= 3; z += shadowLayout.gridStep) {
-    group.add(createRoute(tracker, [[-shadowLayout.width / 2, 0.75, z], [shadowLayout.width / 2, 0.75, z]], 0xc594ff, 0.018));
+    group.add(createRoute(tracker, [[-shadowLayout.width / 2, deckTop, z], [shadowLayout.width / 2, deckTop, z]], 0xc594ff, 0.018));
   }
-  const entryDoor = createDoor(tracker, 0xd8acff, [4.5, 0.76, -2.55], 0.65);
+  const entryDoor = createDoor(tracker, 0xd8acff, [4.5, deckTop, -2.55], 0.65);
   entryDoor.group.rotation.y = -Math.PI / 4;
   group.add(entryDoor.group);
   const shadowTitle = createTextLabel(tracker, {
@@ -337,7 +341,7 @@ function createProofScene(tracker) {
   });
   entryDoor.group.add(entryLabel);
   const mockDoors = [-3.7, -1.8, 0.1].map((x, index) => {
-    const door = createDoor(tracker, 0xc28bff, [x, 0.76, 2.55 + index * 0.15], 0.4);
+    const door = createDoor(tracker, 0xc28bff, [x, deckTop, 2.55 + index * 0.15], 0.4);
     door.group.rotation.y = Math.PI / 7;
     const label = createTextLabel(tracker, {
       text: ["fb.mock", "input.inject", "file.sandbox"][index],
@@ -407,7 +411,11 @@ export function createFactoryWorld() {
   const feedback = createFeedbackScene(tracker);
   const twins = createTwinScene(tracker);
   const proof = createProofScene(tracker);
-  proof.group.position.set(-12.32, 0.04, 0);
+  proof.group.position.set(
+    FACTORY_LAYOUT.shadow.position.x,
+    FACTORY_LAYOUT.shadow.position.y,
+    FACTORY_LAYOUT.shadow.position.z,
+  );
   proof.spikes.visible = false;
   const guardStatus = createGuardStatusPanel(tracker);
   const scenes = { builder, inert, compiler, feedback, twins, proof };
@@ -644,13 +652,40 @@ export function createFactoryWorld() {
     const scanAlpha = scanIntro * scanOutro;
     const scanProgress = scanWindow ? interval(time, scanWindow[0], scanWindow[1]) : 0;
     setFactoryOpacity(proof.group, scanAlpha * 0.72);
-    proof.group.position.y = 0.04 - (1 - scanIntro) * 0.42;
-    proof.group.scale.setScalar(0.93 + scanIntro * 0.07);
+    proof.group.position.y = FACTORY_LAYOUT.shadow.position.y - (1 - scanIntro) * 0.42;
+    // The Shadow VM is a fixed kernel quadrant. Scaling the whole group made
+    // its seams drift against Genesis and Builder during every scan intro.
+    proof.group.scale.setScalar(1);
     const shadowDoorIntro = scanWindow
       ? smootherstep(interval(time, scanWindow[0] + 0.22, scanWindow[0] + 0.72))
       : 0;
-    proof.entryDoor.group.visible = shadowDoorIntro * scanOutro > 0.001;
-    proof.entryDoor.group.scale.setScalar(0.42 * Math.max(0.001, shadowDoorIntro * scanOutro));
+    const shadowHatchOpen = scanWindow
+      ? smootherstep(interval(time, scanWindow[0] + 0.42, scanWindow[0] + 0.82))
+      : 0;
+    const shadowDoorRise = scanWindow
+      ? smootherstep(interval(time, scanWindow[0] + 0.68, scanWindow[0] + 1.18))
+      : 0;
+    setFactoryDoorEmergence(proof.entryDoor, {
+      outlineAmount: shadowDoorIntro,
+      openAmount: shadowHatchOpen,
+      riseAmount: shadowDoorRise,
+      opacity: scanAlpha * 0.72,
+    });
+    proof.mockDoors.forEach((door, index) => {
+      const delay = index * 0.09;
+      setFactoryDoorEmergence(door, {
+        outlineAmount: scanWindow
+          ? smootherstep(interval(time, scanWindow[0] + 0.34 + delay, scanWindow[0] + 0.68 + delay))
+          : 0,
+        openAmount: scanWindow
+          ? smootherstep(interval(time, scanWindow[0] + 0.52 + delay, scanWindow[0] + 0.86 + delay))
+          : 0,
+        riseAmount: scanWindow
+          ? smootherstep(interval(time, scanWindow[0] + 0.74 + delay, scanWindow[0] + 1.18 + delay))
+          : 0,
+        opacity: scanAlpha * 0.72,
+      });
+    });
     // The reference entrance grows in place; its vector leaf never swings
     // toward an edge-on camera angle during the scan.
     proof.entryDoor.hinge.rotation.y = 0;
