@@ -44,10 +44,10 @@ const GUARD_DOOR_INSET = 1.3;
 export const FACTORY_SCENES = Object.freeze({
   builder: Object.freeze({ start: 25, end: 33 }),
   inert: Object.freeze({ start: 33, end: 41 }),
-  compiler: Object.freeze({ start: 39, end: 110 }),
+  compiler: Object.freeze({ start: 39, end: 115 }),
   feedback: Object.freeze({ start: 52, end: 62 }),
   twins: Object.freeze({ start: 62, end: 72 }),
-  proof: Object.freeze({ start: 72, end: 94 }),
+  proof: Object.freeze({ start: 72, end: 99 }),
 });
 
 export const FACTORY_LANES = Object.freeze([

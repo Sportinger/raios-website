@@ -2,6 +2,14 @@ import * as THREE from "three";
 
 const UNIT_Y = new THREE.Vector3(0, 1, 0);
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
+const smoothstep = (value) => {
+  const amount = clamp01(value);
+  return amount * amount * (3 - 2 * amount);
+};
+const timedProgress = (time, start, end) => {
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 0;
+  return smoothstep((time - start) / (end - start));
+};
 const trackGeometry = (tracker, geometry) => tracker?.geometry?.(geometry) ?? geometry;
 const trackMaterial = (tracker, material) => tracker?.material?.(material) ?? material;
 
@@ -255,6 +263,47 @@ export function setVectorLayerBuild(layer, {
   setObjectOpacity(layer.title, solidVisible ? resolvedTitleOpacity : 0);
   setFootprintOutline(layer.outline, outlineAmount, outlineOpacity);
   layer.group.visible = solidVisible || clamp01(outlineAmount) * clamp01(outlineOpacity) > 0.001;
+}
+
+export function setVectorLayerLifecycle(layer, time, {
+  introStart,
+  introEnd,
+  outroStart = Number.POSITIVE_INFINITY,
+  outroEnd = Number.POSITIVE_INFINITY,
+  opacity = 1,
+  outlineShare = 0.38,
+} = {}) {
+  const introDuration = Math.max(0.001, introEnd - introStart);
+  const introOutlineEnd = introStart + introDuration * outlineShare;
+  const outlineIn = timedProgress(time, introStart, introOutlineEnd);
+  const riseIn = timedProgress(time, introOutlineEnd, introEnd);
+
+  const hasOutro = Number.isFinite(outroStart)
+    && Number.isFinite(outroEnd)
+    && outroEnd > outroStart;
+  const outroDuration = hasOutro ? outroEnd - outroStart : 1;
+  const lowerEnd = outroStart + outroDuration * (1 - outlineShare);
+  const lowerOut = hasOutro ? timedProgress(time, outroStart, lowerEnd) : 0;
+  const outlineOut = hasOutro ? timedProgress(time, lowerEnd, outroEnd) : 0;
+  const riseAmount = riseIn * (1 - lowerOut);
+  const outlineAmount = outlineIn * (1 - outlineOut);
+  const introOutlineOpacity = 1 - timedProgress(
+    time,
+    introOutlineEnd,
+    introOutlineEnd + introDuration * 0.34,
+  );
+  const outroOutlineOpacity = hasOutro
+    ? timedProgress(time, outroStart, outroStart + outroDuration * 0.16) * (1 - outlineOut)
+    : 0;
+  const alpha = clamp01(opacity);
+  setVectorLayerBuild(layer, {
+    outlineAmount,
+    riseAmount,
+    opacity: alpha,
+    outlineOpacity: alpha * Math.max(introOutlineOpacity, outroOutlineOpacity),
+    titleOpacity: alpha * riseAmount,
+  });
+  return Object.freeze({ outlineAmount, riseAmount, outroAmount: Math.max(lowerOut, outlineOut) });
 }
 
 export function setVectorLayerFootprint(layer, scaleX, scaleZ) {

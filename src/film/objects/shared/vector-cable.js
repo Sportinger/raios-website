@@ -9,6 +9,14 @@ export const VECTOR_CABLE_DIRECTIONS = Object.freeze({
 
 const UNIT_Y = new THREE.Vector3(0, 1, 0);
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
+const smoothstep = (value) => {
+  const amount = clamp01(value);
+  return amount * amount * (3 - 2 * amount);
+};
+const timedProgress = (time, start, end) => {
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 0;
+  return smoothstep((time - start) / (end - start));
+};
 const trackGeometry = (tracker, geometry) => tracker?.geometry?.(geometry) ?? geometry;
 const trackMaterial = (tracker, material) => tracker?.material?.(material) ?? material;
 
@@ -330,6 +338,11 @@ export function setVectorCableState(cable, {
 } = {}) {
   const reveal = clamp01(progress);
   const alpha = clamp01(opacity);
+  cable.currentState = {
+    progress: reveal,
+    persistent: Boolean(persistent),
+    active: Boolean(active && alpha > 0.001),
+  };
   cable.group.visible = reveal > 0.001 && alpha > 0.001;
   cable.underlayRecords.forEach((record) => setBeamReveal(record, reveal));
   cable.cableRecords.forEach((record) => setBeamReveal(record, reveal));
@@ -341,11 +354,34 @@ export function setVectorCableState(cable, {
   });
 }
 
-export function setVectorCableTime(cable, time, {
-  progress = 1,
+export function setVectorCableLifecycle(cable, time, {
+  introStart,
+  introEnd,
+  outroStart = Number.POSITIVE_INFINITY,
+  outroEnd = Number.POSITIVE_INFINITY,
+  opacity = 1,
   persistent = true,
   active = true,
 } = {}) {
+  const revealIn = timedProgress(time, introStart, introEnd);
+  const retract = Number.isFinite(outroStart) && Number.isFinite(outroEnd)
+    ? timedProgress(time, outroStart, outroEnd)
+    : 0;
+  const progress = revealIn * (1 - retract);
+  setVectorCableState(cable, {
+    progress,
+    time,
+    opacity,
+    persistent,
+    active: active && revealIn >= 0.999 && retract <= 0.001,
+  });
+  return Object.freeze({ progress, retract });
+}
+
+export function setVectorCableTime(cable, time, options = {}) {
+  const progress = options.progress ?? cable.currentState?.progress ?? 1;
+  const persistent = options.persistent ?? cable.currentState?.persistent ?? true;
+  const active = options.active ?? cable.currentState?.active ?? true;
   const reveal = clamp01(progress);
   const movingPhase = persistent && reveal >= 0.999
     ? ((time * cable.speed) % 1 + 1) % 1

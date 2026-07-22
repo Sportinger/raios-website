@@ -21,6 +21,7 @@ import {
   setVectorMachineBuild,
   setVectorMachineTitle,
 } from "../shared/vector-machine.js";
+import { createPlayerProgram } from "../shared/player-program.js";
 import {
   anchorVectorDoorToSurface,
   attachVectorDoorLabel,
@@ -656,19 +657,9 @@ function createFileCard(name) {
 function createProduction() {
   const group = new THREE.Group();
 
-  const machine = createVectorMachine({
+  const machine = createPlayerProgram({
     id: "player-program",
     title: "PLAYER.RS",
-    size: [1.06, 0.86, 0.94],
-    panelColor: 0x17263a,
-    panelTopColor: 0x263a52,
-    edgeColor: PALETTE.blueHigh,
-    lampCount: 0,
-  });
-  setVectorMachineBuild(machine, {
-    outlineAmount: 1,
-    riseAmount: 1,
-    outlineOpacity: 0,
   });
   const workpiece = machine.group;
   const compilerSuccess = createCompilerProofToken();
@@ -1038,7 +1029,7 @@ export function createFoundationWorld() {
   );
 
   function setTime(rawTime, camera) {
-    const time = Math.min(134, Math.max(0, Number(rawTime) || 0));
+    const time = Math.min(139, Math.max(0, Number(rawTime) || 0));
     const kernelOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.kernelOutline);
     const kernelRise = timedProgress(time, FOUNDATION_TIMELINE.kernelRise);
     setVectorLayerBuild(kernel, {
@@ -1054,8 +1045,8 @@ export function createFoundationWorld() {
     if (group.userData.presentationBaseZ === undefined) {
       group.userData.presentationBaseZ = group.position.z;
     }
-    const compactComposition = progress(time, 120, 123);
-    const finaleComposition = progress(time, 123, 131);
+    const compactComposition = progress(time, 125, 128);
+    const finaleComposition = progress(time, 128, 136);
     group.position.x = group.userData.presentationBaseX
       + FOUNDATION_LAYOUT.expansionOffset[0] * foundationExpansion
       + 1.76 * compactComposition + 4.1 * finaleComposition;
@@ -1066,7 +1057,7 @@ export function createFoundationWorld() {
       time,
       FOUNDATION_TIMELINE.kernelSquareExpansion,
     );
-    const kernelFinalExpansion = progress(time, 120, 123);
+    const kernelFinalExpansion = progress(time, 125, 128);
     const kernelScaleX = THREE.MathUtils.lerp(
       1,
       THREE.MathUtils.lerp(
@@ -1145,7 +1136,7 @@ export function createFoundationWorld() {
       angle: -THREE.MathUtils.degToRad(26.565),
     });
 
-    const legacyWorldAlpha = 1 - progress(time, 120, 122.7);
+    const legacyWorldAlpha = 1 - progress(time, 125, 127.7);
     const agentOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.agentOutline);
     const agentRise = timedProgress(time, FOUNDATION_TIMELINE.agentRise);
     agent.group.position.set(
@@ -1260,7 +1251,7 @@ export function createFoundationWorld() {
 
     const builderOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.builderOutline);
     const builderRise = timedProgress(time, FOUNDATION_TIMELINE.builderRise);
-    const builderRelease = progress(time, 108.62, 109.8);
+    const builderRelease = progress(time, 113.62, 114.8);
     setVectorLayerBuild(builder, {
       outlineAmount: builderOutlineDraw,
       riseAmount: builderRise,
@@ -1285,7 +1276,7 @@ export function createFoundationWorld() {
 
     const buildDraw = timedProgress(time, FOUNDATION_TIMELINE.buildRequestRoute);
     setRouteProgress(buildLine, buildDraw, time, time >= FOUNDATION_TIMELINE.buildKey.insert);
-    const buildRequestWindowAlpha = 1 - progress(time, 108.58, 109.01);
+    const buildRequestWindowAlpha = 1 - progress(time, 113.58, 114.01);
     setFade(buildLine.group, buildDraw * buildRequestWindowAlpha);
     setEmergingDoor(
       buildDoor,
@@ -1303,19 +1294,19 @@ export function createFoundationWorld() {
       sysrootDoor,
       time,
       FOUNDATION_TIMELINE.sysrootDoorRise,
-      1 - progress(time, 107.9, 108.24),
+      1 - progress(time, 112.9, 113.24),
     );
     setEmergingDoor(
       srcDoor,
       time,
       FOUNDATION_TIMELINE.srcDoorRise,
-      1 - progress(time, 108.09, 108.43),
+      1 - progress(time, 113.09, 113.43),
     );
     setEmergingDoor(
       outDoor,
       time,
       FOUNDATION_TIMELINE.outDoorRise,
-      1 - progress(time, 108.29, 108.62),
+      1 - progress(time, 113.29, 113.62),
     );
     setVectorDoorOpen(sysrootDoor, progress(
       time,
@@ -1327,7 +1318,7 @@ export function createFoundationWorld() {
       getCapabilityUnlockEnd(FOUNDATION_TIMELINE.srcKey),
       FOUNDATION_TIMELINE.srcKey.insert + 0.9,
     ));
-    setVectorDoorOpen(outDoor, progress(time, 99.25, 100.15));
+    setVectorDoorOpen(outDoor, progress(time, 104.25, 105.15));
 
     setRouteProgress(
       requestToSysroot,
@@ -1338,11 +1329,11 @@ export function createFoundationWorld() {
     setFade(
       requestToSysroot.group,
       timedProgress(time, FOUNDATION_TIMELINE.sysrootRoute)
-        * (1 - progress(time, 108.53, 108.87)),
+        * (1 - progress(time, 113.53, 113.87)),
     );
     const srcRouteProgress = timedProgress(time, FOUNDATION_TIMELINE.srcRoute);
     setRouteProgress(sysrootToSrc, srcRouteProgress, time, time >= FOUNDATION_TIMELINE.srcRoute.end);
-    setFade(sysrootToSrc.group, srcRouteProgress * (1 - progress(time, 108.38, 108.72)));
+    setFade(sysrootToSrc.group, srcRouteProgress * (1 - progress(time, 113.38, 113.72)));
     const workpieceRouteProgress = timedProgress(time, FOUNDATION_TIMELINE.workpieceRoute);
     setRouteProgress(
       srcToWorkpiece,
@@ -1350,7 +1341,7 @@ export function createFoundationWorld() {
       time,
       time >= FOUNDATION_TIMELINE.workpieceRoute.end,
     );
-    setFade(srcToWorkpiece.group, workpieceRouteProgress * (1 - progress(time, 108.24, 108.58)));
+    setFade(srcToWorkpiece.group, workpieceRouteProgress * (1 - progress(time, 113.24, 113.58)));
 
     setCapabilityKey(
       buildKey,
@@ -1379,8 +1370,8 @@ export function createFoundationWorld() {
 
     const workpieceRise = timedProgress(time, FOUNDATION_TIMELINE.workpieceRise);
     production.workpiece.visible = workpieceRise > 0.001;
-    const residentRise = progress(time, 103.2, 106);
-    const compactPlayer = progress(time, 120, 123);
+    const residentRise = progress(time, 108.2, 111);
+    const compactPlayer = progress(time, 125, 128);
     production.workpiece.position.y = -(1 - workpieceRise) * 0.35 + residentRise;
     production.workpiece.scale.setScalar(Math.max(
       0.001,
@@ -1415,18 +1406,18 @@ export function createFoundationWorld() {
       { at: 69.95, x: workpieceHome[0], z: workpieceHome[2] },
       { at: 70.35, x: workpieceHome[0], z: workpieceHome[2] },
       { at: 71.2, x: testerDock[0], z: testerDock[2] },
-      { at: 93.8, x: testerDock[0], z: testerDock[2] },
-      { at: 94.4, x: workpieceHome[0], z: workpieceHome[2] },
-      { at: 94.8, x: workpieceHome[0], z: workpieceHome[2] },
-      { at: 95.8, x: guardDock[0], z: guardDock[2] },
-      { at: 99.25, x: guardDock[0], z: guardDock[2] },
-      { at: 100.1, x: workpieceHome[0], z: workpieceHome[2] },
-      { at: 102, x: workpieceHome[0], z: workpieceHome[2] },
-      { at: 103.6, x: -1.816, z: -0.312 },
-      { at: 106, x: -6.108, z: 1.912 },
-      { at: 120, x: -6.108, z: 1.912 },
-      { at: 123, x: -0.574, z: 6.885 },
-      { at: 134, x: -0.574, z: 6.885 },
+      { at: 98.8, x: testerDock[0], z: testerDock[2] },
+      { at: 99.4, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 99.8, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 100.8, x: guardDock[0], z: guardDock[2] },
+      { at: 104.25, x: guardDock[0], z: guardDock[2] },
+      { at: 105.1, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 107, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 108.6, x: -1.816, z: -0.312 },
+      { at: 111, x: -6.108, z: 1.912 },
+      { at: 125, x: -6.108, z: 1.912 },
+      { at: 128, x: -0.574, z: 6.885 },
+      { at: 139, x: -0.574, z: 6.885 },
     ];
     const beforeFrame = workpieceFrames.reduce(
       (best, frame) => (frame.at <= time ? frame : best),
@@ -1439,7 +1430,7 @@ export function createFoundationWorld() {
     const workpieceCopy = time >= 55.4 ? "PLAYER.WASM" : "PLAYER.RS";
     setVectorMachineTitle(production.machine, workpieceCopy);
     const earlyCompilerCargo = time >= 55.4 && time < 58.55;
-    const finalCompilerCargo = time >= 69.35 && time < 96.45;
+    const finalCompilerCargo = time >= 69.35 && time < 101.45;
     const successPop = earlyCompilerCargo
       ? progress(time, 55.4, 55.72)
       : finalCompilerCargo
@@ -1448,7 +1439,7 @@ export function createFoundationWorld() {
     const successHandoff = earlyCompilerCargo
       ? progress(time, 57.8, 58.55)
       : finalCompilerCargo
-        ? progress(time, 95.8, 96.45)
+        ? progress(time, 100.8, 101.45)
         : 0;
     const successOpacity = successPop * (1 - progress(successHandoff, 0.72, 1));
     const compilerCargoTarget = earlyCompilerCargo
@@ -1464,8 +1455,8 @@ export function createFoundationWorld() {
       Math.max(0.001, 0.76 * successPop * THREE.MathUtils.lerp(1, 0.12, successHandoff)),
     );
     setFade(production.compilerSuccess, successOpacity);
-    const evidencePickupTimes = [93.25, 93.5, 93.75];
-    const evidenceDeliveryTimes = [96.7, 97.15, 97.6];
+    const evidencePickupTimes = [98.25, 98.5, 98.75];
+    const evidenceDeliveryTimes = [101.7, 102.15, 102.6];
     production.evidenceSeals.forEach((seal, index) => {
       const pickup = progress(
         time,
@@ -1538,5 +1529,10 @@ export function createFoundationWorld() {
   }
 
   setTime(0);
-  return { group, setTime, dispose };
+  function getPlayerWorldPosition(target = new THREE.Vector3()) {
+    production.workpiece.updateWorldMatrix(true, false);
+    return production.workpiece.getWorldPosition(target);
+  }
+
+  return { group, setTime, getPlayerWorldPosition, dispose };
 }

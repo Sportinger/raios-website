@@ -106,7 +106,7 @@ export function createRoute(tracker, points, color, width = 0.08, {
   const { group } = cable;
   group.name = "factory-signal-route";
   group.userData.setRouteTime = (time) => {
-    setVectorCableTime(cable, time, { active: animated });
+    setVectorCableTime(cable, time);
   };
   setVectorCableState(cable, {
     progress: 1,

@@ -329,7 +329,7 @@ function createTwinScene(tracker) {
   return { group, pods, bridge, seal, progressRails, hashPlates, resultLabel, drillLabel };
 }
 
-export function createFactoryWorld() {
+export function createFactoryWorld({ getPlayerWorldPosition } = {}) {
   const tracker = createResourceTracker();
   const group = new THREE.Group();
   group.name = "factory-world";
@@ -349,7 +349,7 @@ export function createFactoryWorld() {
   const archipelagoSequence = createArchipelagoSequence(tracker);
   const feedback = createFeedbackScene(tracker);
   const twins = createTwinScene(tracker);
-  const proof = createShadowVmSequence(tracker);
+  const proof = createShadowVmSequence(tracker, { getPlayerWorldPosition });
   const scenes = { builder, inert, compiler, feedback, twins, proof };
   Object.entries(scenes).forEach(([id, scene]) => {
     scene.group.name = `factory-${id}`;
@@ -363,7 +363,7 @@ export function createFactoryWorld() {
   );
 
   function setTime(nextTime, camera) {
-    const time = Math.min(134, Math.max(0, Number.isFinite(nextTime) ? nextTime : 0));
+    const time = Math.min(139, Math.max(0, Number.isFinite(nextTime) ? nextTime : 0));
     Object.entries(scenes).forEach(([id, scene]) => showScene(scene.group, time, FACTORY_SCENES[id]));
 
     // Foundation owns the canonical Builder Deck, source material and
@@ -412,7 +412,7 @@ export function createFactoryWorld() {
     const verifierSecond = smoothstep(interval(time, 57.8, 60.8));
     const activeCompileWindow = [[42.25, 46], [53.25, 55.4], [67.5, 69.35]]
       .find(([start, end]) => time >= start && time < end);
-    const activeTestWindow = [[57.8, 60.8], [71.2, 77], [78, 84.5], [85.5, 93.2]]
+    const activeTestWindow = [[57.8, 60.8], [71.2, 82], [83, 89.5], [90.5, 98.2]]
       .find(([start, end]) => time >= start && time < end);
     const compilerLampState = time >= 46 && time < 53.25
       ? "failed"
@@ -423,23 +423,23 @@ export function createFactoryWorld() {
           : "pending";
     const testerLampState = time >= 60.8 && time < 71.2
       ? "failed"
-      : time >= 93.2
+      : time >= 98.2
         ? "passed"
         : "pending";
     setVectorMachineLampStates(compiler.machines[0], [compilerLampState]);
     setVectorMachineLampStates(compiler.machines[1], [testerLampState]);
     setVectorMachineLampStates(compiler.machines[2], [
-      time >= 96.45
+      time >= 101.45
         ? "passed"
         : time >= 46 && time < 53.25
           ? "failed"
           : "pending",
-      time >= 98
+      time >= 103
         ? "passed"
         : time >= 60.8 && time < 71.2
           ? "failed"
           : "pending",
-      time >= 98.55 ? "passed" : "pending",
+      time >= 103.55 ? "passed" : "pending",
     ]);
     setVectorMachineProgress(compiler.machines[0], {
       visible: Boolean(activeCompileWindow),
@@ -475,7 +475,7 @@ export function createFactoryWorld() {
     compiler.upgrades[1].visible = byteJigRise > 0.001;
     compiler.upgrades[1].position.y = 2.15 + byteJigRise * 0.5;
     compiler.upgrades[1].scale.set(1.55, Math.max(0.001, 0.4 * byteJigRise), 1);
-    const drillKitRise = smootherstep(interval(time, 77, 78.2));
+    const drillKitRise = smootherstep(interval(time, 82, 83.2));
     compiler.upgrades[2].visible = drillKitRise > 0.001;
     compiler.upgrades[2].position.y = 1.3 + drillKitRise * 0.5;
     compiler.upgrades[2].scale.set(1.55, Math.max(0.001, 0.4 * drillKitRise), 1);
@@ -548,7 +548,7 @@ export function createFactoryWorld() {
     archipelagoSequence.setTime(time);
     const compilerWindow = time >= FACTORY_SCENES.compiler.start && time < FACTORY_SCENES.compiler.end;
     const workshopAlpha = compilerWindow
-      ? 1 - smootherstep(interval(time, 106.75, 108.05))
+      ? 1 - smootherstep(interval(time, 111.75, 113.05))
       : 0;
     setFactoryOpacity(compiler.group, workshopAlpha);
 

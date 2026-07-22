@@ -5,6 +5,7 @@ import {
   createVectorDoor,
   createVectorDoorLabel,
   setVectorDoorEmergence,
+  setVectorDoorLifecycle,
   setVectorDoorOpen,
 } from "../shared/vector-door.js";
 import {
@@ -52,6 +53,11 @@ function createFactoryDoorMechanism(
 export function setFactoryDoorEmergence(door, state) {
   door.group.scale.setScalar(door.baseScale);
   setVectorDoorEmergence(door.mechanism, state);
+}
+
+export function setFactoryDoorLifecycle(door, time, lifecycle) {
+  door.group.scale.setScalar(door.baseScale);
+  return setVectorDoorLifecycle(door.mechanism, time, lifecycle);
 }
 
 export function createFactoryDoorOnSurface(tracker, color, {

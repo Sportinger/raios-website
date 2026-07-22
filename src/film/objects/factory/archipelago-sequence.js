@@ -17,35 +17,35 @@ const SVG_ANCHOR = Object.freeze({ x: 600, y: 410 });
 const LATTICE_STEP = 5.8;
 
 const APP_DEFINITIONS = Object.freeze([
-  ["FORTNITE", "F", 165, 194, 125.55, 1.12, FACTORY_PALETTE.amber],
-  ["BROWSER", "WEB", 310, 122, 125.82, 0.92, FACTORY_PALETTE.blue],
-  ["DOCS", "DOC", 455, 50, 126.09, 0.84, FACTORY_PALETTE.cyan],
-  ["EMAIL", "MAIL", 600, 122, 126.36, 0.84, FACTORY_PALETTE.red],
-  ["WEATHER", "SUN", 745, 50, 126.63, 0.84, FACTORY_PALETTE.cyan],
-  ["VIDEO PLAYER", "PLAY", 890, 122, 126.9, 0.98, FACTORY_PALETTE.violet],
-  ["MINECRAFT", "M", 1035, 50, 127.17, 1.12, FACTORY_PALETTE.green],
-  ["MESSAGES", "CHAT", 600, 266, 127.44, 0.84, FACTORY_PALETTE.violet],
-  ["FILES", "DIR", 745, 194, 127.71, 0.84, FACTORY_PALETTE.blue],
-  ["PHOTOS", "PIC", 890, 266, 127.98, 0.88, FACTORY_PALETTE.red],
-  ["MAPS", "MAP", 1035, 194, 128.25, 0.88, FACTORY_PALETTE.amber],
-  ["NOTES", "TXT", 1180, 266, 128.52, 0.84, FACTORY_PALETTE.amber],
-  ["CALENDAR", "CAL", 745, 338, 128.79, 0.84, FACTORY_PALETTE.red],
-  ["CAMERA", "CAM", 890, 410, 129.06, 0.84, FACTORY_PALETTE.blue],
-  ["CONTACTS", "ID", 1035, 338, 129.33, 0.84, FACTORY_PALETTE.cyan],
-  ["STUDIO", "EDIT", 1180, 410, 129.6, 0.94, FACTORY_PALETTE.violet],
-  ["TERMINAL", "CLI", 455, 554, 129.87, 0.9, FACTORY_PALETTE.green],
-  ["STORE", "GET", 600, 626, 130.14, 0.84, FACTORY_PALETTE.blue],
-  ["SETTINGS", "CFG", 745, 554, 130.41, 0.84, FACTORY_PALETTE.amber],
-  ["GAMES", "PAD", 890, 626, 130.68, 0.84, FACTORY_PALETTE.red],
+  ["FORTNITE", "F", 165, 194, 130.55, 1.12, FACTORY_PALETTE.amber],
+  ["BROWSER", "WEB", 310, 122, 130.82, 0.92, FACTORY_PALETTE.blue],
+  ["DOCS", "DOC", 455, 50, 131.09, 0.84, FACTORY_PALETTE.cyan],
+  ["EMAIL", "MAIL", 600, 122, 131.36, 0.84, FACTORY_PALETTE.red],
+  ["WEATHER", "SUN", 745, 50, 131.63, 0.84, FACTORY_PALETTE.cyan],
+  ["VIDEO PLAYER", "PLAY", 890, 122, 131.9, 0.98, FACTORY_PALETTE.violet],
+  ["MINECRAFT", "M", 1035, 50, 132.17, 1.12, FACTORY_PALETTE.green],
+  ["MESSAGES", "CHAT", 600, 266, 132.44, 0.84, FACTORY_PALETTE.violet],
+  ["FILES", "DIR", 745, 194, 132.71, 0.84, FACTORY_PALETTE.blue],
+  ["PHOTOS", "PIC", 890, 266, 132.98, 0.88, FACTORY_PALETTE.red],
+  ["MAPS", "MAP", 1035, 194, 133.25, 0.88, FACTORY_PALETTE.amber],
+  ["NOTES", "TXT", 1180, 266, 133.52, 0.84, FACTORY_PALETTE.amber],
+  ["CALENDAR", "CAL", 745, 338, 133.79, 0.84, FACTORY_PALETTE.red],
+  ["CAMERA", "CAM", 890, 410, 134.06, 0.84, FACTORY_PALETTE.blue],
+  ["CONTACTS", "ID", 1035, 338, 134.33, 0.84, FACTORY_PALETTE.cyan],
+  ["STUDIO", "EDIT", 1180, 410, 134.6, 0.94, FACTORY_PALETTE.violet],
+  ["TERMINAL", "CLI", 455, 554, 134.87, 0.9, FACTORY_PALETTE.green],
+  ["STORE", "GET", 600, 626, 135.14, 0.84, FACTORY_PALETTE.blue],
+  ["SETTINGS", "CFG", 745, 554, 135.41, 0.84, FACTORY_PALETTE.amber],
+  ["GAMES", "PAD", 890, 626, 135.68, 0.84, FACTORY_PALETTE.red],
 ]);
 
 const ROUTE_DEFINITIONS = Object.freeze([
-  [125.55, [[320, 395], [600, 266], [890, 122]]],
-  [125.82, [[600, 266], [745, 194], [890, 266], [1035, 194], [1180, 266]]],
-  [126.09, [[320, 395], [600, 410], [745, 338], [890, 410], [1035, 338], [1180, 410]]],
-  [126.36, [[320, 395], [455, 554], [600, 626], [745, 554], [890, 626]]],
-  [126.63, [[455, 50], [600, 122], [745, 50], [890, 122], [1035, 50]]],
-  [126.9, [[165, 194], [310, 122], [455, 50]]],
+  [130.55, [[320, 395], [600, 266], [890, 122]]],
+  [130.82, [[600, 266], [745, 194], [890, 266], [1035, 194], [1180, 266]]],
+  [131.09, [[320, 395], [600, 410], [745, 338], [890, 410], [1035, 338], [1180, 410]]],
+  [131.36, [[320, 395], [455, 554], [600, 626], [745, 554], [890, 626]]],
+  [131.63, [[455, 50], [600, 122], [745, 50], [890, 122], [1035, 50]]],
+  [131.9, [[165, 194], [310, 122], [455, 50]]],
 ]);
 
 function mapSvgPoint(x, y, height = COMPACT_ANCHOR.y) {
@@ -318,25 +318,25 @@ export function createArchipelagoSequence(tracker) {
   );
 
   function setTime(rawTime) {
-    const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 134);
-    const finaleDrift = smootherstep(interval(time, 123, 131));
+    const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 139);
+    const finaleDrift = smootherstep(interval(time, 128, 136));
     group.position.set(3.2 * finaleDrift, 0, 3.2 * finaleDrift);
-    const connectionProgress = smootherstep(interval(time, 120.45, 123.1));
-    setOpacity(compactRoute, connectionProgress * (time >= 120.1 ? 1 : 0));
+    const connectionProgress = smootherstep(interval(time, 125.45, 128.1));
+    setOpacity(compactRoute, connectionProgress * (time >= 125.1 ? 1 : 0));
     setVectorCableTime(compactCable, time, {
       progress: connectionProgress,
       persistent: true,
-      active: time >= 120.45,
+      active: time >= 125.45,
     });
 
-    const doorRise = smootherstep(interval(time, 121, 122.2));
+    const doorRise = smootherstep(interval(time, 126, 127.2));
     compactDoor.group.visible = doorRise > 0.001;
     compactDoor.group.scale.setScalar(0.18 * Math.max(0.001, doorRise));
     compactDoor.group.position.y = 0.22 - (1 - doorRise) * 0.9;
     setFactoryDoorOpen(compactDoor, 0);
-    const compactLabelAlpha = smoothstep(interval(time, 122.45, 122.75));
+    const compactLabelAlpha = smoothstep(interval(time, 127.45, 127.75));
     setOpacity(compactLabel, compactLabelAlpha);
-    const captionAlpha = windowAlpha(time, 120, 126.7, 0.7);
+    const captionAlpha = windowAlpha(time, 125, 131.7, 0.7);
     compactCaption.sprite.visible = captionAlpha > 0.001;
     compactCaption.material.opacity = captionAlpha;
 
@@ -349,7 +349,7 @@ export function createArchipelagoSequence(tracker) {
       island.group.scale.setScalar(Math.max(0.001, scale));
       island.group.position.y = COMPACT_ANCHOR.y - (1 - reveal) * 1.15;
       setOpacity(island.group, reveal);
-      const cycleStart = 128.3 + index * 0.48;
+      const cycleStart = 133.3 + index * 0.48;
       const lit = smoothstep(interval(time, cycleStart, cycleStart + 0.35));
       const beat = 1 + lit * 0.34 + Math.max(0, Math.sin((time - cycleStart) * 4.5)) * 0.08 * lit;
       island.beacon.scale.setScalar(beat);
@@ -368,13 +368,13 @@ export function createArchipelagoSequence(tracker) {
       });
     });
 
-    const counterAlpha = smoothstep(interval(time, 125.75, 126.45));
+    const counterAlpha = smoothstep(interval(time, 130.75, 131.45));
     counter.sprite.visible = counterAlpha > 0.001;
     counter.material.opacity = counterAlpha;
     counter.draw(visibleApps);
 
-    const titlePanelAlpha = smoothstep(interval(time, 130.6, 131.05));
-    const titleTextAlpha = windowAlpha(time, 130.6, 133.45, 0.55);
+    const titlePanelAlpha = smoothstep(interval(time, 135.6, 136.05));
+    const titleTextAlpha = windowAlpha(time, 135.6, 138.45, 0.55);
     title.sprite.visible = titlePanelAlpha > 0.001;
     title.material.opacity = titlePanelAlpha;
     title.draw(titleTextAlpha);

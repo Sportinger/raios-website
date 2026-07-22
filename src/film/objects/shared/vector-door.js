@@ -471,3 +471,56 @@ export function setVectorDoorEmergence(door, {
   const resolvedFrameOpacity = frameOpacity ?? alpha * rise;
   setVectorOpacity(door.frame, clamp01(resolvedFrameOpacity) * labelFinished);
 }
+
+function timedProgress(time, start, end) {
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 0;
+  return smoothstep((time - start) / (end - start));
+}
+
+export function setVectorDoorLifecycle(door, time, {
+  introStart,
+  introEnd,
+  openStart,
+  openEnd,
+  outroStart = Number.POSITIVE_INFINITY,
+  outroEnd = Number.POSITIVE_INFINITY,
+  opacity = 1,
+  undergroundY = -1.62,
+} = {}) {
+  const introDuration = Math.max(0.001, introEnd - introStart);
+  const porchEnd = introStart + introDuration * 0.3;
+  const labelEnd = introStart + introDuration * 0.55;
+  const porchIn = timedProgress(time, introStart, porchEnd);
+  const labelIn = timedProgress(time, porchEnd, labelEnd);
+  const riseIn = timedProgress(time, labelEnd, introEnd);
+
+  const hasOutro = Number.isFinite(outroStart)
+    && Number.isFinite(outroEnd)
+    && outroEnd > outroStart;
+  const outroDuration = hasOutro ? outroEnd - outroStart : 1;
+  const closeEnd = outroStart + outroDuration * 0.24;
+  const lowerEnd = outroStart + outroDuration * 0.56;
+  const eraseLabelEnd = outroStart + outroDuration * 0.78;
+  const closeOut = hasOutro ? timedProgress(time, outroStart, closeEnd) : 0;
+  const lowerOut = hasOutro ? timedProgress(time, closeEnd, lowerEnd) : 0;
+  const labelOut = hasOutro ? timedProgress(time, lowerEnd, eraseLabelEnd) : 0;
+  const porchOut = hasOutro ? timedProgress(time, eraseLabelEnd, outroEnd) : 0;
+
+  const porchAmount = porchIn * (1 - porchOut);
+  const labelAmount = labelIn * (1 - labelOut);
+  const riseAmount = riseIn * (1 - lowerOut);
+  const opened = Number.isFinite(openStart) && Number.isFinite(openEnd)
+    ? timedProgress(time, openStart, openEnd)
+    : 0;
+  const openAmount = opened * (1 - closeOut);
+  setVectorDoorEmergence(door, {
+    porchAmount,
+    labelAmount,
+    riseAmount,
+    opacity,
+    frameOpacity: riseAmount * clamp01(opacity),
+    undergroundY,
+  });
+  setVectorDoorOpen(door, openAmount);
+  return Object.freeze({ porchAmount, labelAmount, riseAmount, openAmount });
+}

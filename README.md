@@ -15,13 +15,13 @@ betrachten, ohne die deterministische Filmfassung zu verändern.
 
 ## Filmvertrag
 
-- Dauer: `134` Sekunden
+- Dauer: `139` Sekunden
 - Szenen: `14`
 - Kamera-Keyframes: `23`
 - Scrollstrecke: `1600svh` plus ein sichtbarer Viewport
 - Autoplay: eine Filmsekunde pro realer Sekunde
 - Finale: `21` echte, instanzierte App-Inseln
-- Reduced Motion: deterministisches Poster bei Sekunde `132`
+- Reduced Motion: deterministisches Poster bei Sekunde `137`
 
 Die Zeitachse liegt in `src/film/film-data.js`. Jede Objektwelt besitzt nur eine
 deterministische `setTime(time)`-API; vorwärts scrollen, rückwärts scrollen und
@@ -48,7 +48,7 @@ src/
 ```
 
 Die Foundation-Welt deckt die Sekunden `0–41` ab. Die Factory-Welt modelliert
-die Sekunden `41–134`. Wiederholte Produktionspfade und das Insel-Finale nutzen
+die Sekunden `41–139`. Wiederholte Produktionspfade und das Insel-Finale nutzen
 Konfiguration beziehungsweise `THREE.InstancedMesh` statt duplizierter Szenen.
 
 ### Layer- und Callout-Vertrag
@@ -59,6 +59,8 @@ Konfiguration; der deterministische Aufbau ist immer gleich: Zuerst zeichnet
 sich der Grundriss auf dem Trägerboden, danach wächst der massive Layer bei
 unveränderter Position bis zu seiner vollen Höhe. Eigene Szenen dürfen Layer
 nicht mehr durch Verschieben oder Skalieren der gesamten Gruppe einblenden.
+Beim Outro läuft derselbe Vertrag rückwärts: Der Körper sinkt zuerst in seine
+Trägerfläche zurück, anschließend wird der verbleibende Grundriss gelöscht.
 
 Die zugehörigen Erklärtafeln verwenden `objects/shared/vector-callout.js`.
 Dieses Modul öffnet das Panel vor der Kamera, schreibt Titel und Text, bewegt
@@ -123,6 +125,8 @@ Der deterministische Aufbau ist ebenfalls Teil des Moduls: Der Vorbau wächst
 von der Deckkante nach außen, danach schreibt sich das Label und erst dann
 fährt der Türrahmen aus der Ebene hoch. Die geteilte Bodenklappe wird nur für
 eigenständige Objekte wie den NET-Turm verwendet, nicht für Türen.
+Beim Outro schließt zuerst das Blatt, danach sinkt der Rahmen, der Text wird
+rückwärts gelöscht und zuletzt zieht sich der Vorbau in die Deckkante zurück.
 Nur bewusst freistehende Objekte wie die kompakte Finaltür verwenden die
 separat benannte `createFreestandingFactoryDoor`-API.
 
@@ -150,6 +154,8 @@ laufen mit `cableDoorLandingDrop` zunächst über den vollständigen Vorbau und
 erst an dessen Außenkante nach unten. Technische Fillets runden alle möglichen
 Waypoints mit engem Radius ab. Signalpulse starten erst, wenn die Leitung
 vollständig aufgebaut und verbunden ist.
+Beim Outro wird die Leitung entlang derselben Route bis zu ihrem Ursprung
+zurückgezogen; währenddessen kann kein Signal weiterlaufen.
 Der Eintritt in die Shadow VM ist ausdrücklich kein Signalweg: Eine sichtbare
 lilafarbene `PLAYER.WASM · GHOST COPY` bewegt sich als echtes 3D-Objekt durch
 die geöffnete `shadow.in`-Tür. Dafür darf weder Kabel noch Puls gezeichnet
@@ -165,7 +171,11 @@ Testplattformen mit gleichzeitig laufenden Programmkopien und lässt die
 sichtbare Divergenz über einer gestrichelten 3D-Regenbogenbrücke auf `0%`
 fallen, Akt 3 prüft in einer hellblauen Fail-Closed-Kammer sieben Angriffe.
 Jeder Akt baut seine eigene disposable Plattform vollständig auf und wieder
-ab. Erst nach dem dritten bestandenen Akt nimmt das Programm alle drei
+ab. Vor jedem neuen Akt reist eine neue, mit `PLAYER.WASM` geometrisch und
+visuell identische Ghost Copy von dessen aktueller Position beim Tester durch
+die neue VM-Tür. Der erfolgreiche violette Akt 1 erhält knapp elf Sekunden und
+spielt Mock-I/O, Dateidrop und alle 654 Claims lesbar nacheinander aus. Erst
+nach dem dritten bestandenen Akt nimmt das Programm alle drei
 Prüfsiegel auf und transportiert sie zum Guard.
 
 ## Kamera

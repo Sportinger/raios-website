@@ -15,7 +15,9 @@ export function createFilmWorld() {
   grid.material.transparent = true;
   grid.material.opacity = 0.28;
   const foundation = createFoundationWorld();
-  const factory = createFactoryWorld();
+  const factory = createFactoryWorld({
+    getPlayerWorldPosition: (target) => foundation.getPlayerWorldPosition(target),
+  });
   // The native meshes use compact modeling units. This authored transform maps
   // the Foundation set back onto the original SVG composition while preserving
   // real depth for a future orbit camera.

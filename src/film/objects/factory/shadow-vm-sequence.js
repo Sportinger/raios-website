@@ -4,7 +4,7 @@ import {
   createFactoryDoorOnSurface,
   FACTORY_STANDARD_DOOR_SCALE,
   setFactoryDoorEmergence,
-  setFactoryDoorOpen,
+  setFactoryDoorLifecycle,
 } from "./door-primitives.js";
 import { createRoute, createTextLabel, createVectorBox } from "./primitives.js";
 import {
@@ -38,18 +38,23 @@ import {
   setShadowTrapFlash,
 } from "./shadow-vm-primitives.js";
 import { interval, smootherstep } from "./timeline.js";
-import { VECTOR_CABLE_DIRECTIONS } from "../shared/vector-cable.js";
+import {
+  setVectorCableLifecycle,
+  VECTOR_CABLE_DIRECTIONS,
+} from "../shared/vector-cable.js";
 import { createVectorCallout, setVectorCallout } from "../shared/vector-callout.js";
-import { createVectorLayer, setVectorLayerBuild } from "../shared/vector-layer.js";
-import { createVectorMachine, setVectorMachineBuild } from "../shared/vector-machine.js";
+import { createVectorLayer, setVectorLayerLifecycle } from "../shared/vector-layer.js";
+import { createPlayerProgram } from "../shared/player-program.js";
+import { FOUNDATION_PRESENTATION_SCALE } from "../../layout-constants.js";
 
 const clamp01 = (value) => THREE.MathUtils.clamp(value, 0, 1);
 const riseBetween = (time, start, end) => smootherstep(interval(time, start, end));
+const PLAYER_GHOST_SCALE = FOUNDATION_PRESENTATION_SCALE;
 const SHADOW_TEST_PALETTES = Object.freeze({
-  rehearsal: Object.freeze({ panel: 0x351d4e, edge: 0xb77cff, ghost: 0x6b448b, ghostEdge: 0xe0b8ff }),
-  actOne: Object.freeze({ panel: 0x351d4e, edge: 0xb77cff, ghost: 0x6b448b, ghostEdge: 0xe0b8ff }),
-  actTwo: Object.freeze({ panel: 0x3a2b0e, edge: 0xffc857, ghost: 0x80621f, ghostEdge: 0xffe2a0 }),
-  actThree: Object.freeze({ panel: 0x14334d, edge: 0x8fd8ff, ghost: 0x32688b, ghostEdge: 0xc7efff }),
+  rehearsal: Object.freeze({ panel: 0x351d4e, edge: 0xb77cff, door: 0xe0b8ff }),
+  actOne: Object.freeze({ panel: 0x351d4e, edge: 0xb77cff, door: 0xe0b8ff }),
+  actTwo: Object.freeze({ panel: 0x3a2b0e, edge: 0xffc857, door: 0xffe2a0 }),
+  actThree: Object.freeze({ panel: 0x14334d, edge: 0x8fd8ff, door: 0xc7efff }),
 });
 
 function materialsWithColor(root, color) {
@@ -68,20 +73,20 @@ function setMaterialColors(materials, color) {
   materials.forEach((material) => material.color?.setHex(color));
 }
 
-function createGhostCopy(tracker, name = "PLAYER.WASM · GHOST COPY") {
-  const machine = createVectorMachine({
+function createGhostCopy(tracker) {
+  const machine = createPlayerProgram({
     tracker,
-    id: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-    title: name,
-    size: [1.5, 1.2, 1.5],
-    panelColor: 0x6b448b,
-    panelTopColor: 0x6b448b,
-    edgeColor: 0xe0b8ff,
-    lampCount: 0,
+    id: "shadow-player-wasm-copy",
+    title: "PLAYER.WASM",
   });
-  setVectorMachineBuild(machine, { outlineAmount: 0, riseAmount: 1, opacity: 1 });
-  machine.group.name = `shadow-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  machine.group.name = "shadow-player-wasm-copy";
   return machine.group;
+}
+
+function setRouteLifecycle(route, time, lifecycle) {
+  const cable = route.userData.vectorCable;
+  if (!cable) return;
+  setVectorCableLifecycle(cable, time, lifecycle);
 }
 
 function attackAmount(time, attack) {
@@ -107,7 +112,7 @@ function createPackets(tracker, count, color) {
   });
 }
 
-export function createShadowVmSequence(tracker) {
+export function createShadowVmSequence(tracker, { getPlayerWorldPosition } = {}) {
   const group = new THREE.Group();
   group.name = "shadow-vm-three-acts";
   group.position.set(
@@ -133,8 +138,8 @@ export function createShadowVmSequence(tracker) {
   const halfWidth = shadowLayout.width * 0.5;
   const halfDepth = shadowLayout.depth * 0.5;
   const subject = createGhostCopy(tracker);
-  const runA = createGhostCopy(tracker, "PLAYER.WASM A");
-  const runB = createGhostCopy(tracker, "PLAYER.WASM B");
+  const runA = createGhostCopy(tracker);
+  const runB = createGhostCopy(tracker);
   group.add(layer.group, subject, runA, runB);
 
   const comparisonPads = [-1, 1].map((side, index) => {
@@ -190,8 +195,6 @@ export function createShadowVmSequence(tracker) {
       ...materialsWithColor(layer.grid, 0xb77cff),
       ...materialsWithColor(layer.outline.group, 0xb77cff),
     ],
-    ghostPanels: [subject, runA, runB].flatMap((ghost) => materialsWithColor(ghost, 0x6b448b)),
-    ghostEdges: [subject, runA, runB].flatMap((ghost) => materialsWithColor(ghost, 0xe0b8ff)),
     entryDoor: materialsWithColor(entryDoor.group, 0xd8acff),
     mockDoors: mockDoors.flatMap((door) => materialsWithColor(door.group, 0xc28bff)),
   };
@@ -199,9 +202,7 @@ export function createShadowVmSequence(tracker) {
   function setTestPalette(palette) {
     setMaterialColors(paletteTargets.layerPanels, palette.panel);
     setMaterialColors(paletteTargets.layerEdges, palette.edge);
-    setMaterialColors(paletteTargets.ghostPanels, palette.ghost);
-    setMaterialColors(paletteTargets.ghostEdges, palette.ghostEdge);
-    setMaterialColors(paletteTargets.entryDoor, palette.ghostEdge);
+    setMaterialColors(paletteTargets.entryDoor, palette.door);
     setMaterialColors(paletteTargets.mockDoors, palette.edge);
   }
 
@@ -217,6 +218,20 @@ export function createShadowVmSequence(tracker) {
     new THREE.Vector3(2.5, ghostFlightY, -1.2),
     new THREE.Vector3(0, ghostFlightY, 0),
   ], false, "centripetal", 0.45);
+
+  function updateEntryFlight() {
+    if (typeof getPlayerWorldPosition !== "function") return;
+    const worldStart = getPlayerWorldPosition(new THREE.Vector3());
+    group.updateWorldMatrix(true, false);
+    const localStart = group.worldToLocal(worldStart.clone());
+    const approach = new THREE.Vector3(halfWidth + 0.85, ghostFlightY, -2.05);
+    entryFlight.points[0].copy(localStart);
+    [0.22, 0.46, 0.7].forEach((amount, index) => {
+      entryFlight.points[index + 1].lerpVectors(localStart, approach, amount);
+      entryFlight.points[index + 1].y += Math.sin(amount * Math.PI) * 0.34;
+    });
+    entryFlight.updateArcLengths();
+  }
 
   const inputStart = new THREE.Vector3(-1.35, deckTop + 0.12, halfDepth - 0.65);
   const inputEnd = new THREE.Vector3(0, deckTop + 0.32, 0.6);
@@ -416,54 +431,56 @@ export function createShadowVmSequence(tracker) {
         : SHADOW_TEST_PALETTES.actThree;
     setTestPalette(palette);
 
+    const cableOutroStart = window.end - 1.35;
+    const cableOutroEnd = window.end - 0.94;
+    const doorOutroStart = window.end - 0.9;
+    const doorOutroEnd = window.end - 0.38;
+    const layerOutroStart = window.end - 0.38;
+    const contentOutro = riseBetween(time, cableOutroStart, doorOutroEnd);
     const intro = riseBetween(time, window.start, window.start + 0.42);
-    const outro = 1 - riseBetween(time, window.end - 0.35, window.end);
-    const alpha = intro * outro;
-    const outline = riseBetween(time, window.start, window.start + 0.28);
-    const layerRise = riseBetween(time, window.start + 0.28, window.start + 0.72);
-    setVectorLayerBuild(layer, {
-      outlineAmount: outline,
-      riseAmount: layerRise,
-      opacity: alpha,
-      outlineOpacity: alpha * (1 - riseBetween(time, window.start + 0.28, window.start + 0.62)),
-      titleOpacity: 0,
+    const alpha = intro * (1 - contentOutro);
+    setVectorLayerLifecycle(layer, time, {
+      introStart: window.start,
+      introEnd: window.start + 0.72,
+      outroStart: layerOutroStart,
+      outroEnd: window.end,
     });
 
-    const porch = riseBetween(time, window.start + 0.55, window.start + 0.88);
-    const label = riseBetween(time, window.start + 0.72, window.start + 1.02);
-    const doorRise = riseBetween(time, window.start + 0.92, window.start + 1.28);
-    setFactoryDoorEmergence(entryDoor, {
-      porchAmount: porch,
-      labelAmount: label,
-      riseAmount: doorRise,
-      opacity: alpha,
+    setFactoryDoorLifecycle(entryDoor, time, {
+      introStart: window.start + 0.55,
+      introEnd: window.start + 1.28,
+      openStart: window.start + 1.12,
+      openEnd: window.start + 1.38,
+      outroStart: doorOutroStart,
+      outroEnd: doorOutroEnd,
     });
     const showMockDoors = rehearsal || actOne;
     mockDoors.forEach((door, index) => {
       const delay = index * 0.07;
-      setFactoryDoorEmergence(door, {
-        porchAmount: showMockDoors
-          ? riseBetween(time, window.start + 0.66 + delay, window.start + 0.94 + delay)
-          : 0,
-        labelAmount: showMockDoors
-          ? riseBetween(time, window.start + 0.82 + delay, window.start + 1.12 + delay)
-          : 0,
-        riseAmount: showMockDoors
-          ? riseBetween(time, window.start + 1.02 + delay, window.start + 1.34 + delay)
-          : 0,
-        opacity: alpha,
-      });
+      if (showMockDoors) {
+        setFactoryDoorLifecycle(door, time, {
+          introStart: window.start + 0.66 + delay,
+          introEnd: window.start + 1.34 + delay,
+          outroStart: doorOutroStart,
+          outroEnd: doorOutroEnd,
+        });
+      } else {
+        setFactoryDoorEmergence(door, {
+          porchAmount: 0,
+          labelAmount: 0,
+          riseAmount: 0,
+          opacity: 0,
+        });
+      }
     });
-    const doorOpen = riseBetween(time, window.start + 1.12, window.start + 1.38)
-      * (1 - riseBetween(time, window.end - 0.32, window.end - 0.08));
-    setFactoryDoorOpen(entryDoor, doorOpen);
 
+    updateEntryFlight();
     const flight = riseBetween(time, window.start + 1.18, window.start + 1.72);
     const point = entryFlight.getPointAt(flight);
     subject.position.copy(point);
     subject.rotation.set(0, 0, 0);
     const squeeze = Math.max(0, 1 - Math.abs(flight - 0.59) / 0.18);
-    const baseGhostScale = THREE.MathUtils.lerp(0.82, 0.72, flight) - squeeze * 0.12;
+    const baseGhostScale = PLAYER_GHOST_SCALE - squeeze * 0.2;
     subject.scale.setScalar(baseGhostScale);
     setShadowOpacity(subject, alpha);
 
@@ -484,11 +501,11 @@ export function createShadowVmSequence(tracker) {
     setShadowHashBadge(hashBadge, {}, 0);
     setShadowHud(hud, { act: 1 }, 0);
     setShadowByteStrip(byteStrip, {}, 0);
-    comparisonPads.forEach((pad) => setVectorLayerBuild(pad, {
-      outlineAmount: 0,
-      riseAmount: 0,
-      opacity: 0,
-      outlineOpacity: 0,
+    comparisonPads.forEach((pad) => setVectorLayerLifecycle(pad, time, {
+      introStart: 83.28,
+      introEnd: 84.18,
+      outroStart: 88.65,
+      outroEnd: 89.08,
     }));
     setShadowComparisonBridge(comparisonBridge, { progress: 0, divergence: 100 }, 0);
     setShadowTendril(networkTendril, 0, 0);
@@ -502,10 +519,18 @@ export function createShadowVmSequence(tracker) {
 
     if (rehearsal) {
       subject.position.y += Math.sin(time * Math.PI * 2.1) * 0.05;
-      const mockProgress = riseBetween(time, 59.25, 59.8);
-      inputCable.visible = mockProgress > 0.001;
-      framebufferCable.visible = time >= 59.42;
-      fileCable.visible = time >= 59.62;
+      setRouteLifecycle(inputCable, time, {
+        introStart: 59.25, introEnd: 59.8,
+        outroStart: cableOutroStart, outroEnd: cableOutroEnd,
+      });
+      setRouteLifecycle(framebufferCable, time, {
+        introStart: 59.42, introEnd: 59.86,
+        outroStart: cableOutroStart, outroEnd: cableOutroEnd,
+      });
+      setRouteLifecycle(fileCable, time, {
+        introStart: 59.62, introEnd: 60.02,
+        outroStart: cableOutroStart, outroEnd: cableOutroEnd,
+      });
       inputPackets.forEach((packet, index) => {
         const packetProgress = clamp01(interval(time, 59.18 + index * 0.12, 59.72 + index * 0.12));
         packet.position.copy(inputCurve.getPointAt(packetProgress));
@@ -533,23 +558,31 @@ export function createShadowVmSequence(tracker) {
     const beat = shadowBeatAt(time);
 
     if (actOne) {
-      const mockStart = SHADOW_VM_WINDOWS.actOne.start + 2;
-      const mockProgress = riseBetween(time, mockStart, mockStart + 1.25);
-      inputCable.visible = mockProgress > 0.001;
-      framebufferCable.visible = time >= mockStart + 0.2;
-      fileCable.visible = time >= mockStart + 0.38;
+      const mockStart = SHADOW_VM_WINDOWS.actOne.start + 2.8;
+      setRouteLifecycle(inputCable, time, {
+        introStart: mockStart, introEnd: mockStart + 0.8,
+        outroStart: cableOutroStart, outroEnd: cableOutroEnd,
+      });
+      setRouteLifecycle(framebufferCable, time, {
+        introStart: mockStart + 0.45, introEnd: mockStart + 1.05,
+        outroStart: cableOutroStart, outroEnd: cableOutroEnd,
+      });
+      setRouteLifecycle(fileCable, time, {
+        introStart: mockStart + 0.9, introEnd: mockStart + 1.5,
+        outroStart: cableOutroStart, outroEnd: cableOutroEnd,
+      });
       inputPackets.forEach((packet, index) => {
         const packetProgress = clamp01(interval(time, mockStart + index * 0.24, mockStart + 1.18 + index * 0.24));
         packet.position.copy(inputCurve.getPointAt(packetProgress));
         packet.visible = packetProgress > 0.001 && packetProgress < 0.999;
       });
-      const panelOpen = riseBetween(time, mockStart + 0.55, mockStart + 1.35);
+      const panelOpen = riseBetween(time, mockStart + 0.7, mockStart + 1.9);
       setShadowFramePanel(framePanel, panelOpen, panelOpen * alpha);
-      const fileDrop = riseBetween(time, mockStart + 1.05, mockStart + 2.05);
+      const fileDrop = riseBetween(time, mockStart + 1.5, mockStart + 2.9);
       fileObject.position.set(1, THREE.MathUtils.lerp(deckTop + 2.2, deckTop + 0.16, fileDrop), 2.55);
       fileObject.rotation.y = fileDrop * Math.PI * 1.5;
       setShadowOpacity(fileObject, fileDrop * alpha);
-      const hashLock = riseBetween(time, 75.3, 76.65);
+      const hashLock = riseBetween(time, 77, 80.45);
       setShadowHashBadge(hashBadge, { locked: hashLock > 0.78 }, hashLock * alpha);
       setShadowHud(hud, {
         act: 1,
@@ -557,29 +590,21 @@ export function createShadowVmSequence(tracker) {
         claims: Math.round(hashLock * 654),
         current: beat?.caption,
         accent: "#b77cff",
-      }, riseBetween(time, 72.4, 73.05) * alpha);
+      }, riseBetween(time, 72.4, 73.25) * alpha);
     }
 
     if (actTwo) {
-      const padOutline = riseBetween(time, 78.28, 78.72);
-      const padRise = riseBetween(time, 78.72, 79.18);
-      comparisonPads.forEach((pad) => setVectorLayerBuild(pad, {
-        outlineAmount: padOutline,
-        riseAmount: padRise,
-        opacity: alpha,
-        outlineOpacity: alpha * (1 - riseBetween(time, 78.72, 79.08)),
-        titleOpacity: 0,
-      }));
-      const split = riseBetween(time, 78.86, 79.62);
+      const split = riseBetween(time, 83.86, 84.62);
       setShadowOpacity(subject, alpha * (1 - split));
       [runA, runB].forEach((run, index) => {
         const side = index === 0 ? -1 : 1;
         run.position.set(side * 1.72 * split, comparisonPadTop, -0.55);
-        run.scale.setScalar(0.72);
+        run.scale.setScalar(PLAYER_GHOST_SCALE);
         setShadowOpacity(run, split * alpha);
       });
-      const comparison = riseBetween(time, 79.35, 80.35);
-      const convergence = riseBetween(time, 80.1, 83.7);
+      const comparison = riseBetween(time, 84.35, 85.35)
+        * (1 - riseBetween(time, 88.2, 88.65));
+      const convergence = riseBetween(time, 85.1, 88.2);
       const divergence = THREE.MathUtils.lerp(100, 0, convergence);
       setShadowComparisonBridge(comparisonBridge, {
         progress: comparison,
@@ -596,7 +621,7 @@ export function createShadowVmSequence(tracker) {
     if (actThree) {
       setShadowOpacity(subject, alpha);
       subject.position.set(0, deckTop + 0.02, 0);
-      subject.scale.setScalar(0.72);
+      subject.scale.setScalar(PLAYER_GHOST_SCALE);
       redWash.visible = true;
       redWash.material.opacity = (0.08 + Math.abs(Math.sin(time * 5.2)) * 0.08) * alpha;
       const activeAttack = SHADOW_VM_ATTACKS.find(({ start, end }) => time >= start && time < end);
@@ -630,7 +655,11 @@ export function createShadowVmSequence(tracker) {
           impactPoint.copy(subject.position);
         } else if (activeAttack.kind === "memory") {
           const swell = Math.sin(amount * Math.PI);
-          subject.scale.set(0.72 + swell * 0.7, 0.72 + swell * 1.2, 0.72 + swell * 0.7);
+          subject.scale.set(
+            PLAYER_GHOST_SCALE + swell * 0.7,
+            PLAYER_GHOST_SCALE + swell * 1.2,
+            PLAYER_GHOST_SCALE + swell * 0.7,
+          );
           setShadowOpacity(memoryCeiling, swell * alpha);
           impactPoint.set(0, deckTop + 2.65, 0);
         } else if (activeAttack.kind === "token") {
@@ -668,7 +697,7 @@ export function createShadowVmSequence(tracker) {
     }
 
     if (receiptPhase) {
-      const death = riseBetween(time, 93.2, 93.5);
+      const death = riseBetween(time, 98.2, 98.5);
       setShadowOpacity(subject, alpha * (1 - death));
       subject.position.set(0, deckTop + 0.02, 0);
       setShadowFragments(fragments, death, subject.position, death * alpha);
@@ -679,11 +708,16 @@ export function createShadowVmSequence(tracker) {
         current: "GHOST TERMINATED",
         accent: "#8fd8ff",
       }, alpha);
-      testimonyCable.visible = death > 0.35;
-      const receiptTravel = riseBetween(time, 93.35, 93.85);
+      setRouteLifecycle(testimonyCable, time, {
+        introStart: 98.3,
+        introEnd: 98.5,
+        outroStart: 98.78,
+        outroEnd: 99,
+      });
+      const receiptTravel = riseBetween(time, 98.35, 98.85);
       receipt.group.position.copy(receiptFlight.getPointAt(receiptTravel));
       receipt.group.scale.setScalar(0.58 + Math.sin(receiptTravel * Math.PI) * 0.18);
-      setShadowOpacity(receipt.group, riseBetween(time, 93.25, 93.45) * alpha);
+      setShadowOpacity(receipt.group, riseBetween(time, 98.25, 98.45) * alpha);
       redWash.visible = true;
       redWash.material.opacity = 0.08 * alpha;
     }
