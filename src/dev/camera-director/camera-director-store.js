@@ -31,6 +31,8 @@ export function createCameraDirectorStore(initialKeyframes = []) {
   const past = [];
   const future = [];
   const listeners = new Set();
+  let dragStartState = null;
+  let dragChanged = false;
 
   const emit = () => listeners.forEach((listener) => listener(getSnapshot()));
   const persist = () => window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -41,6 +43,8 @@ export function createCameraDirectorStore(initialKeyframes = []) {
     state: cloneState(state),
   });
   const restore = (nextState) => {
+    dragStartState = null;
+    dragChanged = false;
     state = {
       initialized: true,
       keyframes: sortKeyframes(nextState.keyframes ?? []),
@@ -93,6 +97,38 @@ export function createCameraDirectorStore(initialKeyframes = []) {
         draft.initialized = true;
         draft.version = 1;
       });
+    },
+
+    beginSelectedDrag() {
+      if (!selectedId || dragStartState) return false;
+      dragStartState = cloneState(state);
+      dragChanged = false;
+      return true;
+    },
+
+    finishSelectedDrag() {
+      if (!dragStartState) return;
+      if (dragChanged) {
+        past.push(dragStartState);
+        if (past.length > HISTORY_LIMIT) past.shift();
+        future.length = 0;
+        persist();
+        emit();
+      }
+      dragStartState = null;
+      dragChanged = false;
+    },
+
+    previewSelectedProgress(progress) {
+      if (!selectedId || !dragStartState) return;
+      const keyframe = state.keyframes.find(({ id }) => id === selectedId);
+      if (!keyframe) return;
+      const nextProgress = Math.max(0, Math.min(1, Number(progress) || 0));
+      if (Math.abs(keyframe.progress - nextProgress) < 0.000001) return;
+      keyframe.progress = nextProgress;
+      state.keyframes = sortKeyframes(state.keyframes);
+      dragChanged = true;
+      emit();
     },
 
     redo() {

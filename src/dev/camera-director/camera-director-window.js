@@ -26,7 +26,8 @@ const popupMarkup = `<!doctype html>
     .timeline input { position: absolute; z-index: 1; inset: 0; width: 100%; margin: 0; accent-color: #65d4ff; }
     .markers { position: absolute; z-index: 2; inset: 0 7px; pointer-events: none; }
     .marker { position: absolute; top: 6px; width: 11px; min-width: 0; height: 22px; padding: 0; border-color: #65d4ff; border-radius: 2px 7px 7px 7px; background: #1486b8; transform: translateX(-50%) rotate(45deg); pointer-events: auto; }
-    .marker[aria-current="true"] { background: #d9f7ff; box-shadow: 0 0 14px #5ad4ff; }
+    .marker--continuous { background: #23b89a; }
+    .marker[aria-current="true"] { background: #d9f7ff; box-shadow: 0 0 14px #5ad4ff; cursor: ew-resize; touch-action: none; }
     .content { display: grid; grid-template-columns: 280px minmax(440px, 1fr); min-height: 0; overflow: hidden; }
     .list { overflow: auto; border-right: 1px solid #1c3444; }
     .keyframe { display: grid; grid-template-columns: 36px 1fr; gap: 3px 8px; width: 100%; padding: 8px 10px; border: 0; border-bottom: 1px solid #142936; border-radius: 0; text-align: left; }
@@ -90,6 +91,7 @@ const popupMarkup = `<!doctype html>
     <footer class="footer">
       <button data-action="add">+ KEYFRAME</button>
       <button data-action="capture">UPDATE FROM CAMERA</button>
+      <button data-action="continuous">CONTINUOUS</button>
       <button class="danger" data-action="delete">DELETE</button>
       <button data-action="undo">UNDO</button>
       <button data-action="redo">REDO</button>
@@ -123,6 +125,9 @@ export function openCameraDirectorWindow({ controller, navigationItems, store })
   const importInput = doc.querySelector("[data-import]");
   let snapshot = store.getSnapshot();
   let controllerState = controller.getState();
+  let draggingMarker = false;
+  let dragStartX = 0;
+  let dragMoved = false;
 
   const sections = doc.querySelector("[data-sections]");
   navigationItems.forEach((item) => {
@@ -139,6 +144,8 @@ export function openCameraDirectorWindow({ controller, navigationItems, store })
     if (popup.closed) return;
     const { keyframes } = snapshot.state;
     const selected = keyframes.find(({ id }) => id === snapshot.selectedId) ?? null;
+    const selectedIndex = keyframes.findIndex(({ id }) => id === snapshot.selectedId);
+    const continuousButton = doc.querySelector("[data-action='continuous']");
     timeline.value = controllerState.progress;
     progressOutput.value = controllerState.progress.toFixed(4);
     doc.querySelector("[data-action='edit']").setAttribute("aria-pressed", String(controllerState.editing));
@@ -149,16 +156,25 @@ export function openCameraDirectorWindow({ controller, navigationItems, store })
     doc.querySelector("[data-action='redo']").disabled = !snapshot.canRedo;
     doc.querySelector("[data-action='delete']").disabled = !selected;
     doc.querySelector("[data-action='capture']").disabled = !selected;
+    continuousButton.disabled = selectedIndex <= 0 || selectedIndex >= keyframes.length - 1;
+    continuousButton.setAttribute("aria-pressed", String(selected?.continuous === true));
     status.textContent = controllerState.pointerLocked
       ? `FPS ${controllerState.speed.toFixed(1)} · ESC löst Maus`
       : "WASD · Q/E · Shift · Mausrad";
 
     markers.replaceChildren(...keyframes.map((keyframe) => {
       const marker = doc.createElement("button");
-      marker.className = "marker";
+      marker.className = `marker${keyframe.continuous ? " marker--continuous" : ""}`;
       marker.style.left = `${keyframe.progress * 100}%`;
       marker.title = `Keyframe ${keyframe.progress.toFixed(4)}`;
       marker.setAttribute("aria-current", String(keyframe.id === snapshot.selectedId));
+      marker.addEventListener("pointerdown", (event) => {
+        if (keyframe.id !== snapshot.selectedId) return;
+        event.preventDefault();
+        draggingMarker = store.beginSelectedDrag();
+        dragStartX = event.clientX;
+        dragMoved = false;
+      });
       marker.addEventListener("click", () => {
         store.select(keyframe.id);
         controller.seek(keyframe.progress);
@@ -182,7 +198,7 @@ export function openCameraDirectorWindow({ controller, navigationItems, store })
         const spacer = doc.createElement("span");
         const details = doc.createElement("span");
         number.textContent = String(index + 1).padStart(2, "0");
-        name.textContent = keyframe.label;
+        name.textContent = `${keyframe.label}${keyframe.continuous ? " ↔" : ""}`;
         details.textContent = `${keyframe.progress.toFixed(4)} · ${formatTuple(keyframe.position)}`;
         button.append(number, name, spacer, details);
         button.addEventListener("click", () => {
@@ -219,12 +235,34 @@ export function openCameraDirectorWindow({ controller, navigationItems, store })
   });
 
   timeline.addEventListener("input", () => controller.seek(Number(timeline.value)));
+  const finishMarkerDrag = () => {
+    if (!draggingMarker) return;
+    store.finishSelectedDrag();
+    draggingMarker = false;
+    dragMoved = false;
+  };
+  doc.addEventListener("pointermove", (event) => {
+    if (!draggingMarker) return;
+    if (!dragMoved && Math.abs(event.clientX - dragStartX) < 3) return;
+    dragMoved = true;
+    const bounds = markers.getBoundingClientRect();
+    const progress = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+    store.previewSelectedProgress(progress);
+    controller.seek(progress);
+  });
+  doc.addEventListener("pointerup", finishMarkerDrag);
+  doc.addEventListener("pointercancel", finishMarkerDrag);
+  popup.addEventListener("blur", finishMarkerDrag);
   inspector.addEventListener("change", updateFromForm);
   doc.querySelector("[data-action='edit']").addEventListener("click", () => controller.setEditing(!controller.getState().editing));
   doc.querySelector("[data-action='fps']").addEventListener("click", () => controller.setFpsEnabled(!controller.getState().fpsEnabled));
   doc.querySelector("[data-action='play']").addEventListener("click", () => controller.setPlaying(!controller.getState().playing));
   doc.querySelector("[data-action='add']").addEventListener("click", () => store.addKeyframe(captureCurrent()));
   doc.querySelector("[data-action='capture']").addEventListener("click", () => store.updateSelected(captureCurrent()));
+  doc.querySelector("[data-action='continuous']").addEventListener("click", () => {
+    const selected = snapshot.state.keyframes.find(({ id }) => id === snapshot.selectedId);
+    if (selected) store.updateSelected({ continuous: !selected.continuous });
+  });
   doc.querySelector("[data-action='delete']").addEventListener("click", store.deleteSelected);
   doc.querySelector("[data-action='undo']").addEventListener("click", store.undo);
   doc.querySelector("[data-action='redo']").addEventListener("click", store.redo);

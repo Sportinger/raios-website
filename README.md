@@ -277,6 +277,10 @@ oder exportieren. Auf der produktiven Website wird ohne den Query-Parameter kein
 Editor erzeugt. Beim ersten Start übernimmt der Director die semantischen
 Kamera-Anker der vorhandenen Story als editierbaren Basistrack. `STORY RESET`
 stellt diesen Ausgangsstand wieder her und bleibt per Undo rückgängig machbar.
+Ein bereits ausgewählter Timeline-Marker lässt sich horizontal ziehen; der
+gesamte Drag ist ein einzelner Undo-Schritt. `CONTINUOUS` gibt einem inneren
+Keyframe eine gemeinsame Ein-/Ausgangstangente, sodass die Kamera ihn ohne
+vollständiges Abbremsen durchfährt.
 
 ## Produktions-Build
 
