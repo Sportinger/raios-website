@@ -1046,7 +1046,7 @@ export function createFoundationWorld() {
     height: FOUNDATION_LAYER_HEIGHT,
     color: PALETTE.panel, edgeColor: 0x587b9e, label: "GENESIS DECK", labelColor: PALETTE.ink,
   });
-  place(genesis.group, FOUNDATION_LAYOUT.genesis);
+  place(genesis.group, FOUNDATION_LAYOUT.genesisCompact);
   const genesisOutline = createFootprintOutline(
     GENESIS_FOOTPRINT.width,
     GENESIS_FOOTPRINT.depth,
@@ -1348,13 +1348,11 @@ export function createFoundationWorld() {
     const genesisOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.genesisOutline);
     const genesisRise = timedProgress(time, FOUNDATION_TIMELINE.genesisRise);
     genesis.group.position.set(
-      THREE.MathUtils.lerp(
-        FOUNDATION_LAYOUT.genesisCompact[0],
-        FOUNDATION_LAYOUT.genesis[0],
-        foundationExpansion,
-      ),
-      FOUNDATION_LAYOUT.genesis[1],
-      FOUNDATION_LAYOUT.genesis[2],
+      FOUNDATION_LAYOUT.genesisCompact[0]
+        - FOUNDATION_LAYOUT.expansionOffset[0] * foundationExpansion / foundationScaleX,
+      FOUNDATION_LAYOUT.genesisCompact[1],
+      FOUNDATION_LAYOUT.genesisCompact[2]
+        - FOUNDATION_LAYOUT.expansionOffset[2] * foundationExpansion / foundationScaleZ,
     );
     setDeckRise(genesis, genesisRise);
     const genesisSolidVisible = genesisRise > 0.001;

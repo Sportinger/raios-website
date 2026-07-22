@@ -7,7 +7,6 @@ export const FOUNDATION_LAYOUT = Object.freeze({
   kernel: point(-3.05, 0, 0),
   expansionOffset: point(-1.9, 0, 1),
   genesisCompact: point(-3.05, FOUNDATION_LAYER_HEIGHT, 0),
-  genesis: point(-0.4, FOUNDATION_LAYER_HEIGHT, 0),
   agentCompact: point(-2.0, FOUNDATION_LAYER_HEIGHT * 2, 0.87),
   agent: point(0, FOUNDATION_LAYER_HEIGHT * 2, 1.37),
   keyForge: point(0.52, FOUNDATION_LAYER_HEIGHT * 2, -1.12),
