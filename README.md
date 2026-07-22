@@ -38,6 +38,10 @@ Bis Playback `00:13.00` zeigt die Kamera den Rust-Kernel aus einer horizontalen,
 um `45°` gegen den Uhrzeigersinn versetzten 2D-Seitenansicht auf dessen
 Mittelhöhe. Von `00:13.00` bis `00:15.30` fährt sie weich in die kanonische
 isometrische Filmansicht zurück.
+Bei hörbarem PLAY wartet die eingebettete Animation an jeder Cue-Grenze auf das
+tatsächliche Ende der Audiodatei. Dadurch werden insbesondere die längeren
+Sprecherdateien ab Kapitel 09 nicht mehr durch den nächsten Animationszustand
+abgeschnitten; stummes Scrollen und direkte Sprünge bleiben unverändert.
 
 ## Lokal starten
 

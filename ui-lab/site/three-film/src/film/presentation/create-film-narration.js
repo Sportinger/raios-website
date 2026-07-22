@@ -1,6 +1,8 @@
 import { FILM_NARRATION_AUDIO_CUES } from "./film-playback-timeline.js";
 
 const clamp = (value, minimum, maximum) => Math.min(maximum, Math.max(minimum, value));
+const AUDIO_END_HOLD_SECONDS = 0.02;
+const AUDIO_FINISH_TOLERANCE_SECONDS = 0.005;
 
 function createTrack(source, cueId, direction) {
   const track = new Audio(source);
@@ -22,7 +24,7 @@ function pauseTrack(track) {
 
 function seekTrack(track, time, duration) {
   try {
-    track.currentTime = clamp(time, 0, Math.max(0, duration - 0.01));
+    track.currentTime = clamp(time, 0, Math.max(0, duration - 0.001));
   } catch {
     // Metadata may still be loading. The next cue transition will seek again.
   }
@@ -74,7 +76,7 @@ export function createFilmNarration({ host } = {}) {
   };
 
   const renderAudio = (now) => {
-    const cue = cues.find(({ start, end }) => filmTime >= start && filmTime < end - 0.01);
+    const cue = cues.find(({ start, end }) => filmTime >= start && filmTime < end);
     const moving = playing;
 
     if (disabled || muted || !unlocked || !cue || !moving) {
@@ -140,6 +142,21 @@ export function createFilmNarration({ host } = {}) {
   frame = requestAnimationFrame(renderAudio);
 
   return {
+    advancePlaybackTime(time, delta) {
+      const currentTime = Number.isFinite(Number(time)) ? Number(time) : 0;
+      const nextTime = currentTime + Math.max(0, Number(delta) || 0);
+      if (disabled || muted || !unlocked || !playing) return nextTime;
+
+      const cue = cues.find(({ start, end }) => currentTime >= start && currentTime < end);
+      if (!cue || nextTime < cue.end) return nextTime;
+      const mediaDuration = Number.isFinite(cue.forward.duration) && cue.forward.duration > 0
+        ? cue.forward.duration
+        : cue.duration;
+      const audioFinished = cue.forward.ended
+        || cue.forward.currentTime >= mediaDuration - AUDIO_FINISH_TOLERANCE_SECONDS;
+      if (audioFinished) return nextTime;
+      return Math.min(nextTime, cue.end - AUDIO_END_HOLD_SECONDS);
+    },
     setTime(time, { source = "seek" } = {}) {
       const nextTime = Number.isFinite(Number(time)) ? Number(time) : 0;
       filmTime = nextTime;

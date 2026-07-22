@@ -254,7 +254,11 @@ export function createFilmApp({
       return;
     }
     if (playing) {
-      setTime(playbackTime + delta * AUTOPLAY_SECONDS_PER_SECOND, true, "play");
+      const nextPlaybackTime = narration.advancePlaybackTime(
+        playbackTime,
+        delta * AUTOPLAY_SECONDS_PER_SECOND,
+      );
+      setTime(nextPlaybackTime, true, "play");
       if (playbackTime >= FILM_PLAYBACK_DURATION) {
         setPlaying(false);
       }
