@@ -2,7 +2,7 @@ import * as THREE from "three";
 
 const UNIT_Y = new THREE.Vector3(0, 1, 0);
 const CAMERA_PANEL_DISTANCE = 0.7;
-const CAMERA_PANEL_SCALE = 3.84;
+const CAMERA_PANEL_SCALE = 1.92;
 const DOCKED_PANEL_SCALE = 0.3;
 
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
