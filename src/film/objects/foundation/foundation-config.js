@@ -11,9 +11,12 @@ export const FOUNDATION_LAYOUT = Object.freeze({
   keyForge: point(0.52, 1.06, -1.12),
   netDoor: point(2.75, 0.76, 2.45),
   netTower: point(8.65, 0.27, 2.3),
-  builder: point(6.53, 0.72, -6.93),
-  buildDoor: point(1.95, 1.06, -2.35),
-  production: point(4.43, 1.06, -6.93),
+  builder: point(7.025, 0.72, -7.389),
+  buildDoor: point(2.833, 1.06, -1.08),
+  sysrootDoor: point(4.258, 1.06, -3.915),
+  srcDoor: point(6.008, 1.06, -3.929),
+  outDoor: point(3.308, 1.06, -8.284),
+  production: point(7.025, 1.06, -7.389),
 });
 
 export const KERNEL_FOOTPRINT = Object.freeze({
@@ -24,6 +27,11 @@ export const KERNEL_FOOTPRINT = Object.freeze({
 export const GENESIS_FOOTPRINT = Object.freeze({
   width: 6.9,
   depth: 6.9,
+});
+
+export const BUILDER_FOOTPRINT = Object.freeze({
+  width: 6.92,
+  depth: 6.92,
 });
 
 export const FOUNDATION_TIMELINE = Object.freeze({
@@ -41,8 +49,16 @@ export const FOUNDATION_TIMELINE = Object.freeze({
   builderRise: window(27.45, 28.45),
   buildDoorRise: window(27.45, 28.1),
   buildKey: Object.freeze({ start: 28, detach: 28.34, insert: 28.75, end: 29.2 }),
-  builderRoute: window(28.75, 29.65),
-  sourceRise: window(31.4, 31.95),
-  workpieceRise: window(33, 34),
-  assembly: window(34, 40),
+  sysrootRoute: window(28.75, 29.65),
+  sysrootDoorRise: window(29.65, 30.2),
+  sysrootKey: Object.freeze({ start: 30.2, detach: 30.45, insert: 30.75, end: 31.1 }),
+  srcRoute: window(30.75, 31.4),
+  srcDoorRise: window(31.4, 31.95),
+  srcKey: Object.freeze({ start: 31.95, detach: 32.2, insert: 32.5, end: 32.85 }),
+  workpieceRoute: window(32.5, 33.65),
+  outDoorRise: window(29.35, 29.95),
+  builderFloorOnline: window(30.15, 31.15),
+  workpieceRise: window(34, 37.2),
+  materialMain: window(34, 37.3),
+  materialCargo: window(34.8, 38.2),
 });

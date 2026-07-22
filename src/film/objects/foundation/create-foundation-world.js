@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import {
+  BUILDER_FOOTPRINT,
   FOUNDATION_LAYOUT,
   FOUNDATION_TIMELINE,
   GENESIS_FOOTPRINT,
@@ -136,6 +137,39 @@ function createLabel(text, color = PALETTE.ink, width = 3, fontSize = 52) {
   const sprite = new THREE.Sprite(material);
   sprite.scale.set(width, width * (canvas.height / canvas.width), 1);
   sprite.renderOrder = 50;
+  sprite.userData.labelTexture = texture;
+  return sprite;
+}
+
+function createWideLabel(text, color = PALETTE.ink, width = 6, fontSize = 44) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 2048;
+  canvas.height = 180;
+  const context = canvas.getContext("2d");
+  const renderedFontSize = Math.min(138, fontSize * 2.45);
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.font = `800 ${renderedFontSize}px Consolas, monospace`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.lineJoin = "round";
+  context.lineWidth = Math.max(8, renderedFontSize * 0.1);
+  context.strokeStyle = "#05080d";
+  context.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
+  context.strokeText(text, canvas.width / 2, canvas.height / 2, 1960);
+  context.fillText(text, canvas.width / 2, canvas.height / 2, 1960);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  const material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+  });
+  material.userData.preserveTransparency = true;
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.set(width, width * canvas.height / canvas.width, 1);
+  sprite.renderOrder = 52;
   sprite.userData.labelTexture = texture;
   return sprite;
 }
@@ -617,7 +651,12 @@ function createNetTower() {
   return { group, rings, signal, beacon, glow };
 }
 
-function createDoorAndKey(labelText = "net.https") {
+function createDoorAndKey(labelText = "net.https", {
+  positiveSlope = false,
+  edgeColor = PALETTE.blueHigh,
+  labelColor = PALETTE.amber,
+  keyTagText = "CAP: NET.HTTPS",
+} = {}) {
   const group = new THREE.Group();
   const frame = new THREE.Group();
   const socket = new THREE.Mesh(
@@ -637,11 +676,11 @@ function createDoorAndKey(labelText = "net.https") {
       corner,
       socketCorners[(index + 1) % socketCorners.length],
       0.022,
-      PALETTE.blueHigh,
+      edgeColor,
       6,
     ));
   });
-  const frameMaterial = new THREE.MeshBasicMaterial({ color: PALETTE.blueHigh });
+  const frameMaterial = new THREE.MeshBasicMaterial({ color: edgeColor });
   const verticalGeometry = new THREE.BoxGeometry(0.12, 1.55, 0.16);
   const lintelGeometry = new THREE.BoxGeometry(1.18, 0.12, 0.16);
   const left = new THREE.Mesh(verticalGeometry, frameMaterial);
@@ -683,11 +722,11 @@ function createDoorAndKey(labelText = "net.https") {
     hinges.add(hinge);
   });
   frame.add(socket, socketEdges, doorVoid, left, right, lintel, threshold, leafPivot, hinges);
-  const label = createLabel(labelText, PALETTE.amber, 1.05, 68);
+  const label = createLabel(labelText, labelColor, 1.05, 68);
   label.position.set(0, 0.12, 0.86);
   label.material.depthTest = false;
   frame.add(label);
-  frame.rotation.y = Math.PI / 2;
+  frame.rotation.y = positiveSlope ? 0 : Math.PI / 2;
 
   const key = new THREE.Group();
   const ring = new THREE.Mesh(
@@ -704,7 +743,7 @@ function createDoorAndKey(labelText = "net.https") {
   tooth.rotation.z = Math.PI / 2;
   tooth.position.set(0.69, -0.12, 0);
   key.add(ring, shaft, tooth);
-  const keyTag = createLabel("CAP: NET.HTTPS", PALETTE.amber, 1.65, 40);
+  const keyTag = createLabel(keyTagText, PALETTE.amber, 1.65, 40);
   keyTag.position.set(0.32, 0.38, 0);
   key.add(keyTag);
   key.position.set(-1.85, 0.74, -2.25);
@@ -712,28 +751,60 @@ function createDoorAndKey(labelText = "net.https") {
   return { group, frame, leafPivot, key };
 }
 
-function createSourceAndWorkpiece() {
+function createBuilderHatch(width, depth) {
   const group = new THREE.Group();
-  const source = createOutlinedBox(new THREE.Vector3(1.25, 0.72, 1), PALETTE.panelHigh, PALETTE.greenHigh);
-  source.position.set(0, 0.36, 0);
-  const sourceLabel = createLabel("SOURCE", PALETTE.greenHigh, 1.15, 52);
-  sourceLabel.position.set(0, 0.45, 0.516);
-  source.add(sourceLabel);
+  const halfX = width / 2 - 0.08;
+  const halfZ = depth / 2 - 0.08;
+  const step = 0.36;
+  for (let x = -halfX; x <= halfX; x += step) {
+    group.add(createBeamBetween(
+      new THREE.Vector3(x, 0, -halfZ),
+      new THREE.Vector3(x, 0, halfZ),
+      0.016,
+      0x5f8fbd,
+      6,
+    ));
+  }
+  return group;
+}
+
+function createFileCard(name) {
+  const group = new THREE.Group();
+  const page = createOutlinedBox(new THREE.Vector3(0.46, 0.62, 0.055), 0x14243a, PALETTE.blueHigh);
+  page.position.y = 0.31;
+  const fold = createBeamBetween(
+    new THREE.Vector3(0.08, 0.58, 0.038),
+    new THREE.Vector3(0.2, 0.46, 0.038),
+    0.016,
+    PALETTE.blueHigh,
+    6,
+  );
+  const label = createLabel(name, PALETTE.ink, 0.82, 44);
+  label.position.set(0, -0.09, 0.07);
+  group.add(page, fold, label);
+  group.rotation.y = Math.PI / 4;
+  return group;
+}
+
+function createProduction() {
+  const group = new THREE.Group();
 
   const workpiece = new THREE.Group();
-  const capsule = createOutlinedBox(new THREE.Vector3(1.8, 0.58, 1.06), 0x183253, PALETTE.blueHigh);
-  capsule.position.y = 0.29;
-  const core = new THREE.Mesh(
-    new THREE.OctahedronGeometry(0.22, 0),
-    new THREE.MeshBasicMaterial({ color: PALETTE.blueHigh }),
+  const body = createOutlinedBox(new THREE.Vector3(1.06, 0.86, 0.94), 0x17263a, PALETTE.blueHigh);
+  body.position.y = 0.43;
+  const status = new THREE.Mesh(
+    new THREE.SphereGeometry(0.055, 10, 6),
+    new THREE.MeshBasicMaterial({ color: PALETTE.green }),
   );
-  core.position.set(-0.55, 0.62, 0);
-  const label = createLabel("WORKPIECE", PALETTE.ink, 1.45, 48);
-  label.position.set(0.16, 0.35, 0.546);
-  workpiece.add(capsule, core, label);
-  workpiece.position.set(2.6, 0, 0);
-  group.add(source, workpiece);
-  return { group, source, workpiece, core };
+  status.position.set(0, 0.96, 0);
+  const label = createLabel("PLAYER.RS", PALETTE.ink, 1.08, 54);
+  label.position.set(0, 0.48, 0.49);
+  workpiece.add(body, status, label);
+
+  const main = createFileCard("main.rs");
+  const cargo = createFileCard("Cargo.toml");
+  group.add(workpiece, main, cargo);
+  return { group, workpiece, main, cargo, status };
 }
 
 function createSignalRoute(curve, color = PALETTE.blue, samples = 30, thickness = 1) {
@@ -787,6 +858,37 @@ function setRouteProgress(route, amount, time, persistent = false) {
   route.glow.position.copy(position);
   route.pulse.visible = value > 0.02;
   route.glow.visible = route.pulse.visible;
+}
+
+function setCapabilityKey(key, time, timing, start, end, finalScale = 0.72) {
+  const growing = progress(time, timing.start, timing.detach);
+  const flying = progress(time, timing.detach, timing.insert);
+  const outro = 1 - progress(time, timing.insert + 0.12, timing.end);
+  key.visible = time >= timing.start && time < timing.end;
+  key.position.lerpVectors(start, end, flying);
+  key.position.y += Math.sin(flying * Math.PI) * 0.5;
+  const snap = time >= timing.detach && time < timing.detach + 0.2
+    ? Math.sin(progress(time, timing.detach, timing.detach + 0.2) * Math.PI)
+    : 0;
+  key.scale.setScalar(Math.max(0.001, growing * finalScale * (1 + snap * 0.16)));
+  key.rotation.y = 0;
+  key.rotation.z = THREE.MathUtils.degToRad(
+    THREE.MathUtils.lerp(-22, 0, growing) + flying * 58 - Math.sin(flying * Math.PI) * 16,
+  );
+  setFade(key, growing * outro);
+}
+
+function setMovingFile(file, route, time, timing, delay = 0) {
+  const start = timing.start + delay;
+  const end = timing.end + delay;
+  const amount = progress(time, start, end);
+  const intro = progress(time, start - 0.2, start + 0.18);
+  const absorb = 1 - progress(time, end - 0.34, end);
+  file.visible = intro * absorb > 0.001;
+  file.position.copy(route.getPointAt(amount));
+  file.position.y += 0.12 + Math.sin(amount * Math.PI) * 0.28;
+  file.scale.setScalar(Math.max(0.001, (0.55 + absorb * 0.45) * intro));
+  setFade(file, intro * absorb);
 }
 
 export function createFoundationWorld() {
@@ -896,28 +998,125 @@ export function createFoundationWorld() {
   ], false, "centripetal"), PALETTE.green, 30, 0.45);
 
   const builder = createDeck({
-    width: 5.1, depth: 4.25, height: 0.34,
+    width: BUILDER_FOOTPRINT.width, depth: BUILDER_FOOTPRINT.depth, height: 0.34,
     color: 0x111c2b, edgeColor: PALETTE.blueHigh, label: "BUILDER DECK",
   });
   place(builder.group, FOUNDATION_LAYOUT.builder);
-  const production = createSourceAndWorkpiece();
+  const builderHatch = createBuilderHatch(BUILDER_FOOTPRINT.width, BUILDER_FOOTPRINT.depth);
+  builderHatch.position.y = builder.height + 0.025;
+  builder.group.add(builderHatch);
+  const builderCallout = createLayerCallout({
+    title: "BUILDER DECK",
+    copy: "OFFLINE TOOLS \u00b7 SEALED EGRESS",
+    color: PALETTE.blueHigh,
+    width: 5.65,
+  });
+  const builderCalloutPosition = new THREE.Vector3(3.842, 2.1, -2.503);
+  const builderCalloutTarget = new THREE.Vector3(8.102, 1.08, -2.911);
+  setCalloutRoute(
+    builderCallout,
+    new THREE.Vector3(3.45, 1.92, -2.25),
+    new THREE.Vector3(5.86, 1.46, -2.55),
+    builderCalloutTarget,
+    PALETTE.blueHigh,
+  );
+
+  const production = createProduction();
   place(production.group, FOUNDATION_LAYOUT.production);
-  const buildDoor = createDoorAndKey("build.request");
+  production.group.remove(production.main, production.cargo);
+  const buildDoor = createDoorAndKey("build.request", { keyTagText: "REQUEST" });
   place(buildDoor.group, FOUNDATION_LAYOUT.buildDoor);
-  buildDoor.key.visible = false;
-  buildDoor.group.scale.setScalar(0.82);
+  buildDoor.group.scale.setScalar(0.72);
+  const sysrootDoor = createDoorAndKey("/sysroot", { positiveSlope: true, keyTagText: "READ" });
+  place(sysrootDoor.group, FOUNDATION_LAYOUT.sysrootDoor);
+  sysrootDoor.group.scale.setScalar(0.72);
+  const srcDoor = createDoorAndKey("/src", { positiveSlope: true, keyTagText: "READ/WRITE" });
+  place(srcDoor.group, FOUNDATION_LAYOUT.srcDoor);
+  srcDoor.group.scale.setScalar(0.72);
+  const outDoor = createDoorAndKey("/out", {
+    edgeColor: 0xf06962,
+    labelColor: PALETTE.muted,
+    keyTagText: "EGRESS",
+  });
+  place(outDoor.group, FOUNDATION_LAYOUT.outDoor);
+  outDoor.group.scale.setScalar(0.72);
+
+  const buildKey = buildDoor.key;
+  const sysrootKey = sysrootDoor.key;
+  const srcKey = srcDoor.key;
+  buildDoor.group.remove(buildKey);
+  sysrootDoor.group.remove(sysrootKey);
+  srcDoor.group.remove(srcKey);
+  outDoor.key.visible = false;
+
   const buildLine = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(1.0, 1.68, 1.1),
-    new THREE.Vector3(1.1, 1.3, 0.2),
-    new THREE.Vector3(1.45, 1.16, -1.0),
-    new THREE.Vector3(1.95, 1.15, -2.35),
-  ], false, "centripetal"), PALETTE.green);
-  const requestToBuilder = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(2.1, 1.18, -2.45),
-    new THREE.Vector3(2.8, 1.12, -3.8),
-    new THREE.Vector3(3.7, 1.12, -5.3),
-    new THREE.Vector3(4.43, 1.12, -6.5),
-  ], false, "centripetal"), PALETTE.green);
+    new THREE.Vector3(0.537, 1.08, 1.862),
+    new THREE.Vector3(1.894, 1.08, 1.536),
+    new THREE.Vector3(2.274, 1.08, 0.125),
+    new THREE.Vector3(2.857, 1.08, -1.055),
+  ], false, "centripetal"), PALETTE.blueHigh);
+  const requestToSysroot = createSignalRoute(new THREE.CatmullRomCurve3([
+    new THREE.Vector3(2.857, 1.08, -1.055),
+    new THREE.Vector3(3.427, 1.08, -1.625),
+    new THREE.Vector3(3.861, 1.08, -2.819),
+    new THREE.Vector3(4.282, 1.08, -3.891),
+  ], false, "centripetal"), PALETTE.blueHigh);
+  const sysrootToSrc = createSignalRoute(new THREE.CatmullRomCurve3([
+    new THREE.Vector3(4.282, 1.08, -3.891),
+    new THREE.Vector3(4.743, 1.08, -3.972),
+    new THREE.Vector3(5.503, 1.08, -3.864),
+    new THREE.Vector3(6.032, 1.08, -3.904),
+  ], false, "centripetal"), PALETTE.blueHigh);
+  const srcToWorkpiece = createSignalRoute(new THREE.CatmullRomCurve3([
+    new THREE.Vector3(6.032, 1.08, -3.904),
+    new THREE.Vector3(6.399, 1.08, -4.922),
+    new THREE.Vector3(6.494, 1.08, -6.374),
+    new THREE.Vector3(7.05, 1.08, -7.364),
+  ], false, "centripetal"), PALETTE.blueHigh);
+  const materialPath = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0.537, 1.18, 1.862),
+    new THREE.Vector3(2.857, 1.18, -1.055),
+    new THREE.Vector3(4.282, 1.18, -3.891),
+    new THREE.Vector3(6.032, 1.18, -3.904),
+    new THREE.Vector3(7.05, 1.18, -7.364),
+  ], false, "centripetal");
+  const forgeToBuild = createSignalRoute(new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0.52, 2.17, -1.12),
+    new THREE.Vector3(1.38, 2.25, -0.82),
+    new THREE.Vector3(2.833, 1.85, -1.08),
+  ], false, "centripetal"), PALETTE.green, 22, 0.45);
+  const forgeToSysroot = createSignalRoute(new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0.52, 2.17, -1.12),
+    new THREE.Vector3(1.45, 2.42, -3.28),
+    new THREE.Vector3(4.258, 1.85, -3.915),
+  ], false, "centripetal"), PALETTE.green, 28, 0.45);
+  const forgeToSrc = createSignalRoute(new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0.52, 2.17, -1.12),
+    new THREE.Vector3(2.35, 2.38, -3.25),
+    new THREE.Vector3(6.008, 1.85, -3.929),
+  ], false, "centripetal"), PALETTE.green, 32, 0.45);
+
+  const sourceCaption = createWideLabel(
+    "SOURCE FILES \u00b7 AGENT \u2192 /sysroot \u2192 /src",
+    PALETTE.muted,
+    5.15,
+    42,
+  );
+  sourceCaption.position.set(2.259, 2.7, -7.959);
+  const hashCaption = createWideLabel(
+    "HASHED \u00b7 CONTENT-ADDRESSED \u00b7 IMMUTABLE",
+    PALETTE.muted,
+    4.7,
+    38,
+  );
+  hashCaption.position.set(2.259, 2.35, -7.959);
+  const shadowTitle = createWideLabel(
+    "SHADOW WORLD \u00b7 DISPOSABLE \u00b7 ZERO LIVE EFFECT",
+    0xc9b6dc,
+    6.3,
+    46,
+  );
+  shadowTitle.position.set(3.845, 2.1, -1.272);
 
   group.add(
     prompt.group,
@@ -933,10 +1132,27 @@ export function createFoundationWorld() {
     doorToNet.group,
     forgeToDoor.group,
     builder.group,
+    builderCallout.group,
     buildDoor.group,
+    sysrootDoor.group,
+    srcDoor.group,
+    outDoor.group,
+    buildKey,
+    sysrootKey,
+    srcKey,
     production.group,
+    production.main,
+    production.cargo,
     buildLine.group,
-    requestToBuilder.group,
+    requestToSysroot.group,
+    sysrootToSrc.group,
+    srcToWorkpiece.group,
+    forgeToBuild.group,
+    forgeToSysroot.group,
+    forgeToSrc.group,
+    sourceCaption,
+    hashCaption,
+    shadowTitle,
   );
 
   function setTime(rawTime) {
@@ -1147,6 +1363,21 @@ export function createFoundationWorld() {
 
     const builderRise = timedProgress(time, FOUNDATION_TIMELINE.builderRise);
     setDeckRise(builder, builderRise);
+    builderHatch.position.y = builder.height * builderRise + 0.025;
+    const floorOnline = timedProgress(time, FOUNDATION_TIMELINE.builderFloorOnline);
+    setFade(builderHatch, builderRise * (1 - floorOnline));
+    setOpacity(builder.title, progress(time, 32, 32.9));
+    setLayerCallout(builderCallout, time, {
+      start: 28.25,
+      introEnd: 29.05,
+      dockStart: 31.45,
+      titleStart: 32,
+      end: 32.9,
+      basePosition: builderCalloutPosition,
+      dockPosition: builderCalloutTarget.clone().add(new THREE.Vector3(-0.28, 0.28, -0.25)),
+      angle: -THREE.MathUtils.degToRad(26.565),
+    });
+
     const buildDraw = timedProgress(time, FOUNDATION_TIMELINE.buildRequestRoute);
     setRouteProgress(buildLine, buildDraw, time, time >= FOUNDATION_TIMELINE.buildKey.insert);
     const buildRequestWindowAlpha = 1 - progress(time, 94.58, 95.01);
@@ -1160,32 +1391,119 @@ export function createFoundationWorld() {
       FOUNDATION_TIMELINE.buildKey.insert,
       FOUNDATION_TIMELINE.buildKey.insert + 0.9,
     );
-    setRouteProgress(
-      requestToBuilder,
-      timedProgress(time, FOUNDATION_TIMELINE.builderRoute),
+
+    const setRisingDoor = (door, amount, teardownStart, teardownEnd) => {
+      door.frame.position.y = -(1 - amount) * 0.7;
+      door.frame.scale.y = Math.max(0.001, amount);
+      setFade(door.frame, amount * (1 - progress(time, teardownStart, teardownEnd)));
+    };
+    const sysrootRise = timedProgress(time, FOUNDATION_TIMELINE.sysrootDoorRise);
+    const srcRise = timedProgress(time, FOUNDATION_TIMELINE.srcDoorRise);
+    const outRise = timedProgress(time, FOUNDATION_TIMELINE.outDoorRise);
+    setRisingDoor(sysrootDoor, sysrootRise, 93.9, 94.24);
+    setRisingDoor(srcDoor, srcRise, 94.09, 94.43);
+    setRisingDoor(outDoor, outRise, 94.29, 94.62);
+    sysrootDoor.leafPivot.rotation.y = Math.PI * 0.62 * progress(
       time,
-      time >= FOUNDATION_TIMELINE.builderRoute.end,
+      FOUNDATION_TIMELINE.sysrootKey.insert,
+      FOUNDATION_TIMELINE.sysrootKey.insert + 0.9,
+    );
+    srcDoor.leafPivot.rotation.y = Math.PI * 0.62 * progress(
+      time,
+      FOUNDATION_TIMELINE.srcKey.insert,
+      FOUNDATION_TIMELINE.srcKey.insert + 0.9,
+    );
+    outDoor.leafPivot.rotation.y = Math.PI * 0.62 * progress(time, 85.25, 86.15);
+
+    setRouteProgress(
+      requestToSysroot,
+      timedProgress(time, FOUNDATION_TIMELINE.sysrootRoute),
+      time,
+      time >= FOUNDATION_TIMELINE.sysrootRoute.end,
     );
     setFade(
-      requestToBuilder.group,
-      timedProgress(time, FOUNDATION_TIMELINE.builderRoute)
+      requestToSysroot.group,
+      timedProgress(time, FOUNDATION_TIMELINE.sysrootRoute)
         * (1 - progress(time, 94.53, 94.87)),
     );
+    const srcRouteProgress = timedProgress(time, FOUNDATION_TIMELINE.srcRoute);
+    setRouteProgress(sysrootToSrc, srcRouteProgress, time, time >= FOUNDATION_TIMELINE.srcRoute.end);
+    setFade(sysrootToSrc.group, srcRouteProgress * (1 - progress(time, 94.38, 94.72)));
+    const workpieceRouteProgress = timedProgress(time, FOUNDATION_TIMELINE.workpieceRoute);
+    setRouteProgress(
+      srcToWorkpiece,
+      workpieceRouteProgress,
+      time,
+      time >= FOUNDATION_TIMELINE.workpieceRoute.end,
+    );
+    setFade(srcToWorkpiece.group, workpieceRouteProgress * (1 - progress(time, 94.24, 94.58)));
 
-    const sourceRise = timedProgress(time, FOUNDATION_TIMELINE.sourceRise);
-    production.source.visible = sourceRise > 0.001;
-    production.source.position.y = 0.36 - (1 - sourceRise) * 0.72;
-    production.source.scale.y = Math.max(0.001, sourceRise);
+    const keyStart = new THREE.Vector3(0.52, 2.17, -1.12);
+    setCapabilityKey(
+      buildKey,
+      time,
+      FOUNDATION_TIMELINE.buildKey,
+      keyStart,
+      new THREE.Vector3(2.833, 1.82, -1.08),
+      0.7,
+    );
+    setCapabilityKey(
+      sysrootKey,
+      time,
+      FOUNDATION_TIMELINE.sysrootKey,
+      keyStart,
+      new THREE.Vector3(4.258, 1.82, -3.915),
+      0.72,
+    );
+    setCapabilityKey(
+      srcKey,
+      time,
+      FOUNDATION_TIMELINE.srcKey,
+      keyStart,
+      new THREE.Vector3(6.008, 1.82, -3.929),
+      0.72,
+    );
+    const setKeyRoute = (route, timing) => {
+      const reveal = progress(time, timing.start + 0.08, timing.detach);
+      setRouteProgress(route, reveal, time);
+      setFade(route.group, reveal * (1 - progress(time, timing.insert - 0.08, timing.insert + 0.18)));
+    };
+    setKeyRoute(forgeToBuild, FOUNDATION_TIMELINE.buildKey);
+    setKeyRoute(forgeToSysroot, FOUNDATION_TIMELINE.sysrootKey);
+    setKeyRoute(forgeToSrc, FOUNDATION_TIMELINE.srcKey);
+    const keyForgePulse = [
+      FOUNDATION_TIMELINE.buildKey,
+      FOUNDATION_TIMELINE.sysrootKey,
+      FOUNDATION_TIMELINE.srcKey,
+    ].reduce((maximum, timing) => {
+      const growing = time >= timing.start && time < timing.detach
+        ? Math.sin(progress(time, timing.start, timing.detach) * Math.PI)
+        : 0;
+      const detaching = time >= timing.detach - 0.06 && time < timing.detach + 0.28
+        ? Math.sin(progress(time, timing.detach - 0.06, timing.detach + 0.28) * Math.PI)
+        : 0;
+      return Math.max(maximum, growing, detaching);
+    }, 0);
+    if (time >= FOUNDATION_TIMELINE.buildKey.start) {
+      keyForge.core.scale.setScalar(1 + keyForgePulse * 0.64);
+      keyForge.burst.scale.setScalar(0.72 + keyForgePulse * 0.78);
+      setFade(keyForge.burst, keyForgePulse);
+    }
+
     const workpieceRise = timedProgress(time, FOUNDATION_TIMELINE.workpieceRise);
     production.workpiece.visible = workpieceRise > 0.001;
-    production.workpiece.position.y = -(1 - workpieceRise) * 0.8;
-    production.workpiece.scale.setScalar(Math.max(0.001, workpieceRise));
-    production.core.rotation.y = time * 1.8;
-    production.core.rotation.x = time * 0.7;
-    const assembly = timedProgress(time, FOUNDATION_TIMELINE.assembly);
-    production.source.position.x = assembly * 1.85;
-    production.source.scale.setScalar(Math.max(0.001, 1 - assembly * 0.72));
-    production.workpiece.position.x = THREE.MathUtils.lerp(2.6, 2.1, assembly);
+    production.workpiece.position.y = -(1 - workpieceRise) * 0.35;
+    production.workpiece.scale.setScalar(Math.max(0.001, THREE.MathUtils.lerp(0.54, 1, workpieceRise)));
+    production.status.scale.setScalar(0.82 + Math.sin(time * 3.6) * 0.14);
+    setMovingFile(production.main, materialPath, time, FOUNDATION_TIMELINE.materialMain);
+    setMovingFile(production.cargo, materialPath, time, FOUNDATION_TIMELINE.materialCargo);
+    const sourceCaptionAlpha = progress(time, 33, 33.5) * (1 - progress(time, 40.5, 41));
+    setFade(sourceCaption, sourceCaptionAlpha);
+    setFade(hashCaption, sourceCaptionAlpha);
+    setFade(
+      shadowTitle,
+      progress(time, 33.4, 33.9) * (1 - progress(time, 88, 88.5)),
+    );
     return time;
   }
 

@@ -663,7 +663,9 @@ export function createFactoryWorld() {
     });
     compiler.sceneCaption.visible = time >= 41;
     compiler.tokens.visible = time >= 41;
-    compiler.materialRoute.visible = time >= 35.55 && time < 40.6;
+    // The canonical source-file route lives in Foundation so direct seeks and
+    // reverse scrubbing cannot reveal a second, offset transport line.
+    compiler.materialRoute.visible = false;
     const compilerCopy = time < 42.25
       ? "READY · ROUND 0/3"
       : time < 46
