@@ -173,8 +173,10 @@ Alle Beschriftungsflächen rendern nur ihre Vorderseite, sodass bei einem freien
 Orbit unter den Layern keine spiegelverkehrten Rückseiten sichtbar werden.
 Das Material schreibt bewusst keine Tiefe. Eine segmentierte Fase
 ersetzt die harte Boxkante, damit Reflexion und Brechung an den Rändern
-räumlich lesbar sind. Das zusätzliche `EdgesGeometry`-Wireframe begleitet nur
-die Entstehung und ist nach dem Einblenden des Volumenmaterials unsichtbar.
+räumlich lesbar sind. Das zusätzliche `EdgesGeometry`-Wireframe verwendet in
+der Entstehung bewusst nur die zwölf Kanten eines Quaders. Erst das einblendende
+Volumenmaterial besitzt die segmentierte Rundung; danach ist das Wireframe
+unsichtbar.
 Limine und Kernel verwenden denselben vollständigen Vorder-/Rückseiten-
 Transmission-Pass mit eigenen Presets. Limine ist kühl blau-violett getönt;
 der Rust-Kernel bleibt farbneutral und wird über eine geringe

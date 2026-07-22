@@ -174,10 +174,12 @@ export function createExpandingStageLayer({
     })
     : null;
   if (edgeMaterial) {
+    const wireframeGeometry = new THREE.BoxGeometry(...size);
     const wireframe = new THREE.LineSegments(
-      new THREE.EdgesGeometry(geometry),
+      new THREE.EdgesGeometry(wireframeGeometry),
       edgeMaterial,
     );
+    wireframeGeometry.dispose();
     wireframe.renderOrder = surfaceRenderOrder + 1;
     contentGroup.add(wireframe);
   }
