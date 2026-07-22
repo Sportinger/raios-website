@@ -189,6 +189,94 @@ function createCompilerProofToken() {
   return sprite;
 }
 
+function createEvidenceSeal(copy) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 256;
+  const context = canvas.getContext("2d");
+  context.clearRect(0, 0, 256, 256);
+  context.beginPath();
+  context.arc(128, 128, 82, 0, Math.PI * 2);
+  context.fillStyle = "rgba(27,112,65,.96)";
+  context.fill();
+  context.lineWidth = 16;
+  context.strokeStyle = "#a3f3c0";
+  context.stroke();
+  context.font = "900 112px Consolas, monospace";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.lineWidth = 22;
+  context.strokeStyle = "#07101a";
+  context.strokeText(copy, 128, 136);
+  context.fillStyle = "#dcfbe8";
+  context.fillText(copy, 128, 136);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  const material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+  });
+  material.userData.preserveTransparency = true;
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.set(0.75, 0.75, 1);
+  sprite.renderOrder = 59;
+  return sprite;
+}
+
+function createTestReport() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 320;
+  canvas.height = 384;
+  const context = canvas.getContext("2d");
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.beginPath();
+  context.moveTo(40, 24);
+  context.lineTo(220, 24);
+  context.lineTo(280, 84);
+  context.lineTo(280, 356);
+  context.lineTo(40, 356);
+  context.closePath();
+  context.fillStyle = "rgba(9,27,38,.96)";
+  context.fill();
+  context.strokeStyle = "#9dd8b4";
+  context.lineWidth = 16;
+  context.lineJoin = "round";
+  context.stroke();
+  context.beginPath();
+  context.moveTo(220, 24);
+  context.lineTo(220, 84);
+  context.lineTo(280, 84);
+  context.stroke();
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.font = "900 64px Consolas, monospace";
+  context.lineWidth = 14;
+  context.strokeStyle = "#05080d";
+  context.fillStyle = "#dce8f4";
+  context.strokeText("TEST", 160, 184);
+  context.fillText("TEST", 160, 184);
+  context.fillStyle = "#82f0ac";
+  context.strokeText("PASS", 160, 262);
+  context.fillText("PASS", 160, 262);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  const material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+  });
+  material.userData.preserveTransparency = true;
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.set(0.48, 0.58, 1);
+  sprite.renderOrder = 60;
+  return sprite;
+}
+
 function createFloorDecal(text, color, width = 3.4, depth = 1.05) {
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
@@ -887,13 +975,41 @@ function createProduction() {
   failureLabel.renderOrder = 53;
   const compilerSuccess = createCompilerProofToken();
   compilerSuccess.position.set(0.58, 1.96, 0.24);
-  workpiece.add(body, status, label, failureLabel, compilerSuccess);
+  const evidenceSeals = ["#", "C", "R"].map((copy, index) => {
+    const seal = createEvidenceSeal(copy);
+    const screenOffset = (index - 1) * 0.58;
+    seal.position.set(screenOffset, 0.16, 0.54 - screenOffset);
+    return seal;
+  });
+  const testReport = createTestReport();
+  testReport.position.set(0.26, 1.31, 0.42);
+  workpiece.add(
+    body,
+    status,
+    label,
+    failureLabel,
+    compilerSuccess,
+    ...evidenceSeals,
+    testReport,
+  );
 
   const main = createFileCard("main.rs");
   const cargo = createFileCard("Cargo.toml");
   const edits = Array.from({ length: 3 }, () => createFileCard("EDIT"));
   group.add(workpiece, main, cargo, ...edits);
-  return { group, workpiece, main, cargo, edits, status, label, failureLabel, compilerSuccess };
+  return {
+    group,
+    workpiece,
+    main,
+    cargo,
+    edits,
+    status,
+    label,
+    failureLabel,
+    compilerSuccess,
+    evidenceSeals,
+    testReport,
+  };
 }
 
 function createSignalRoute(curve, color = PALETTE.blue, samples = 30, thickness = 1) {
@@ -1611,6 +1727,8 @@ export function createFoundationWorld() {
       { at: 70, x: -0.217, z: -0.217 },
       { at: 71.2, x: 0.29, z: -0.145 },
       { at: 77.7, x: 0.29, z: -0.145 },
+      { at: 79.8, x: 0.072, z: 0.362 },
+      { at: 88, x: 0.072, z: 0.362 },
     ];
     const beforeFrame = workpieceFrames.reduce(
       (best, frame) => (frame.at <= time ? frame : best),
@@ -1620,8 +1738,12 @@ export function createFoundationWorld() {
     const workpieceMove = beforeFrame === afterFrame ? 1 : progress(time, beforeFrame.at, afterFrame.at);
     production.workpiece.position.x = THREE.MathUtils.lerp(beforeFrame.x, afterFrame.x, workpieceMove);
     production.workpiece.position.z = THREE.MathUtils.lerp(beforeFrame.z, afterFrame.z, workpieceMove);
-    const workpieceCopy = time >= 71.2
-      ? "PLAYER.WASM"
+    const workpieceCopy = time >= 84.55
+      ? "PLAYER.WASM · AUTHORIZED"
+      : time >= 77.7
+        ? "PLAYER.WASM · 3 PROOFS"
+        : time >= 71.2
+          ? "PLAYER.WASM"
       : time >= 66.95
         ? "FIX 02"
         : time >= 63.85
@@ -1635,7 +1757,10 @@ export function createFoundationWorld() {
             : time >= 49.4
               ? "APPLYING EDIT 01"
               : "PLAYER.RS";
-    const wideWorkpieceCopy = workpieceCopy.includes("APPLYING") || workpieceCopy.includes("FAILED");
+    const wideWorkpieceCopy = workpieceCopy.includes("APPLYING")
+      || workpieceCopy.includes("FAILED")
+      || workpieceCopy.includes("PROOFS")
+      || workpieceCopy.includes("AUTHORIZED");
     production.label.userData.setText?.(workpieceCopy);
     production.label.scale.set(wideWorkpieceCopy ? 2.1 : 1.28, wideWorkpieceCopy ? 0.39 : 0.32, 1);
     production.status.scale.setScalar(0.82 + Math.sin(time * 3.6) * 0.14);
@@ -1657,6 +1782,25 @@ export function createFoundationWorld() {
       Math.max(0.001, 0.76 * successPop * THREE.MathUtils.lerp(1, 0.12, successHandoff)),
     );
     setFade(production.compilerSuccess, successOpacity);
+    const evidenceAlpha = [
+      time >= 74 ? progress(time, 74, 74.5) : 0,
+      time >= 75.6 ? progress(time, 75.6, 76.1) : 0,
+      time >= 77.7 ? progress(time, 78, 78.5) : 0,
+    ];
+    production.evidenceSeals.forEach((seal, index) => {
+      const alpha = evidenceAlpha[index];
+      seal.scale.setScalar(Math.max(0.001, 0.75 * alpha));
+      setFade(seal, alpha);
+    });
+    const reportAlpha = time >= 77.7
+      ? progress(time, 77.55, 77.85) * (1 - progress(time, 84.85, 85.15))
+      : 0;
+    production.testReport.scale.set(
+      Math.max(0.001, 0.48 * reportAlpha),
+      Math.max(0.001, 0.58 * reportAlpha),
+      1,
+    );
+    setFade(production.testReport, reportAlpha);
     setMovingFile(production.main, materialPath, time, FOUNDATION_TIMELINE.materialMain);
     setMovingFile(production.cargo, materialPath, time, FOUNDATION_TIMELINE.materialCargo);
     const activeEditTiming = time < 60 ? FOUNDATION_TIMELINE.editOne : FOUNDATION_TIMELINE.editTwo;

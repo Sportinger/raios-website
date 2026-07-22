@@ -28,8 +28,10 @@ import {
   setWorkshopConsole,
 } from "./workshop-primitives.js";
 import {
+  createGuardStatusPanel,
   createTwinVerifierPanel,
   createVerifierVerdict,
+  setGuardStatusPanel,
   setTwinVerifierPanel,
   setVerifierVerdict,
 } from "./feedback-primitives.js";
@@ -653,6 +655,7 @@ export function createFactoryWorld() {
   proof.group.position.set(-12.32, 0.04, 0);
   proof.spikes.visible = false;
   const guard = createGuardScene(tracker);
+  const guardStatus = createGuardStatusPanel(tracker);
   const approval = createApprovalScene(tracker);
   const running = createPlayer(tracker);
   const compact = createCompactScene(tracker);
@@ -662,6 +665,7 @@ export function createFactoryWorld() {
     scene.group.name = `factory-${id}`;
     group.add(scene.group);
   });
+  group.add(guardStatus.group);
 
   const matrix = new THREE.Matrix4();
   const position = new THREE.Vector3();
@@ -681,6 +685,9 @@ export function createFactoryWorld() {
     // Deck with a new workpiece pass, a verifier console and a disposable scan.
     feedback.group.visible = false;
     twins.group.visible = false;
+    // The placeholder orbital Guard is not part of the reference film. The
+    // persistent workshop Guard remains the canonical machine.
+    guard.group.visible = false;
 
     const deckRise = smootherstep(interval(time, 25.25, 28.45));
     builder.group.position.y = -2.8 + deckRise * 2.8;
@@ -707,6 +714,9 @@ export function createFactoryWorld() {
       machine.group.scale.setScalar(lane.scale * Math.max(0.001, reveal));
       machine.group.position.y = lane.baseY - 1.3 * (1 - reveal);
       machine.status.scale.setScalar(0.88 + Math.sin(time * 3.2 + index) * 0.12);
+    });
+    [79.8, 80.7, 81.55, 84.55].forEach((at, index) => {
+      compiler.checklist.badges[index].userData.setPassed?.(time >= at);
     });
     const firstCompile = smoothstep(interval(time, 42.25, 46));
     const secondCompile = smoothstep(interval(time, 53.25, 55.4));
@@ -787,7 +797,10 @@ export function createFactoryWorld() {
     compiler.upgrades[1].visible = byteJigRise > 0.001;
     compiler.upgrades[1].position.y = 2.15 + byteJigRise * 0.5;
     compiler.upgrades[1].scale.set(1.55, Math.max(0.001, 0.4 * byteJigRise), 1);
-    compiler.upgrades[2].visible = time >= 77;
+    const drillKitRise = smootherstep(interval(time, 77, 78.2));
+    compiler.upgrades[2].visible = drillKitRise > 0.001;
+    compiler.upgrades[2].position.y = 1.3 + drillKitRise * 0.5;
+    compiler.upgrades[2].scale.set(1.55, Math.max(0.001, 0.4 * drillKitRise), 1);
     const compilerBody = compiler.machines[0].body;
     compilerBody.position.set(0, 0, 0);
     compilerBody.rotation.set(0, 0, 0);
@@ -853,9 +866,24 @@ export function createFactoryWorld() {
       progress: time < 66.95 ? verifierSecond : verifierThird,
       hashesVisible: time >= 60.3,
       result: twinResult,
+      drills: [time >= 72.8, time >= 74.2, time >= 75.6],
       opacity: twinPanelIntro,
     });
     setVerifierVerdict(compiler.verifierVerdict, time);
+    const guardStatusAlpha = smootherstep(interval(time, 78, 78.3))
+      * (1 - smoothstep(interval(time, 87.7, 88)));
+    const guardStatusCopy = time < 79.8
+      ? "GUARD · WAITING FOR TEST REPORT"
+      : time < 80.7
+        ? "REPORT OK · MATCHING EXACT HASH"
+        : time < 81.55
+          ? "HASH OK · CHECKING EXACT RIGHTS"
+          : time < 84.55
+            ? "RIGHTS OK · OWNER CONSENT"
+            : time < 85.25
+              ? "ALL BINDINGS MATCH · OPENING"
+              : "GUARD · LIVE DOOR OPEN";
+    setGuardStatusPanel(guardStatus, guardStatusCopy, guardStatusAlpha);
 
     const scanWindow = time >= 57.8 && time < 60.8
       ? [57.8, 60.8]
@@ -873,7 +901,10 @@ export function createFactoryWorld() {
       ? smootherstep(interval(time, scanWindow[0] + 0.22, scanWindow[0] + 0.72))
       : 0;
     proof.entryDoor.group.visible = shadowDoorIntro * scanOutro > 0.001;
-    proof.entryDoor.group.scale.setScalar(0.65 * Math.max(0.001, shadowDoorIntro * scanOutro));
+    proof.entryDoor.group.scale.setScalar(0.42 * Math.max(0.001, shadowDoorIntro * scanOutro));
+    // The reference entrance grows in place; its vector leaf never swings
+    // toward an edge-on camera angle during the scan.
+    proof.entryDoor.hinge.rotation.y = 0;
     const shadowEntry = scanWindow
       ? smootherstep(interval(time, scanWindow[0] + 0.48, Math.min(scanWindow[0] + 1.58, scanWindow[1] - 0.72)))
       : 0;
@@ -918,19 +949,6 @@ export function createFactoryWorld() {
       twins.resultLabel,
       time >= 74 ? "EQUAL" : time >= 60.8 && time < 66.95 ? "RED · BYTE DRIFT" : "BUILDING A/B",
     );
-
-    const proofProgress = smootherstep(interval(time, 73, 78.5));
-    proof.subject.position.y = 1.35 + Math.sin(proofProgress * Math.PI * 5) * (1 - proofProgress) * 0.45;
-    proof.subject.rotation.y = proofProgress * Math.PI * 2;
-    proof.spikes.rotation.y = -time * 0.35;
-    proof.entryDoor.hinge.rotation.y = -smootherstep(interval(time, 72.3, 73.1)) * Math.PI * 0.72;
-    proof.mockDoors.forEach((door, index) => {
-      door.hinge.rotation.y = -Math.sin(proofProgress * Math.PI * (1.3 + index * 0.2)) * 0.35;
-    });
-    proof.attacks.forEach(({ impact }, index) => {
-      const attackPulse = 0.65 + pulse(time, 73 + index * 0.5, 78.5) * 0.85;
-      impact.scale.setScalar(attackPulse);
-    });
 
     const guardProgress = smootherstep(interval(time, 80.5, 87));
     guard.orbitRings.forEach((ring, index) => {
