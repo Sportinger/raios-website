@@ -198,7 +198,7 @@ export function createFilmApp({
   const resizeObserver = typeof ResizeObserver === "function"
     ? new ResizeObserver(resize)
     : null;
-  if (resizeObserver) resizeObserver.observe(viewport);
+  if (resizeObserver) resizeObserver.observe(canvas);
 
   const syncFromScroll = () => {
     scrollFrame = 0;
