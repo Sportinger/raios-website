@@ -60,7 +60,9 @@ rechtwinklige Ausrichtung, den vollständig außerhalb liegenden Vorbau, die
 Öffnungsrichtung zum Vorbau und die mittige Labelposition ab. Szenen dürfen
 diese Werte nicht nachträglich per `position`, `rotation` oder `hinge` ändern.
 Font und Größe sämtlicher Türlabels werden ebenfalls ausschließlich dort
-definiert; Szenen liefern nur Text und Farbe.
+definiert; Szenen liefern nur Text und Farbe. Der Vorbau besitzt eine
+vollständig opake Bodenfläche und übernimmt deren Farbe aus der jeweiligen
+Trägerfläche (zum Beispiel blau oder violett).
 Der deterministische Aufbau ist ebenfalls Teil des Moduls: Der Vorbau wächst
 von der Deckkante nach außen, danach schreibt sich das Label und erst dann
 fährt der Türrahmen aus der Ebene hoch. Die geteilte Bodenklappe wird nur für

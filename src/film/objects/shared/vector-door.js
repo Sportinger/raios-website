@@ -146,6 +146,7 @@ export function createSlidingFloorHatch({
   width = 1.08,
   depth = 1.08,
   color = 0x8bc5ff,
+  fillColor = 0x03070d,
   rotationY = 0,
 } = {}) {
   const group = new THREE.Group();
@@ -153,8 +154,8 @@ export function createSlidingFloorHatch({
   group.rotation.y = rotationY;
   const outline = createFootprintOutline(tracker, width, depth, color);
   const recess = new THREE.Mesh(
-    trackGeometry(tracker, new THREE.BoxGeometry(width * 0.94, 0.035, depth * 0.94)),
-    createMaterial(tracker, 0x03070d),
+    trackGeometry(tracker, new THREE.BoxGeometry(width, 0.035, depth)),
+    createMaterial(tracker, fillColor),
   );
   recess.position.y = 0.012;
   const panels = new THREE.Group();
@@ -279,6 +280,7 @@ export function createVectorDoor({
     width: 1.56,
     depth: 1.56,
     color: edgeColor,
+    fillColor: panelColor,
     rotationY: hatchRotationY,
   });
   // The frame marks the deck edge. The hatch/landing sits completely outside
@@ -333,6 +335,9 @@ export function anchorVectorDoorToSurface(door, {
     0,
     Math.cos(edgeState.rotationY) * mechanism.porchOffset * edgeState.porchSide,
   );
+  if (surface.color !== undefined) {
+    mechanism.hatch.recess.material.color.set(surface.color);
+  }
   if (mechanism.label) {
     positionVectorDoorLabel(mechanism, mechanism.label);
   }
@@ -433,7 +438,8 @@ function setVectorDoorPorchGrowth(door, amount, opacity) {
     Math.cos(door.rotationY) * offset * door.porchSide,
   );
   setFootprintOutline(door.hatch.outline, 1, alpha);
-  door.hatch.recess.visible = false;
+  setVectorOpacity(door.hatch.recess, alpha);
+  door.hatch.recess.visible = grow > 0.001 && alpha > 0.001;
   door.hatch.panels.visible = false;
 }
 

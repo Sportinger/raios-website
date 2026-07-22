@@ -93,6 +93,7 @@ function createBuilderScene(tracker, inert = false) {
   });
   const deckSurface = Object.freeze({
     id: "factory-deck",
+    color: FACTORY_PALETTE.panel,
     centerX: 0,
     centerZ: 0,
     width: deckLayout.width,
@@ -377,6 +378,7 @@ function createProofScene(tracker) {
   const shadowDoorScale = FACTORY_STANDARD_DOOR_SCALE;
   const shadowSurface = Object.freeze({
     id: "shadow",
+    color: 0x351d4e,
     centerX: 0,
     centerZ: 0,
     width: shadowLayout.width,

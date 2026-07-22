@@ -15,10 +15,12 @@ export const FOUNDATION_DOOR_SCALE = FILM_DOOR_SCALE;
 export const FOUNDATION_SURFACES = Object.freeze({
   kernel: Object.freeze({
     id: "kernel",
+    color: 0x05080d,
     top: FOUNDATION_LAYER_HEIGHT,
   }),
   genesis: Object.freeze({
     id: "genesis",
+    color: 0x101a28,
     centerX: -3.05 - (-1.9 / FOUNDATION_PRESENTATION_SCALE),
     centerZ: -(1 / FOUNDATION_PRESENTATION_SCALE),
     width: FILM_QUADRANT_SIZE,
@@ -27,6 +29,7 @@ export const FOUNDATION_SURFACES = Object.freeze({
   }),
   builder: Object.freeze({
     id: "builder",
+    color: 0x111c2b,
     centerX: 6.72,
     centerZ: -9.17,
     width: FILM_QUADRANT_SIZE,

@@ -83,6 +83,7 @@ function createDomain(tracker) {
   const labels = ["fb region", "input", "file door"];
   const domainSurface = Object.freeze({
     id: "player-domain",
+    color: 0x0b1a17,
     centerX: 0,
     centerZ: 0,
     width,
