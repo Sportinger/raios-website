@@ -20,6 +20,8 @@ const setYScale = (object, scale) => {
   object.scale.y = Math.max(0.001, scale);
 };
 
+const setLabelText = (label, text) => label.userData.setText?.(text);
+
 function createMachine(tracker, lane) {
   const { color, x, z, scale } = lane;
   const group = new THREE.Group();
@@ -59,12 +61,23 @@ function createMachine(tracker, lane) {
     size: [2.18, 0.07, 0.09], color, position: [-1.09, 3.58, -0.55],
   });
   progressFill.scale.x = 0.001;
+  const progressCaption = createTextLabel(tracker, {
+    text: lane.id === "compiler" ? "READY · ROUND 0/3" : lane.id === "verifier" ? "READY · NEXT ROUND 2/3" : "REPORT · HASH · RIGHTS · OWNER",
+    width: 3.25, height: 0.38, color: 0xafc2d9, background: FACTORY_PALETTE.ink,
+    position: [0, 3.95, -0.62], fontSize: 38,
+  });
+  const versionCaption = lane.id === "compiler" ? createTextLabel(tracker, {
+    text: "rustc 1.83.0-dev · NO NET", width: 2.85, height: 0.3,
+    color: 0x718197, background: FACTORY_PALETTE.ink,
+    position: [0, 3.73, -0.5], fontSize: 35,
+  }) : null;
   const glow = createVectorBox(tracker, {
     size: [2.5, 3.1, 2.45], color, position: [0, 1.9, -0.65], opacity: 0.055,
   });
   glow.visible = false;
-  group.add(glow, label, progressRail, progressFill);
-  return { group, aperture, status, progressFill, glow };
+  group.add(glow, label, progressRail, progressFill, progressCaption);
+  if (versionCaption) group.add(versionCaption);
+  return { group, aperture, status, progressFill, progressCaption, versionCaption, glow };
 }
 
 function createDoor(tracker, color, position = [0, 0, 0], scale = 1) {
@@ -125,6 +138,11 @@ function createBuilderScene(tracker, inert = false) {
   inputDoor.group.rotation.y = FACTORY_LAYOUT.inputDoor.yaw;
   const outputDoor = createDoor(tracker, FACTORY_PALETTE.green, [FACTORY_LAYOUT.outputDoor.x, 0.76, FACTORY_LAYOUT.outputDoor.z], 0.52);
   outputDoor.group.rotation.y = FACTORY_LAYOUT.outputDoor.yaw;
+  const outLabel = createTextLabel(tracker, {
+    text: "/out", width: 1.25, height: 0.34, color: FACTORY_PALETTE.amber,
+    background: FACTORY_PALETTE.ink, position: [0, 4.18, 0], fontSize: 52,
+  });
+  outputDoor.group.add(outLabel);
   const sourceA = createVectorBox(tracker, {
     size: [1.2, 0.18, 1.6], color: FACTORY_PALETTE.amber,
     edgeColor: FACTORY_PALETTE.white, position: [-5.7, 1.02, 2.9],
@@ -137,11 +155,43 @@ function createBuilderScene(tracker, inert = false) {
     size: [2.1, 1.65, 1.9], color: FACTORY_PALETTE.panelLight,
     edgeColor: FACTORY_PALETTE.cyan, position: [0, 1.62, 0],
   });
+  const sourceALabel = createTextLabel(tracker, {
+    text: "main.rs", width: 1.35, height: 0.32, color: FACTORY_PALETTE.amber,
+    background: FACTORY_PALETTE.ink, position: [0, 0.35, 0.84], fontSize: 52,
+  });
+  const sourceBLabel = createTextLabel(tracker, {
+    text: "Cargo.toml", width: 1.65, height: 0.32, color: FACTORY_PALETTE.amber,
+    background: FACTORY_PALETTE.ink, position: [0, 0.35, 0.84], fontSize: 45,
+  });
+  sourceA.add(sourceALabel);
+  sourceB.add(sourceBLabel);
+  const workpieceLabel = createTextLabel(tracker, {
+    text: inert ? "PLAYER.RS" : "WORKPIECE 01", width: 1.8, height: 0.36,
+    color: FACTORY_PALETTE.white, background: FACTORY_PALETTE.ink,
+    position: [0, 1.05, 0.98], fontSize: 48,
+  });
+  workpiece.add(workpieceLabel);
+  const caption = createTextLabel(tracker, {
+    text: inert ? "HASHED · CONTENT-ADDRESSED · IMMUTABLE" : "OFFLINE TOOLS · SEALED EGRESS",
+    width: 7.8, height: 0.48, color: 0xaab5c5, background: FACTORY_PALETTE.ink,
+    position: [0, 5.2, -3.9], fontSize: 42,
+  });
+  const keyLabels = [
+    createTextLabel(tracker, {
+      text: "READ", width: 1.2, height: 0.34, color: FACTORY_PALETTE.amber,
+      background: FACTORY_PALETTE.ink, position: [-3.5, 2.2, -1.8], fontSize: 56,
+    }),
+    createTextLabel(tracker, {
+      text: "READ/WRITE", width: 1.8, height: 0.34, color: FACTORY_PALETTE.amber,
+      background: FACTORY_PALETTE.ink, position: [3.7, 2.2, -1.5], fontSize: 46,
+    }),
+  ];
+  keyLabels.forEach((label) => { label.visible = false; });
   const route = createRoute(tracker, [
     [-5.7, 1, 2.9], [-2.8, 1.05, 2], [0, 1.05, 0], [3.2, 1.05, -1.2], [6.1, 1.05, -2.7],
   ], inert ? FACTORY_PALETTE.amber : FACTORY_PALETTE.cyan, 0.065);
-  group.add(hatch, title, inputDoor.group, outputDoor.group, sourceA, sourceB, workpiece, route);
-  return { group, deck, hatch, inputDoor, outputDoor, sourceA, sourceB, workpiece, route };
+  group.add(hatch, title, caption, ...keyLabels, inputDoor.group, outputDoor.group, sourceA, sourceB, workpiece, route);
+  return { group, deck, hatch, caption, keyLabels, inputDoor, outputDoor, sourceA, sourceB, workpiece, route };
 }
 
 function createCompilerScene(tracker) {
@@ -159,8 +209,25 @@ function createCompilerScene(tracker) {
   const materialRoute = createRoute(tracker, [
     [-5.5, 1.1, 3.3], [-2.2, 1.1, 2.8], [1.2, 1.1, 2.35], [5.15, 1.1, -1.7], [-4.25, 1.1, -2.1],
   ], FACTORY_PALETTE.blue, 0.075);
-  group.add(materialRoute);
-  return { group, deck, machines, tokens, materialRoute };
+  const sceneCaption = createTextLabel(tracker, {
+    text: "ROUND 1/3 · COMPILER GATE", width: 11.5, height: 0.58,
+    color: 0xaab5c5, background: FACTORY_PALETTE.ink,
+    position: [0, 6.25, -4.2], fontSize: 34, maxWidth: 970,
+  });
+  const evidence = createTextLabel(tracker, {
+    text: "PLAYER.RS · # · C · R · TEST PASS", width: 4.5, height: 0.42,
+    color: FACTORY_PALETTE.green, background: FACTORY_PALETTE.ink,
+    position: [0, 1.15, 1.02], fontSize: 40,
+  });
+  deck.workpiece.add(evidence);
+  const upgrades = [
+    ["LOCK CACHE", -1.8, 1.18, 3.7], ["BYTE JIG", 4.8, 1.18, -3.8], ["DRILL KIT", 6.5, 1.18, -1.2],
+  ].map(([text, x, y, z]) => createTextLabel(tracker, {
+    text, width: 1.65, height: 0.34, color: 0xa9c8e9,
+    background: FACTORY_PALETTE.panel, position: [x, y, z], fontSize: 46,
+  }));
+  group.add(materialRoute, sceneCaption, ...upgrades);
+  return { group, deck, machines, tokens, materialRoute, sceneCaption, upgrades };
 }
 
 function createFeedbackScene(tracker) {
@@ -188,6 +255,10 @@ function createFeedbackScene(tracker) {
       edgeColor: FACTORY_PALETTE.red, position: [-1.5 + index * 1.7, 1.15 + index * 0.22, 2.7],
     });
     card.rotation.y = -0.12 + index * 0.12;
+    card.add(createTextLabel(tracker, {
+      text: "EDIT", width: 1.15, height: 0.3, color: FACTORY_PALETTE.red,
+      background: FACTORY_PALETTE.ink, position: [0, 0.2, 0.75], fontSize: 54,
+    }));
     group.add(card);
     return card;
   });
@@ -242,8 +313,16 @@ function createTwinScene(tracker) {
     group.add(label);
     return label;
   });
-  group.add(bridge, seal);
-  return { group, pods, bridge, seal, progressRails, hashPlates };
+  const resultLabel = createTextLabel(tracker, {
+    text: "BUILDING A/B", width: 3.2, height: 0.42, color: 0x7e8a9b,
+    background: FACTORY_PALETTE.ink, position: [0, 4.15, 0], fontSize: 48,
+  });
+  const drillLabel = createTextLabel(tracker, {
+    text: "WALL · IMPORT · FUEL", width: 3.6, height: 0.38, color: 0x5f6a7d,
+    background: FACTORY_PALETTE.ink, position: [0, 3.68, 2.66], fontSize: 42,
+  });
+  group.add(bridge, seal, resultLabel, drillLabel);
+  return { group, pods, bridge, seal, progressRails, hashPlates, resultLabel, drillLabel };
 }
 
 function createProofScene(tracker) {
@@ -257,6 +336,10 @@ function createProofScene(tracker) {
     size: [1.5, 1.2, 1.5], color: FACTORY_PALETTE.cyan,
     edgeColor: 0xe7d6fa, position: [0, 1.35, 0],
   });
+  subject.add(createTextLabel(tracker, {
+    text: "PLAYER.WASM · GHOST COPY", width: 2.6, height: 0.38,
+    color: 0xe7d6fa, background: 0x12091e, position: [0, 0.85, 0.78], fontSize: 42,
+  }));
   group.add(cellar, subject);
   for (let x = -5; x <= 5; x += shadowLayout.gridStep) {
     group.add(createRoute(tracker, [[x, 0.75, -shadowLayout.depth / 2], [x, 0.75, shadowLayout.depth / 2]], 0xc594ff, 0.018));
@@ -268,7 +351,7 @@ function createProofScene(tracker) {
   entryDoor.group.rotation.y = -Math.PI / 4;
   group.add(entryDoor.group);
   const shadowTitle = createTextLabel(tracker, {
-    text: "SHADOW WORLD · ZERO LIVE EFFECT", width: 6.8, height: 0.58,
+    text: "SHADOW WORLD · DISPOSABLE · ZERO LIVE EFFECT", width: 7.8, height: 0.58,
     color: 0xd9b8ff, background: 0x12091e, position: [0, 0.38, 4.08], fontSize: 48,
   });
   group.add(shadowTitle);
@@ -336,14 +419,29 @@ function createGuardScene(tracker) {
   const checklist = [FACTORY_PALETTE.red, FACTORY_PALETTE.red, FACTORY_PALETTE.red, FACTORY_PALETTE.red].map((color, index) => {
     const badge = createRing(tracker, 0.32, color, 0.1);
     badge.position.set(-1.8 + index * 1.2, 0.72, 2.25);
+    badge.add(createTextLabel(tracker, {
+      text: ["R", "#", "C", "U"][index], width: 0.52, height: 0.38,
+      color: FACTORY_PALETTE.white, background: FACTORY_PALETTE.ink,
+      position: [0, 0, 0.12], fontSize: 64,
+    }));
     group.add(badge);
     return badge;
   });
   const liveDoor = createDoor(tracker, FACTORY_PALETTE.red, [5, 0, -0.5], 0.9);
   liveDoor.group.rotation.y = -Math.PI / 2;
   const grantRoute = createRoute(tracker, [[0, 1, 0], [2.1, 1.1, -0.4], [5, 1.1, -0.5]], FACTORY_PALETTE.green, 0.06);
-  group.add(liveDoor.group, grantRoute);
-  return { group, machine, orbitRings, checklist, liveDoor, grantRoute };
+  const liveDoorLabel = createTextLabel(tracker, {
+    text: "/out", width: 1.3, height: 0.38, color: FACTORY_PALETTE.amber,
+    background: FACTORY_PALETTE.ink, position: [0, 4.2, 0], fontSize: 56,
+  });
+  liveDoor.group.add(liveDoorLabel);
+  const gateStatus = createTextLabel(tracker, {
+    text: "GUARD · WAITING FOR REPORT", width: 5.4, height: 0.48,
+    color: 0xf0b0ad, background: FACTORY_PALETTE.ink,
+    position: [2.3, 5.1, -0.5], fontSize: 42,
+  });
+  group.add(liveDoor.group, grantRoute, gateStatus);
+  return { group, machine, orbitRings, checklist, liveDoor, grantRoute, gateStatus };
 }
 
 function createApprovalScene(tracker) {
@@ -365,8 +463,27 @@ function createApprovalScene(tracker) {
   });
   const approval = createRing(tracker, 0.72, FACTORY_PALETTE.green, 0.14);
   approval.position.set(0, 7.3, 0);
-  group.add(frame, opening, leftDoor, rightDoor, approval);
-  return { group, leftDoor, rightDoor, approval };
+  const domainTitle = createTextLabel(tracker, {
+    text: "PLAYER DOMAIN", width: 4.2, height: 0.5,
+    color: FACTORY_PALETTE.green, background: FACTORY_PALETTE.ink,
+    position: [0, 7.7, 0], fontSize: 52,
+  });
+  const domainDoors = ["fb region", "input", "file door"].map((text, index) => {
+    const door = createDoor(tracker, FACTORY_PALETTE.green, [-3.8 + index * 3.8, 0, 3], 0.48);
+    door.group.add(createTextLabel(tracker, {
+      text, width: 1.55, height: 0.34, color: FACTORY_PALETTE.amber,
+      background: FACTORY_PALETTE.ink, position: [0, 4.2, 0], fontSize: 48,
+    }));
+    group.add(door.group);
+    return door;
+  });
+  const domainRoutes = domainDoors.map((door, index) => {
+    const route = createRoute(tracker, [[0, 0.9, 0], [-3.8 + index * 3.8, 0.9, 3]], FACTORY_PALETTE.green, 0.05);
+    group.add(route);
+    return route;
+  });
+  group.add(frame, opening, leftDoor, rightDoor, approval, domainTitle);
+  return { group, leftDoor, rightDoor, approval, domainTitle, domainDoors, domainRoutes };
 }
 
 function createPlayer(tracker) {
@@ -379,8 +496,13 @@ function createPlayer(tracker) {
     size: [0.42, height, 0.42], color: FACTORY_PALETTE.cyan,
     position: [-1.3 + index * 0.65, 1.1 + height / 2, 0],
   }));
-  group.add(body, ...bars);
-  return { group, body, bars };
+  const label = createTextLabel(tracker, {
+    text: "MUSIC PLAYER", width: 3.6, height: 0.48,
+    color: FACTORY_PALETTE.white, background: FACTORY_PALETTE.ink,
+    position: [0, 2.9, 1.95], fontSize: 50,
+  });
+  group.add(body, label, ...bars);
+  return { group, body, bars, label };
 }
 
 function createCompactScene(tracker) {
@@ -394,8 +516,13 @@ function createCompactScene(tracker) {
   const player = createPlayer(tracker);
   player.group.scale.setScalar(0.72);
   player.group.position.y = 0.7;
-  group.add(floor, wall, player.group);
-  return { group, floor, wall, player };
+  const domainLabel = createTextLabel(tracker, {
+    text: "PLAYER DOMAIN · one door", width: 5.2, height: 0.48,
+    color: FACTORY_PALETTE.green, background: FACTORY_PALETTE.ink,
+    position: [0, 1.1, 4.55], fontSize: 44,
+  });
+  group.add(floor, wall, player.group, domainLabel);
+  return { group, floor, wall, player, domainLabel };
 }
 
 function createArchipelagoScene(tracker) {
@@ -411,13 +538,28 @@ function createArchipelagoScene(tracker) {
   cores.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   FACTORY_ISLANDS.forEach((island, index) => cores.setColorAt(index, new THREE.Color(island.color)));
   group.add(bases, cores);
+  const labels = FACTORY_ISLANDS.map((island) => {
+    const label = createTextLabel(tracker, {
+      text: `${island.icon} · ${island.label}`, width: island.label.length > 10 ? 2.8 : 2.25,
+      height: 0.38, color: island.color, background: FACTORY_PALETTE.ink,
+      position: [0, 0, 0], fontSize: 42,
+    });
+    group.add(label);
+    return label;
+  });
 
   const routes = FACTORY_ISLANDS.slice(1, 8).map((island) => {
     const route = createRoute(tracker, [[0, 0.35, 0], [island.x * 0.5, 0.2, island.z * 0.5], [island.x, 0.35, island.z]], FACTORY_PALETTE.edge, 0.035);
     group.add(route);
     return route;
   });
-  return { group, bases, cores, routes };
+  const counter = createTextLabel(tracker, {
+    text: "20 MORE PRIVATE APP ISLANDS", width: 7.2, height: 0.55,
+    color: FACTORY_PALETTE.white, background: FACTORY_PALETTE.ink,
+    position: [0, 0.3, 10.2], fontSize: 46,
+  });
+  group.add(counter);
+  return { group, bases, cores, labels, routes, counter };
 }
 
 export function createFactoryWorld() {
@@ -456,6 +598,8 @@ export function createFactoryWorld() {
     builder.hatch.scale.setScalar(0.72 + deckRise * 0.28);
     builder.inputDoor.hinge.rotation.y = -smootherstep(interval(time, 27.4, 29.2)) * Math.PI * 0.62;
     builder.outputDoor.hinge.rotation.y = 0;
+    builder.keyLabels[0].visible = time >= 30.2 && time <= 31.1;
+    builder.keyLabels[1].visible = time >= 31.95 && time <= 32.85;
 
     const materialProgress = smootherstep(interval(time, 33.2, 39.8));
     inert.sourceA.position.x = -5.7 + materialProgress * 5.7;
@@ -494,6 +638,47 @@ export function createFactoryWorld() {
       machine.glow.visible = value > 0.02;
       machine.glow.scale.setScalar(0.96 + pulse(time, 41 + index, 80) * 0.05);
     });
+    const compilerCopy = time < 42.25
+      ? "READY · ROUND 0/3"
+      : time < 46
+        ? `COMPILING · ROUND 1/3 · ${Math.round(firstCompile * 100)}%`
+        : time < 52.55
+          ? "FAILED · ROUND 1/3 · DIAG 01"
+          : time < 53.25
+            ? "READY · ROUND 2/3"
+            : time < 55.4
+              ? `COMPILING · ROUND 2/3 · ${Math.round(secondCompile * 100)}%`
+              : time < 66.95
+                ? "PASSED · ROUND 2/3"
+                : time < 69.35
+                  ? `COMPILING · ROUND 3/3 · ${Math.round(thirdCompile * 100)}%`
+                  : "PASSED · ROUND 3/3";
+    const verifierCopy = time < 57.8
+      ? "READY · NEXT ROUND 2/3"
+      : time < 60.8
+        ? `CHECKING · ROUND 2/3 · ${Math.round(verifierSecond * 100)}%`
+        : time < 66.95
+          ? "FAILED · ROUND 2/3 · DIAG 02"
+          : time < 71.2
+            ? "READY · NEXT ROUND 3/3"
+            : time < 75.6
+              ? `CHECKING · ROUND 3/3 · ${Math.round(verifierThird * 100)}%`
+              : "PASSED · ROUND 3/3";
+    setLabelText(compiler.machines[0].progressCaption, compilerCopy);
+    setLabelText(compiler.machines[1].progressCaption, verifierCopy);
+    setLabelText(
+      compiler.sceneCaption,
+      time < 52
+        ? "ROUND 1/3 · COMPILER GATE · Cargo.lock missing · BUILD STOPPED · DIAGNOSTIC 01 → AGENT · EDIT 01 RETURNS"
+        : time < 62
+          ? "ROUND 2/3 · COMPILER PASSES · PRÜFER FINDS BYTE DRIFT · BUILD STOPPED · DIAGNOSTIC 02 → AGENT"
+          : time < 72
+            ? "EDIT 02 RETURNS · ROUND 3/3 · COMPILER PASSES · PRÜFER RUNS A/B · SAME INPUT · TWIN BUILDS · ONE TRUTH"
+            : "HARNESS TEST · SHADOW WORLD COMPLETE · TEST PASSED · SIGNED REPORT EMITTED · REPORT → GUARD · LIVE DOOR STAYS SEALED",
+    );
+    compiler.upgrades[0].visible = time >= 52;
+    compiler.upgrades[1].visible = time >= 70;
+    compiler.upgrades[2].visible = time >= 77;
     compiler.tokens.instanceMatrix.needsUpdate = true;
 
     const fixProgress = smootherstep(interval(time, 54, 60));
@@ -516,6 +701,10 @@ export function createFactoryWorld() {
     });
     twins.hashPlates[1].visible = time >= 60.3;
     twins.hashPlates[0].visible = time >= 60.3;
+    setLabelText(
+      twins.resultLabel,
+      time >= 74 ? "EQUAL" : time >= 60.8 && time < 66.95 ? "RED · BYTE DRIFT" : "BUILDING A/B",
+    );
 
     const proofProgress = smootherstep(interval(time, 73, 78.5));
     proof.subject.position.y = 1.35 + Math.sin(proofProgress * Math.PI * 5) * (1 - proofProgress) * 0.45;
@@ -546,12 +735,16 @@ export function createFactoryWorld() {
     guard.machine.progressFill.scale.x = Math.max(0.001, guardProgress);
     guard.machine.progressFill.position.x = -1.09 + guardProgress * 1.09;
     guard.machine.glow.visible = gateProgress > 0;
+    setLabelText(guard.gateStatus, gateProgress >= 1 ? "GUARD · LIVE DOOR UNLOCKED" : "GUARD · WAITING FOR REPORT");
 
     const openProgress = smootherstep(interval(time, 90, 94));
     approval.leftDoor.position.x = -1.6 - openProgress * 3.15;
     approval.rightDoor.position.x = 1.6 + openProgress * 3.15;
     approval.approval.scale.setScalar(0.5 + smootherstep(interval(time, 88, 91)) * 0.5);
     approval.approval.rotation.z = time * 0.8;
+    approval.domainDoors.forEach((door) => {
+      door.hinge.rotation.y = -smootherstep(interval(time, 92.35, 93.55)) * Math.PI * 0.7;
+    });
 
     const runProgress = smootherstep(interval(time, 96, 104));
     running.group.position.x = -7 + runProgress * 14;
@@ -575,10 +768,17 @@ export function createFactoryWorld() {
       scale.set(0.6 + reveal * 0.4, Math.max(0.001, island.height * reveal), 0.6 + reveal * 0.4);
       matrix.compose(position, quaternion, scale);
       archipelago.cores.setMatrixAt(index, matrix);
+      archipelago.labels[index].position.set(
+        island.x * reveal,
+        1.55 * reveal + island.height,
+        island.z * reveal + 0.7,
+      );
+      archipelago.labels[index].scale.setScalar(Math.max(0.001, reveal));
     });
     archipelago.bases.instanceMatrix.needsUpdate = true;
     archipelago.cores.instanceMatrix.needsUpdate = true;
     archipelago.group.rotation.y = Math.sin(interval(time, 112, 120) * Math.PI) * 0.06;
+    group.traverse((object) => object.userData.setRouteTime?.(time));
     return time;
   }
 

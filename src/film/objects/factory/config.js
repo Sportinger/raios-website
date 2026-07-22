@@ -40,13 +40,21 @@ export const FACTORY_LAYOUT = Object.freeze({
   outputDoor: Object.freeze({ x: 6.1, z: -2.7, yaw: -Math.PI / 5 }),
 });
 
-const islandNames = [
-  "player", "browser", "mail", "video", "photos", "notes", "files",
-  "calendar", "maps", "chat", "terminal", "studio", "game-a", "game-b",
-  "music", "reader", "vault", "settings", "camera", "store", "agent",
+const islandDefinitions = [
+  ["music-player", "MUSIC PLAYER", "PLAY"],
+  ["fortnite", "FORTNITE", "F"], ["browser", "BROWSER", "WEB"],
+  ["docs", "DOCS", "DOC"], ["email", "EMAIL", "MAIL"],
+  ["weather", "WEATHER", "SUN"], ["video-player", "VIDEO PLAYER", "PLAY"],
+  ["minecraft", "MINECRAFT", "M"], ["messages", "MESSAGES", "CHAT"],
+  ["files", "FILES", "DIR"], ["photos", "PHOTOS", "PIC"],
+  ["maps", "MAPS", "MAP"], ["notes", "NOTES", "TXT"],
+  ["calendar", "CALENDAR", "CAL"], ["camera", "CAMERA", "CAM"],
+  ["contacts", "CONTACTS", "ID"], ["studio", "STUDIO", "EDIT"],
+  ["terminal", "TERMINAL", "CLI"], ["store", "STORE", "GET"],
+  ["settings", "SETTINGS", "CFG"], ["games", "GAMES", "PAD"],
 ];
 
-export const FACTORY_ISLANDS = Object.freeze(islandNames.map((id, index) => {
+export const FACTORY_ISLANDS = Object.freeze(islandDefinitions.map(([id, label, icon], index) => {
   const ring = index === 0 ? 0 : index <= 7 ? 1 : 2;
   const ringIndex = ring === 1 ? index - 1 : index - 8;
   const ringCount = ring === 1 ? 7 : 13;
@@ -54,6 +62,8 @@ export const FACTORY_ISLANDS = Object.freeze(islandNames.map((id, index) => {
   const radius = ring === 0 ? 0 : ring === 1 ? 5.3 : 10;
   return Object.freeze({
     id,
+    label,
+    icon,
     index,
     x: Math.cos(angle) * radius,
     z: Math.sin(angle) * radius * 0.72,

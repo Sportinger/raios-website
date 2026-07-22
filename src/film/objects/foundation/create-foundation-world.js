@@ -2,6 +2,7 @@ import * as THREE from "three";
 import {
   FOUNDATION_LAYOUT,
   FOUNDATION_TIMELINE,
+  GENESIS_FOOTPRINT,
   KERNEL_FOOTPRINT,
 } from "./foundation-config.js";
 
@@ -80,7 +81,7 @@ function setOpacity(root, opacity) {
     if (!object.material) return;
     const materials = Array.isArray(object.material) ? object.material : [object.material];
     materials.forEach((material) => {
-      material.transparent = opacity < 0.999;
+      material.transparent = material.userData.preserveTransparency || opacity < 0.999;
       material.opacity = opacity;
     });
   });
@@ -89,27 +90,71 @@ function setOpacity(root, opacity) {
 function createLabel(text, color = PALETTE.ink, width = 3, fontSize = 52) {
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
-  canvas.height = 192;
+  canvas.height = 256;
   const context = canvas.getContext("2d");
+  const renderedFontSize = Math.min(190, fontSize * 2.8);
   context.clearRect(0, 0, canvas.width, canvas.height);
-  context.font = `700 ${fontSize}px Consolas, monospace`;
+  context.font = `800 ${renderedFontSize}px Consolas, monospace`;
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.letterSpacing = "4px";
   context.lineJoin = "round";
-  context.lineWidth = Math.max(8, fontSize * 0.18);
+  context.lineWidth = Math.max(12, renderedFontSize * 0.16);
   context.strokeStyle = "#05080d";
   context.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
-  context.strokeText(text, canvas.width / 2, canvas.height / 2);
-  context.fillText(text, canvas.width / 2, canvas.height / 2);
+  context.strokeText(text, canvas.width / 2, canvas.height / 2, 920);
+  context.fillText(text, canvas.width / 2, canvas.height / 2, 920);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearFilter;
-  const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
+  const material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+  });
+  material.userData.preserveTransparency = true;
   const sprite = new THREE.Sprite(material);
   sprite.scale.set(width, width * (canvas.height / canvas.width), 1);
+  sprite.renderOrder = 50;
   sprite.userData.labelTexture = texture;
   return sprite;
+}
+
+function createDeckLabel(text, color, width, sideHeight) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024;
+  canvas.height = 192;
+  const context = canvas.getContext("2d");
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.font = "900 132px Consolas, monospace";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.letterSpacing = "5px";
+  context.lineJoin = "round";
+  context.lineWidth = 18;
+  context.strokeStyle = "#05080d";
+  context.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
+  context.strokeText(text, canvas.width / 2, canvas.height / 2, 940);
+  context.fillText(text, canvas.width / 2, canvas.height / 2, 940);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.FrontSide,
+  });
+  material.userData.preserveTransparency = true;
+  const decal = new THREE.Mesh(
+    new THREE.PlaneGeometry(width, sideHeight * 0.72),
+    material,
+  );
+  decal.renderOrder = 16;
+  decal.userData.labelTexture = texture;
+  return decal;
 }
 
 function createGlow(color, width = 2.4, height = width) {
@@ -202,8 +247,9 @@ function createDeck({ width, depth, height, color, edgeColor, label }) {
   grid.position.y = height + 0.006;
   grid.material.transparent = true;
   grid.material.opacity = 0.18;
-  const title = createLabel(label, edgeColor, Math.min(width * 0.72, 4.2), 58);
-  title.position.set(0, height * 0.55, depth / 2 + 0.04);
+  const titleWidth = Math.min(2.25, Math.max(1.65, width * 0.34));
+  const title = createDeckLabel(label, edgeColor, titleWidth, height);
+  title.position.set(0, height * 0.52, depth / 2 + 0.034);
   const underglow = createGlow(edgeColor, width * 0.96, depth * 0.34);
   underglow.material.opacity = 0.17;
   underglow.position.set(0, 0.04, depth * 0.18);
@@ -524,7 +570,7 @@ function createDoorAndKey(labelText = "net.https") {
   const keyTag = createLabel("CAP: NET.HTTPS", PALETTE.amber, 1.65, 40);
   keyTag.position.set(0.32, 0.38, 0);
   key.add(keyTag);
-  key.position.set(-1.3, 0.74, -1.67);
+  key.position.set(-1.85, 0.74, -2.25);
   group.add(frame, key);
   return { group, frame, leafPivot, key };
 }
@@ -559,11 +605,22 @@ function createSignalRoute(curve, color = PALETTE.blue, samples = 30) {
   const routeSegments = [];
   for (let index = 1; index < points.length; index += 1) {
     const segment = new THREE.Group();
-    segment.add(
-      createBeamBetween(points[index - 1], points[index], 0.055, PALETTE.lineDark, 7),
-      createBeamBetween(points[index - 1], points[index], 0.029, color, 7),
+    const underlay = createBeamBetween(
+      points[index - 1],
+      points[index],
+      0.045,
+      PALETTE.lineDark,
+      7,
     );
-    routeSegments.push(segment);
+    const dash = createBeamBetween(
+      points[index - 1],
+      points[index],
+      0.068,
+      color,
+      7,
+    );
+    segment.add(underlay, dash);
+    routeSegments.push({ segment, underlay, dash });
     group.add(segment);
   }
   const pulse = new THREE.Mesh(
@@ -579,8 +636,11 @@ function setRouteProgress(route, amount, time, persistent = false) {
   const value = clamp01(amount);
   route.group.visible = value > 0.001;
   const visibleSegments = Math.ceil(route.routeSegments.length * value);
-  route.routeSegments.forEach((segment, index) => {
-    segment.visible = index < visibleSegments;
+  const dashOffset = Math.floor(time * 12) % 8;
+  route.routeSegments.forEach(({ segment, dash }, index) => {
+    const revealed = index < visibleSegments;
+    segment.visible = revealed;
+    dash.visible = revealed && ((index + dashOffset) % 8 < 3);
   });
   const pulseProgress = persistent && value >= 0.999
     ? ((time * 0.42) % 1 + 1) % 1
@@ -598,20 +658,26 @@ export function createFoundationWorld() {
 
   const prompt = createPrompt();
   const kernel = createDeck({
-    width: 5.8, depth: 5.1, height: 0.72,
-    color: 0x05080d, edgeColor: PALETTE.blue, label: "RUST KERNEL",
+    width: KERNEL_FOOTPRINT.compact.width,
+    depth: KERNEL_FOOTPRINT.compact.depth,
+    height: 0.72,
+    color: 0x05080d, edgeColor: PALETTE.blue, label: "RUST-KERNEL",
   });
   const kernelFacets = createSlabFacets(5.8, 5.1, 0.72);
   kernel.body.add(kernelFacets);
   place(kernel.group, FOUNDATION_LAYOUT.kernel);
   const genesis = createDeck({
-    width: 4.9, depth: 4.25, height: 0.34,
+    width: GENESIS_FOOTPRINT.width, depth: GENESIS_FOOTPRINT.depth, height: 0.34,
     color: PALETTE.panel, edgeColor: PALETTE.greenHigh, label: "GENESIS DECK",
   });
   place(genesis.group, FOUNDATION_LAYOUT.genesis);
 
   const agent = createAgent();
   place(agent, FOUNDATION_LAYOUT.agent);
+  // Compensates for the authored Foundation-set scale so the Agent retains
+  // the original block-to-deck ratio while the two decks fill the frame.
+  const agentScale = 1.24;
+  agent.scale.setScalar(agentScale);
   const keyForge = createKeyForge();
   place(keyForge.group, FOUNDATION_LAYOUT.keyForge);
   const internet = createDoorAndKey("net.https");
@@ -619,22 +685,22 @@ export function createFoundationWorld() {
   const netTower = createNetTower();
   place(netTower.group, FOUNDATION_LAYOUT.netTower);
   const agentToDoor = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-3.2, 1.58, 0.72),
-    new THREE.Vector3(-2.7, 1.2, 1.08),
-    new THREE.Vector3(-1.78, 1.13, 1.52),
-    new THREE.Vector3(-1.06, 1.2, 1.7),
+    new THREE.Vector3(-0.05, 1.74, 0.68),
+    new THREE.Vector3(0.62, 1.2, 1.04),
+    new THREE.Vector3(1.58, 1.13, 1.72),
+    new THREE.Vector3(2.48, 1.2, 2.4),
   ], false, "centripetal"));
   const doorToNet = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-0.68, 1.16, 1.8),
-    new THREE.Vector3(0.08, 0.88, 2.06),
-    new THREE.Vector3(0.94, 0.78, 2.38),
-    new THREE.Vector3(1.75, 0.76, 2.55),
+    new THREE.Vector3(2.9, 1.16, 2.52),
+    new THREE.Vector3(3.42, 0.88, 2.7),
+    new THREE.Vector3(4.02, 0.78, 2.96),
+    new THREE.Vector3(4.55, 0.76, 3.12),
   ], false, "centripetal"));
   const forgeToDoor = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-2.15, 1.8, 0.05),
-    new THREE.Vector3(-2.0, 1.44, 0.48),
-    new THREE.Vector3(-1.55, 1.22, 1.08),
-    new THREE.Vector3(-0.85, 1.78, 1.72),
+    new THREE.Vector3(0.85, 1.8, 0.2),
+    new THREE.Vector3(1.22, 1.44, 0.72),
+    new THREE.Vector3(1.86, 1.22, 1.5),
+    new THREE.Vector3(2.7, 1.78, 2.45),
   ], false, "centripetal"), PALETTE.green);
 
   const builder = createDeck({
@@ -649,9 +715,9 @@ export function createFoundationWorld() {
   buildDoor.key.visible = false;
   buildDoor.group.scale.setScalar(0.82);
   const buildLine = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-3.18, 1.44, 0.48),
-    new THREE.Vector3(-1.9, 1.16, 0.16),
-    new THREE.Vector3(-0.55, 1.15, 0.36),
+    new THREE.Vector3(-0.05, 1.68, 0.58),
+    new THREE.Vector3(0.05, 1.28, 0.52),
+    new THREE.Vector3(0.28, 1.16, 0.58),
     new THREE.Vector3(0.6, 1.15, 0.7),
   ], false, "centripetal"), PALETTE.green);
   const requestToBuilder = createSignalRoute(new THREE.CatmullRomCurve3([
@@ -708,13 +774,37 @@ export function createFoundationWorld() {
       FOUNDATION_LAYOUT.kernel[2],
     );
     setDeckFootprint(kernel, kernelScaleX, kernelScaleZ);
+    const compactGenesisWidth = KERNEL_FOOTPRINT.compact.width * (510 / 630);
+    const compactGenesisDepth = KERNEL_FOOTPRINT.compact.depth * (510 / 630);
+    setDeckFootprint(
+      genesis,
+      THREE.MathUtils.lerp(compactGenesisWidth / GENESIS_FOOTPRINT.width, 1, foundationExpansion),
+      THREE.MathUtils.lerp(compactGenesisDepth / GENESIS_FOOTPRINT.depth, 1, foundationExpansion),
+    );
+    genesis.group.position.set(
+      THREE.MathUtils.lerp(
+        FOUNDATION_LAYOUT.genesisCompact[0],
+        FOUNDATION_LAYOUT.genesis[0],
+        foundationExpansion,
+      ),
+      FOUNDATION_LAYOUT.genesis[1],
+      FOUNDATION_LAYOUT.genesis[2],
+    );
     const genesisRise = timedProgress(time, FOUNDATION_TIMELINE.genesisRise);
     setDeckRise(genesis, genesisRise);
 
     const agentRise = timedProgress(time, FOUNDATION_TIMELINE.agentRise);
     agent.visible = agentRise > 0.001;
-    agent.position.y = 1.06 - (1 - agentRise) * 1.12;
-    agent.scale.y = Math.max(0.001, agentRise);
+    agent.position.set(
+      THREE.MathUtils.lerp(
+        FOUNDATION_LAYOUT.agentCompact[0],
+        FOUNDATION_LAYOUT.agent[0],
+        foundationExpansion,
+      ),
+      FOUNDATION_LAYOUT.agent[1] - (1 - agentRise) * 1.12,
+      FOUNDATION_LAYOUT.agent[2],
+    );
+    agent.scale.y = agentScale * Math.max(0.001, agentRise);
 
     const netRise = timedProgress(time, FOUNDATION_TIMELINE.netRise);
     netTower.group.visible = netRise > 0.001;
@@ -759,9 +849,9 @@ export function createFoundationWorld() {
     );
     internet.key.visible = time >= FOUNDATION_TIMELINE.keyForgeRise.start && time < 22.2;
     internet.key.position.set(
-      THREE.MathUtils.lerp(-1.3, -0.08, keyTravel),
+      THREE.MathUtils.lerp(-1.85, -0.08, keyTravel),
       THREE.MathUtils.lerp(0.74, 0.78, keyTravel),
-      THREE.MathUtils.lerp(-1.67, 0.08, keyTravel),
+      THREE.MathUtils.lerp(-2.25, 0.08, keyTravel),
     );
     internet.key.rotation.y = keyTravel * Math.PI * 2;
     setRouteProgress(

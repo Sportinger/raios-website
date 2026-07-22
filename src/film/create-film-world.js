@@ -15,6 +15,11 @@ export function createFilmWorld() {
   grid.material.opacity = 0.28;
   const foundation = createFoundationWorld();
   const factory = createFactoryWorld();
+  // The native meshes use compact modeling units. This authored transform maps
+  // the Foundation set back onto the original SVG composition while preserving
+  // real depth for a future orbit camera.
+  foundation.group.scale.setScalar(1.5);
+  foundation.group.position.set(-1.9, 0, 4.5);
   root.add(grid, foundation.group, factory.group);
   scene.add(root);
 

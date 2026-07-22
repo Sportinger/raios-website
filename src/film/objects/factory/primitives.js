@@ -78,9 +78,44 @@ export function createVectorBox(tracker, {
 
 export function createRoute(tracker, points, color, width = 0.08) {
   const curve = new THREE.CatmullRomCurve3(points.map((point) => new THREE.Vector3(...point)));
-  const geometry = tracker.geometry(new THREE.TubeGeometry(curve, 48, width, 6, false));
-  const material = createFlatMaterial(tracker, color);
-  return new THREE.Mesh(geometry, material);
+  const group = new THREE.Group();
+  group.name = "factory-signal-route";
+  const baseGeometry = tracker.geometry(new THREE.TubeGeometry(curve, 48, width, 6, false));
+  const baseColor = new THREE.Color(color).multiplyScalar(0.2);
+  const baseMaterial = createFlatMaterial(tracker, baseColor);
+  group.add(new THREE.Mesh(baseGeometry, baseMaterial));
+
+  const animated = width >= 0.03;
+  const dashes = [];
+  if (animated) {
+    const dashGeometry = tracker.geometry(new THREE.CylinderGeometry(width * 1.22, width * 1.22, 1, 6));
+    const dashMaterial = createFlatMaterial(tracker, color);
+    for (let index = 0; index < 9; index += 1) {
+      const dash = new THREE.Mesh(dashGeometry, dashMaterial);
+      dash.renderOrder = 12;
+      group.add(dash);
+      dashes.push(dash);
+    }
+  }
+
+  const point = new THREE.Vector3();
+  const tangent = new THREE.Vector3();
+  const up = new THREE.Vector3(0, 1, 0);
+  const quaternion = new THREE.Quaternion();
+  const routeLength = curve.getLength();
+  group.userData.setRouteTime = (time) => {
+    dashes.forEach((dash, index) => {
+      const phase = ((time * 0.16 + index / dashes.length) % 1 + 1) % 1;
+      curve.getPointAt(phase, point);
+      curve.getTangentAt(phase, tangent).normalize();
+      quaternion.setFromUnitVectors(up, tangent);
+      dash.position.copy(point);
+      dash.quaternion.copy(quaternion);
+      dash.scale.set(1, Math.max(width * 6, routeLength * 0.038), 1);
+    });
+  };
+  group.userData.setRouteTime(0);
+  return group;
 }
 
 export function createRing(tracker, radius, color, tube = 0.08) {
@@ -125,6 +160,7 @@ export function createTextLabel(tracker, {
   background = 0x07111d,
   position = [0, 0, 0],
   fontSize = 48,
+  maxWidth = 940,
 } = {}) {
   if (typeof document === "undefined") {
     return createPanelLabel(tracker, {
@@ -137,19 +173,8 @@ export function createTextLabel(tracker, {
   }
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
-  canvas.height = 192;
+  canvas.height = 256;
   const context = canvas.getContext("2d");
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  context.fillStyle = `#${new THREE.Color(background).getHexString()}`;
-  context.fillRect(0, 14, canvas.width, canvas.height - 28);
-  context.strokeStyle = `#${new THREE.Color(color).getHexString()}`;
-  context.lineWidth = 7;
-  context.strokeRect(4, 18, canvas.width - 8, canvas.height - 36);
-  context.fillStyle = `#${new THREE.Color(color).getHexString()}`;
-  context.font = `800 ${fontSize}px ui-monospace, SFMono-Regular, Consolas, monospace`;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.fillText(String(text), canvas.width / 2, canvas.height / 2, canvas.width - 70);
   const texture = tracker.texture(new THREE.CanvasTexture(canvas));
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearFilter;
@@ -158,11 +183,34 @@ export function createTextLabel(tracker, {
     map: texture,
     transparent: true,
     depthWrite: false,
+    depthTest: false,
     side: THREE.DoubleSide,
   }));
   const label = new THREE.Mesh(geometry, material);
   label.name = `label-${String(text).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   label.position.set(...position);
-  label.renderOrder = 20;
+  label.renderOrder = 40;
+  let renderedText = null;
+  const drawText = (nextText) => {
+    const copy = String(nextText);
+    if (copy === renderedText) return;
+    renderedText = copy;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = `#${new THREE.Color(background).getHexString()}`;
+    context.fillRect(0, 18, canvas.width, canvas.height - 36);
+    context.strokeStyle = "#05070a";
+    const renderedFontSize = Math.min(170, fontSize * 2.7);
+    context.lineWidth = Math.max(14, renderedFontSize * 0.18);
+    context.lineJoin = "round";
+    context.font = `800 ${renderedFontSize}px Consolas, ui-monospace, SFMono-Regular, monospace`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.strokeText(copy, canvas.width / 2, canvas.height / 2, maxWidth);
+    context.fillStyle = `#${new THREE.Color(color).getHexString()}`;
+    context.fillText(copy, canvas.width / 2, canvas.height / 2, maxWidth);
+    texture.needsUpdate = true;
+  };
+  label.userData.setText = drawText;
+  drawText(text);
   return label;
 }
