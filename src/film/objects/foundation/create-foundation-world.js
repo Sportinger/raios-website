@@ -1397,16 +1397,29 @@ export function createFoundationWorld() {
     if (group.userData.presentationBaseZ === undefined) {
       group.userData.presentationBaseZ = group.position.z;
     }
-    group.position.x = group.userData.presentationBaseX - 1.9 * foundationExpansion;
-    group.position.z = group.userData.presentationBaseZ + foundationExpansion;
+    const compactComposition = progress(time, 106, 109);
+    const finaleComposition = progress(time, 109, 117);
+    group.position.x = group.userData.presentationBaseX - 1.9 * foundationExpansion
+      + 1.76 * compactComposition + 4.1 * finaleComposition;
+    group.position.z = group.userData.presentationBaseZ + foundationExpansion
+      + 3.45 * compactComposition + 4.1 * finaleComposition;
+    const kernelFinalExpansion = progress(time, 106, 109);
     const kernelScaleX = THREE.MathUtils.lerp(
       1,
-      KERNEL_FOOTPRINT.expanded.width / KERNEL_FOOTPRINT.compact.width,
+      THREE.MathUtils.lerp(
+        KERNEL_FOOTPRINT.expanded.width,
+        18.3,
+        kernelFinalExpansion,
+      ) / KERNEL_FOOTPRINT.compact.width,
       foundationExpansion,
     );
     const kernelScaleZ = THREE.MathUtils.lerp(
       1,
-      KERNEL_FOOTPRINT.expanded.depth / KERNEL_FOOTPRINT.compact.depth,
+      THREE.MathUtils.lerp(
+        KERNEL_FOOTPRINT.expanded.depth,
+        12.85,
+        kernelFinalExpansion,
+      ) / KERNEL_FOOTPRINT.compact.depth,
       foundationExpansion,
     );
     kernel.group.position.set(
@@ -1416,8 +1429,9 @@ export function createFoundationWorld() {
         foundationExpansion,
       ),
       FOUNDATION_LAYOUT.kernel[1] - (1 - kernelRise) * 2.15,
-      FOUNDATION_LAYOUT.kernel[2],
+      FOUNDATION_LAYOUT.kernel[2] - 2.3 * kernelFinalExpansion,
     );
+    kernel.group.position.x += 2.3 * kernelFinalExpansion;
     setDeckFootprint(kernel, kernelScaleX, kernelScaleZ);
     kernel.title.position.x = 2.3 * foundationExpansion;
     const compactGenesisWidth = KERNEL_FOOTPRINT.compact.width * (510 / 630);
@@ -1451,8 +1465,9 @@ export function createFoundationWorld() {
       angle: -THREE.MathUtils.degToRad(26.565),
     });
 
+    const legacyWorldAlpha = 1 - progress(time, 106, 108.7);
     const agentRise = timedProgress(time, FOUNDATION_TIMELINE.agentRise);
-    agent.visible = agentRise > 0.001;
+    agent.visible = agentRise * legacyWorldAlpha > 0.001;
     agent.position.set(
       THREE.MathUtils.lerp(
         FOUNDATION_LAYOUT.agentCompact[0],
@@ -1463,22 +1478,26 @@ export function createFoundationWorld() {
       FOUNDATION_LAYOUT.agent[2],
     );
     agent.scale.y = agentScale * Math.max(0.001, agentRise);
+    setFade(agent, agentRise * legacyWorldAlpha);
 
     const netRise = timedProgress(time, FOUNDATION_TIMELINE.netRise);
-    netTower.group.visible = netRise > 0.001;
+    netTower.group.visible = netRise * legacyWorldAlpha > 0.001;
     netTower.group.position.y = FOUNDATION_LAYOUT.netTower[1] + 0.3 - (1 - netRise) * 0.92;
     netTower.group.scale.y = 1.18 * Math.max(0.001, netRise);
     netTower.rings.forEach((ring, index) => {
       const cycle = ((time - 13.2 - index * 1.2) % 3.6 + 3.6) % 3.6 / 3.6;
       ring.scale.setScalar(0.4 + cycle * 2.5);
-      ring.material.opacity = time < 13.2 ? 0 : (1 - cycle) * 0.72;
+      ring.material.opacity = time < 13.2 ? 0 : (1 - cycle) * 0.72 * legacyWorldAlpha;
     });
+    setFade(netTower.signal, legacyWorldAlpha);
+    setFade(netTower.beacon, legacyWorldAlpha);
+    setFade(netTower.glow, legacyWorldAlpha);
     netTower.signal.rotation.z = time * 0.26;
     netTower.beacon.scale.setScalar(0.8 + Math.sin(time * 4) * 0.18);
 
     const lineDraw = timedProgress(time, FOUNDATION_TIMELINE.agentRoute);
     setRouteProgress(agentToDoor, lineDraw, time, time >= FOUNDATION_TIMELINE.networkConnectedAt);
-    const networkWindowAlpha = 1 - progress(time, 106.25, 106.6);
+    const networkWindowAlpha = legacyWorldAlpha;
     setFade(agentToDoor.group, lineDraw * networkWindowAlpha);
 
     const doorRise = timedProgress(time, FOUNDATION_TIMELINE.netDoorRise);
@@ -1709,10 +1728,13 @@ export function createFoundationWorld() {
     const workpieceRise = timedProgress(time, FOUNDATION_TIMELINE.workpieceRise);
     production.workpiece.visible = workpieceRise > 0.001;
     const residentRise = progress(time, 89.2, 92);
+    const compactPlayer = progress(time, 106, 109);
     production.workpiece.position.y = -(1 - workpieceRise) * 0.35 + residentRise;
     production.workpiece.scale.setScalar(Math.max(
       0.001,
-      THREE.MathUtils.lerp(0.54, 1, workpieceRise) * THREE.MathUtils.lerp(1, 0.93, residentRise),
+      THREE.MathUtils.lerp(0.54, 1, workpieceRise)
+        * THREE.MathUtils.lerp(1, 0.93, residentRise)
+        * THREE.MathUtils.lerp(1, 0.25, compactPlayer),
     ));
     const workpieceFrames = [
       { at: 34, x: 0, z: 0 },
@@ -1736,6 +1758,8 @@ export function createFoundationWorld() {
       { at: 89.6, x: -1.816, z: -0.312 },
       { at: 92, x: -6.108, z: 1.912 },
       { at: 106, x: -6.108, z: 1.912 },
+      { at: 109, x: -0.574, z: 6.885 },
+      { at: 120, x: -0.574, z: 6.885 },
     ];
     const beforeFrame = workpieceFrames.reduce(
       (best, frame) => (frame.at <= time ? frame : best),

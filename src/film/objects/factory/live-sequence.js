@@ -6,6 +6,7 @@ import { createRoute, createTextLabel, createVectorBox } from "./primitives.js";
 import { interval, smoothstep, smootherstep } from "./timeline.js";
 
 const DOMAIN_CENTER = new THREE.Vector3(-10.318, 1.5, 3.179);
+const COMPACT_DOMAIN_CENTER = new THREE.Vector3(-0.25, 1.5, 14.09);
 const AGENT_PORT = new THREE.Vector3(-11.695, 0.18, 13.45);
 const DOMAIN_DOOR_X = Object.freeze([-4.48, -1.48, 1.52]);
 
@@ -278,12 +279,21 @@ export function createLiveSequence(tracker) {
     const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 120);
     const domainAlpha = windowAlpha(time, 88.8, 120, 0.45);
     const domainRise = smootherstep(interval(time, 89.2, 92));
+    const contraction = smootherstep(interval(time, 106, 109));
+    const finaleDrift = smootherstep(interval(time, 109, 117));
+    const compactX = COMPACT_DOMAIN_CENTER.x + 4.1 * finaleDrift;
+    const compactZ = COMPACT_DOMAIN_CENTER.z + 4.1 * finaleDrift;
     setOpacity(domain.group, domainAlpha);
-    domain.group.position.y = DOMAIN_CENTER.y - (1 - domainRise) * 2.6;
+    domain.group.position.set(
+      THREE.MathUtils.lerp(DOMAIN_CENTER.x, compactX, contraction),
+      DOMAIN_CENTER.y - (1 - domainRise) * 2.6,
+      THREE.MathUtils.lerp(DOMAIN_CENTER.z, compactZ, contraction),
+    );
+    domain.group.scale.setScalar(THREE.MathUtils.lerp(1, 0.25, contraction));
     domain.title.material.opacity = domainAlpha * (1 - smootherstep(interval(time, 106, 109)));
     domain.doors.forEach((door, index) => {
       const reveal = smootherstep(interval(time, 92.35 + index * 0.05, 93.55 + index * 0.05));
-      door.group.visible = reveal > 0.001;
+      door.group.visible = reveal > 0.001 && time < 106.55;
       door.group.position.y = -0.53 - (1 - reveal) * 1.1;
       door.group.scale.setScalar(0.32 * Math.max(0.001, reveal));
       door.hinge.rotation.y = -smootherstep(interval(time, 93.55, 94.35)) * Math.PI * 0.62;

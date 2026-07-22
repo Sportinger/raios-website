@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import {
-  FACTORY_ISLANDS,
   FACTORY_LANES,
   FACTORY_LAYOUT,
   FACTORY_PALETTE,
@@ -36,12 +35,9 @@ import {
   setVerifierVerdict,
 } from "./feedback-primitives.js";
 import { createApprovalSequence } from "./approval-sequence.js";
+import { createArchipelagoSequence } from "./archipelago-sequence.js";
 import { createFactoryDoor as createDoor } from "./door-primitives.js";
 import { createLiveSequence } from "./live-sequence.js";
-
-const setYScale = (object, scale) => {
-  object.scale.y = Math.max(0.001, scale);
-};
 
 const setLabelText = (label, text) => label.userData.setText?.(text);
 
@@ -60,64 +56,6 @@ function setFactoryOpacity(root, opacity) {
       material.opacity = baseOpacity * value;
     });
   });
-}
-
-function createMachine(tracker, lane) {
-  const { color, x, z, scale } = lane;
-  const group = new THREE.Group();
-  group.name = `factory-machine-${lane.id}`;
-  group.position.set(x, 0, z);
-  group.scale.setScalar(scale);
-  group.add(createVectorBox(tracker, {
-    size: [2.2, 0.28, 2.45], color: FACTORY_PALETTE.panel,
-    edgeColor: FACTORY_PALETTE.edge, position: [0, 0.14, 0],
-  }));
-  group.add(createVectorBox(tracker, {
-    size: [1.55, 1.62, 1.38], color: FACTORY_PALETTE.panelLight,
-    edgeColor: color, position: [0, 0.98, -0.18],
-  }));
-  const aperture = createVectorBox(tracker, {
-    size: [0.92, 0.42, 0.06], color, edgeColor: FACTORY_PALETTE.white,
-    position: [0, 0.95, 0.53],
-  });
-  group.add(aperture);
-  const status = createRing(tracker, 0.27, color, 0.04);
-  status.position.set(0, 1.9, -0.18);
-  group.add(status);
-  const labelCopy = {
-    compiler: "COMPILER · rustc → WASM",
-    verifier: "PRÜFER · HARNESS",
-    guard: "GUARD · LIVE GATE",
-  }[lane.id];
-  const label = createTextLabel(tracker, {
-    text: labelCopy, width: 1.8, height: 0.36, color,
-    background: FACTORY_PALETTE.ink, position: [0, 1.28, 0.56], fontSize: 38,
-  });
-  const progressRail = createVectorBox(tracker, {
-    size: [1.82, 0.1, 0.06], color: FACTORY_PALETTE.ink,
-    edgeColor: FACTORY_PALETTE.edge, position: [0, 2.25, -0.16],
-  });
-  const progressFill = createVectorBox(tracker, {
-    size: [1.68, 0.055, 0.075], color, position: [-0.84, 2.25, -0.11],
-  });
-  progressFill.scale.x = 0.001;
-  const progressCaption = createTextLabel(tracker, {
-    text: lane.id === "compiler" ? "READY · ROUND 0/3" : lane.id === "verifier" ? "READY · NEXT ROUND 2/3" : "REPORT · HASH · RIGHTS · OWNER",
-    width: 2.7, height: 0.32, color: 0xafc2d9, background: FACTORY_PALETTE.ink,
-    position: [0, 2.62, -0.16], fontSize: 34,
-  });
-  const versionCaption = lane.id === "compiler" ? createTextLabel(tracker, {
-    text: "rustc 1.83.0-dev · NO NET", width: 2.85, height: 0.3,
-    color: 0x718197, background: FACTORY_PALETTE.ink,
-    position: [0, 2.43, -0.1], fontSize: 32,
-  }) : null;
-  const glow = createVectorBox(tracker, {
-    size: [1.85, 1.9, 1.65], color, position: [0, 1.05, -0.18], opacity: 0.055,
-  });
-  glow.visible = false;
-  group.add(glow, label, progressRail, progressFill, progressCaption);
-  if (versionCaption) group.add(versionCaption);
-  return { group, aperture, status, progressRail, progressFill, progressCaption, versionCaption, glow };
 }
 
 function createBuilderScene(tracker, inert = false) {
@@ -447,167 +385,6 @@ function createProofScene(tracker) {
   return { group, subject, spikes, entryDoor, mockDoors, entryRoute, attacks };
 }
 
-function createGuardScene(tracker) {
-  const group = new THREE.Group();
-  const machine = createMachine(tracker, {
-    id: "guard", x: 0, z: 0, scale: 1, color: FACTORY_PALETTE.green,
-  });
-  group.add(machine.group);
-  const orbitRings = [1.5, 2.1, 2.7, 3.3].map((radius, index) => {
-    const ring = createRing(tracker, radius, [
-      FACTORY_PALETTE.cyan, FACTORY_PALETTE.amber,
-      FACTORY_PALETTE.violet, FACTORY_PALETTE.green,
-    ][index], 0.07);
-    ring.position.y = 4.1;
-    group.add(ring);
-    return ring;
-  });
-  const checklist = [FACTORY_PALETTE.red, FACTORY_PALETTE.red, FACTORY_PALETTE.red, FACTORY_PALETTE.red].map((color, index) => {
-    const badge = createRing(tracker, 0.32, color, 0.1);
-    badge.position.set(-1.8 + index * 1.2, 0.72, 2.25);
-    badge.add(createTextLabel(tracker, {
-      text: ["R", "#", "C", "U"][index], width: 0.52, height: 0.38,
-      color: FACTORY_PALETTE.white, background: FACTORY_PALETTE.ink,
-      position: [0, 0, 0.12], fontSize: 64,
-    }));
-    group.add(badge);
-    return badge;
-  });
-  const liveDoor = createDoor(tracker, FACTORY_PALETTE.red, [5, 0, -0.5], 0.9);
-  liveDoor.group.rotation.y = -Math.PI / 2;
-  const grantRoute = createRoute(tracker, [[0, 1, 0], [2.1, 1.1, -0.4], [5, 1.1, -0.5]], FACTORY_PALETTE.green, 0.06);
-  const liveDoorLabel = createTextLabel(tracker, {
-    text: "/out", width: 1.3, height: 0.38, color: FACTORY_PALETTE.amber,
-    background: FACTORY_PALETTE.ink, position: [0, 4.2, 0], fontSize: 56,
-  });
-  liveDoor.group.add(liveDoorLabel);
-  const gateStatus = createTextLabel(tracker, {
-    text: "GUARD · WAITING FOR REPORT", width: 5.4, height: 0.48,
-    color: 0xf0b0ad, background: FACTORY_PALETTE.ink,
-    position: [2.3, 5.1, -0.5], fontSize: 42,
-  });
-  group.add(liveDoor.group, grantRoute, gateStatus);
-  return { group, machine, orbitRings, checklist, liveDoor, grantRoute, gateStatus };
-}
-
-function createApprovalScene(tracker) {
-  const group = new THREE.Group();
-  const frame = createVectorBox(tracker, {
-    size: [8.5, 6.4, 0.7], color: FACTORY_PALETTE.panel,
-    edgeColor: FACTORY_PALETTE.green, position: [0, 3.2, 0],
-  });
-  const opening = createVectorBox(tracker, {
-    size: [6.4, 4.8, 0.9], color: FACTORY_PALETTE.ink, position: [0, 3.1, 0.05],
-  });
-  const leftDoor = createVectorBox(tracker, {
-    size: [3.1, 4.6, 0.35], color: FACTORY_PALETTE.panelLight,
-    edgeColor: FACTORY_PALETTE.cyan, position: [-1.6, 3.1, 0.6],
-  });
-  const rightDoor = createVectorBox(tracker, {
-    size: [3.1, 4.6, 0.35], color: FACTORY_PALETTE.panelLight,
-    edgeColor: FACTORY_PALETTE.cyan, position: [1.6, 3.1, 0.6],
-  });
-  const approval = createRing(tracker, 0.72, FACTORY_PALETTE.green, 0.14);
-  approval.position.set(0, 7.3, 0);
-  const domainTitle = createTextLabel(tracker, {
-    text: "PLAYER DOMAIN", width: 4.2, height: 0.5,
-    color: FACTORY_PALETTE.green, background: FACTORY_PALETTE.ink,
-    position: [0, 7.7, 0], fontSize: 52,
-  });
-  const domainDoors = ["fb region", "input", "file door"].map((text, index) => {
-    const door = createDoor(tracker, FACTORY_PALETTE.green, [-3.8 + index * 3.8, 0, 3], 0.48);
-    door.group.add(createTextLabel(tracker, {
-      text, width: 1.55, height: 0.34, color: FACTORY_PALETTE.amber,
-      background: FACTORY_PALETTE.ink, position: [0, 4.2, 0], fontSize: 48,
-    }));
-    group.add(door.group);
-    return door;
-  });
-  const domainRoutes = domainDoors.map((door, index) => {
-    const route = createRoute(tracker, [[0, 0.9, 0], [-3.8 + index * 3.8, 0.9, 3]], FACTORY_PALETTE.green, 0.05);
-    group.add(route);
-    return route;
-  });
-  group.add(frame, opening, leftDoor, rightDoor, approval, domainTitle);
-  return { group, leftDoor, rightDoor, approval, domainTitle, domainDoors, domainRoutes };
-}
-
-function createPlayer(tracker) {
-  const group = new THREE.Group();
-  const body = createVectorBox(tracker, {
-    size: [5.8, 1.1, 3.8], color: FACTORY_PALETTE.panelLight,
-    edgeColor: FACTORY_PALETTE.cyan, position: [0, 0.6, 0],
-  });
-  const bars = [0.6, 1.2, 1.8, 1.1, 0.75].map((height, index) => createVectorBox(tracker, {
-    size: [0.42, height, 0.42], color: FACTORY_PALETTE.cyan,
-    position: [-1.3 + index * 0.65, 1.1 + height / 2, 0],
-  }));
-  const label = createTextLabel(tracker, {
-    text: "MUSIC PLAYER", width: 3.6, height: 0.48,
-    color: FACTORY_PALETTE.white, background: FACTORY_PALETTE.ink,
-    position: [0, 2.9, 1.95], fontSize: 50,
-  });
-  group.add(body, label, ...bars);
-  return { group, body, bars, label };
-}
-
-function createCompactScene(tracker) {
-  const group = new THREE.Group();
-  const floorGeometry = tracker.geometry(new THREE.CylinderGeometry(4.2, 4.8, 0.7, 12));
-  const floorMaterial = createFlatMaterial(tracker, FACTORY_PALETTE.panel);
-  const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-  floor.position.y = 0.35;
-  const wall = createRing(tracker, 4.15, FACTORY_PALETTE.violet, 0.14);
-  wall.position.y = 0.82;
-  const player = createPlayer(tracker);
-  player.group.scale.setScalar(0.72);
-  player.group.position.y = 0.7;
-  const domainLabel = createTextLabel(tracker, {
-    text: "PLAYER DOMAIN · one door", width: 5.2, height: 0.48,
-    color: FACTORY_PALETTE.green, background: FACTORY_PALETTE.ink,
-    position: [0, 1.1, 4.55], fontSize: 44,
-  });
-  group.add(floor, wall, player.group, domainLabel);
-  return { group, floor, wall, player, domainLabel };
-}
-
-function createArchipelagoScene(tracker) {
-  const group = new THREE.Group();
-  const baseGeometry = tracker.geometry(new THREE.CylinderGeometry(1.38, 1.65, 0.55, 10));
-  const baseMaterial = createFlatMaterial(tracker, FACTORY_PALETTE.panel);
-  const bases = new THREE.InstancedMesh(baseGeometry, baseMaterial, FACTORY_ISLANDS.length);
-  bases.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-
-  const coreGeometry = tracker.geometry(new THREE.BoxGeometry(1.25, 1, 1.25));
-  const coreMaterial = tracker.material(new THREE.MeshBasicMaterial({ vertexColors: true }));
-  const cores = new THREE.InstancedMesh(coreGeometry, coreMaterial, FACTORY_ISLANDS.length);
-  cores.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-  FACTORY_ISLANDS.forEach((island, index) => cores.setColorAt(index, new THREE.Color(island.color)));
-  group.add(bases, cores);
-  const labels = FACTORY_ISLANDS.map((island) => {
-    const label = createTextLabel(tracker, {
-      text: `${island.icon} · ${island.label}`, width: island.label.length > 10 ? 2.8 : 2.25,
-      height: 0.38, color: island.color, background: FACTORY_PALETTE.ink,
-      position: [0, 0, 0], fontSize: 42,
-    });
-    group.add(label);
-    return label;
-  });
-
-  const routes = FACTORY_ISLANDS.slice(1, 8).map((island) => {
-    const route = createRoute(tracker, [[0, 0.35, 0], [island.x * 0.5, 0.2, island.z * 0.5], [island.x, 0.35, island.z]], FACTORY_PALETTE.edge, 0.035);
-    group.add(route);
-    return route;
-  });
-  const counter = createTextLabel(tracker, {
-    text: "20 MORE PRIVATE APP ISLANDS", width: 7.2, height: 0.55,
-    color: FACTORY_PALETTE.white, background: FACTORY_PALETTE.ink,
-    position: [0, 0.3, 10.2], fontSize: 46,
-  });
-  group.add(counter);
-  return { group, bases, cores, labels, routes, counter };
-}
-
 export function createFactoryWorld() {
   const tracker = createResourceTracker();
   const group = new THREE.Group();
@@ -626,28 +403,19 @@ export function createFactoryWorld() {
     guardChecklist: compiler.checklist,
   });
   const liveSequence = createLiveSequence(tracker);
+  const archipelagoSequence = createArchipelagoSequence(tracker);
   const feedback = createFeedbackScene(tracker);
   const twins = createTwinScene(tracker);
   const proof = createProofScene(tracker);
   proof.group.position.set(-12.32, 0.04, 0);
   proof.spikes.visible = false;
-  const guard = createGuardScene(tracker);
   const guardStatus = createGuardStatusPanel(tracker);
-  const approval = createApprovalScene(tracker);
-  const running = createPlayer(tracker);
-  const compact = createCompactScene(tracker);
-  const archipelago = createArchipelagoScene(tracker);
-  const scenes = { builder, inert, compiler, feedback, twins, proof, guard, approval, running, compact, archipelago };
+  const scenes = { builder, inert, compiler, feedback, twins, proof };
   Object.entries(scenes).forEach(([id, scene]) => {
     scene.group.name = `factory-${id}`;
     group.add(scene.group);
   });
-  group.add(guardStatus.group, approvalSequence.group, liveSequence.group);
-
-  const matrix = new THREE.Matrix4();
-  const position = new THREE.Vector3();
-  const scale = new THREE.Vector3();
-  const quaternion = new THREE.Quaternion();
+  group.add(guardStatus.group, approvalSequence.group, liveSequence.group, archipelagoSequence.group);
 
   function setTime(nextTime) {
     const time = Math.min(120, Math.max(0, Number.isFinite(nextTime) ? nextTime : 0));
@@ -662,13 +430,6 @@ export function createFactoryWorld() {
     // Deck with a new workpiece pass, a verifier console and a disposable scan.
     feedback.group.visible = false;
     twins.group.visible = false;
-    // The placeholder orbital Guard is not part of the reference film. The
-    // persistent workshop Guard remains the canonical machine.
-    guard.group.visible = false;
-    approval.group.visible = false;
-    running.group.visible = false;
-    compact.group.visible = false;
-
     const deckRise = smootherstep(interval(time, 25.25, 28.45));
     builder.group.position.y = -2.8 + deckRise * 2.8;
     builder.hatch.scale.setScalar(0.72 + deckRise * 0.28);
@@ -866,6 +627,7 @@ export function createFactoryWorld() {
     setGuardStatusPanel(guardStatus, guardStatusCopy, guardStatusAlpha);
     approvalSequence.setTime(time);
     liveSequence.setTime(time);
+    archipelagoSequence.setTime(time);
     const compilerWindow = time >= FACTORY_SCENES.compiler.start && time < FACTORY_SCENES.compiler.end;
     const workshopAlpha = compilerWindow
       ? 1 - smootherstep(interval(time, 92.75, 94.05))
@@ -937,65 +699,6 @@ export function createFactoryWorld() {
       time >= 74 ? "EQUAL" : time >= 60.8 && time < 66.95 ? "RED · BYTE DRIFT" : "BUILDING A/B",
     );
 
-    const guardProgress = smootherstep(interval(time, 80.5, 87));
-    guard.orbitRings.forEach((ring, index) => {
-      ring.rotation.x = Math.PI / 2 + Math.sin(time * 0.5 + index) * 0.25;
-      ring.rotation.y = time * (0.12 + index * 0.035);
-      ring.scale.setScalar(0.45 + guardProgress * 0.55);
-    });
-    [79.8, 80.7, 81.55, 84.55].forEach((at, index) => {
-      const attached = smootherstep(interval(time, at, at + 0.42));
-      guard.checklist[index].material.color.setHex(attached >= 0.5 ? FACTORY_PALETTE.green : FACTORY_PALETTE.red);
-      guard.checklist[index].scale.setScalar(0.72 + attached * 0.28);
-    });
-    const gateProgress = smootherstep(interval(time, 84.55, 85.25));
-    guard.liveDoor.hinge.rotation.y = -gateProgress * Math.PI * 0.72;
-    guard.machine.progressFill.scale.x = Math.max(0.001, guardProgress);
-    guard.machine.progressFill.position.x = -0.84 + guardProgress * 0.84;
-    guard.machine.glow.visible = gateProgress > 0;
-    setLabelText(guard.gateStatus, gateProgress >= 1 ? "GUARD · LIVE DOOR UNLOCKED" : "GUARD · WAITING FOR REPORT");
-
-    const openProgress = smootherstep(interval(time, 90, 94));
-    approval.leftDoor.position.x = -1.6 - openProgress * 3.15;
-    approval.rightDoor.position.x = 1.6 + openProgress * 3.15;
-    approval.approval.scale.setScalar(0.5 + smootherstep(interval(time, 88, 91)) * 0.5);
-    approval.approval.rotation.z = time * 0.8;
-    approval.domainDoors.forEach((door) => {
-      door.hinge.rotation.y = -smootherstep(interval(time, 92.35, 93.55)) * Math.PI * 0.7;
-    });
-
-    const runProgress = smootherstep(interval(time, 96, 104));
-    running.group.position.x = -7 + runProgress * 14;
-    running.group.position.y = 0.2 + Math.abs(Math.sin(runProgress * Math.PI * 6)) * 0.7;
-    running.bars.forEach((bar, index) => setYScale(bar, 0.45 + (Math.sin(time * 4 + index) + 1) * 0.35));
-
-    const compactProgress = smootherstep(interval(time, 106, 111));
-    compact.wall.scale.setScalar(1 - compactProgress * 0.18);
-    compact.wall.rotation.z = time * 0.2;
-    compact.player.group.rotation.y = compactProgress * Math.PI * 2;
-
-    const islandProgress = smootherstep(interval(time, 112, 119));
-    FACTORY_ISLANDS.forEach((island, index) => {
-      const delay = index / FACTORY_ISLANDS.length * 0.42;
-      const reveal = smootherstep(Math.max(0, Math.min(1, (islandProgress - delay) / 0.58)));
-      position.set(island.x * reveal, island.height * 0.28 * reveal, island.z * reveal);
-      scale.setScalar(Math.max(0.001, reveal));
-      matrix.compose(position, quaternion, scale);
-      archipelago.bases.setMatrixAt(index, matrix);
-      position.y = 0.75 * reveal + island.height * 0.5;
-      scale.set(0.6 + reveal * 0.4, Math.max(0.001, island.height * reveal), 0.6 + reveal * 0.4);
-      matrix.compose(position, quaternion, scale);
-      archipelago.cores.setMatrixAt(index, matrix);
-      archipelago.labels[index].position.set(
-        island.x * reveal,
-        1.55 * reveal + island.height,
-        island.z * reveal + 0.7,
-      );
-      archipelago.labels[index].scale.setScalar(Math.max(0.001, reveal));
-    });
-    archipelago.bases.instanceMatrix.needsUpdate = true;
-    archipelago.cores.instanceMatrix.needsUpdate = true;
-    archipelago.group.rotation.y = Math.sin(interval(time, 112, 120) * Math.PI) * 0.06;
     group.traverse((object) => object.userData.setRouteTime?.(time));
     return time;
   }
