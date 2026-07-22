@@ -15,13 +15,13 @@ betrachten, ohne die deterministische Filmfassung zu verändern.
 
 ## Filmvertrag
 
-- Dauer: `139` Sekunden
+- Dauer: `148` Sekunden
 - Szenen: `14`
 - Kamera-Keyframes: `23`
 - Scrollstrecke: `1600svh` plus ein sichtbarer Viewport
 - Autoplay: eine Filmsekunde pro realer Sekunde
 - Finale: `21` echte, instanzierte App-Inseln
-- Reduced Motion: deterministisches Poster bei Sekunde `137`
+- Reduced Motion: deterministisches Poster bei Sekunde `146`
 
 Die Zeitachse liegt in `src/film/film-data.js`. Jede Objektwelt besitzt nur eine
 deterministische `setTime(time)`-API; vorwärts scrollen, rückwärts scrollen und
@@ -48,7 +48,7 @@ src/
 ```
 
 Die Foundation-Welt deckt die Sekunden `0–41` ab. Die Factory-Welt modelliert
-die Sekunden `41–139`. Wiederholte Produktionspfade und das Insel-Finale nutzen
+die Sekunden `41–148`. Wiederholte Produktionspfade und das Insel-Finale nutzen
 Konfiguration beziehungsweise `THREE.InstancedMesh` statt duplizierter Szenen.
 
 ### Layer- und Callout-Vertrag
@@ -163,8 +163,11 @@ werden.
 
 ### Shadow-VM-Vertrag
 
-Der erste Besuch beim Tester führt einen violetten Akt-1-Probelauf aus und
-scheitert an einer Claim-Abweichung. Nach Korrektur und erneutem Kompilieren
+Der erste Besuch beim Tester führt einen zwölf Sekunden langen violetten
+Akt-1-Probelauf aus. Ghost-Eintritt, Mock-I/O, Dateidrop, die nur bis
+`653 / 654` laufenden Claims und der abschließende Frame-Hash-Mismatch werden
+nacheinander gezeigt; erst danach scheitert die Kammer geschlossen und baut
+sich rückwärts ab. Nach Korrektur und erneutem Kompilieren
 bleibt `PLAYER.WASM` für den vollständigen zweiten Besuch am Tester stehen:
 Akt 1 wird als violette Claim-Prüfung wiederholt, Akt 2 erzeugt zwei gelbe
 Testplattformen mit gleichzeitig laufenden Programmkopien und lässt die

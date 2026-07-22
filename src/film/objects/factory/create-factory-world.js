@@ -363,7 +363,7 @@ export function createFactoryWorld({ getPlayerWorldPosition } = {}) {
   );
 
   function setTime(nextTime, camera) {
-    const time = Math.min(139, Math.max(0, Number.isFinite(nextTime) ? nextTime : 0));
+    const time = Math.min(148, Math.max(0, Number.isFinite(nextTime) ? nextTime : 0));
     Object.entries(scenes).forEach(([id, scene]) => showScene(scene.group, time, FACTORY_SCENES[id]));
 
     // Foundation owns the canonical Builder Deck, source material and
@@ -409,37 +409,37 @@ export function createFactoryWorld({ getPlayerWorldPosition } = {}) {
         )),
       });
     });
-    const verifierSecond = smoothstep(interval(time, 57.8, 60.8));
-    const activeCompileWindow = [[42.25, 46], [53.25, 55.4], [67.5, 69.35]]
+    const verifierSecond = smoothstep(interval(time, 57.8, 69.8));
+    const activeCompileWindow = [[42.25, 46], [53.25, 55.4], [76.5, 78.35]]
       .find(([start, end]) => time >= start && time < end);
-    const activeTestWindow = [[57.8, 60.8], [71.2, 82], [83, 89.5], [90.5, 98.2]]
+    const activeTestWindow = [[57.8, 69.8], [80.2, 91], [92, 98.5], [99.5, 107.2]]
       .find(([start, end]) => time >= start && time < end);
     const compilerLampState = time >= 46 && time < 53.25
       ? "failed"
-      : time >= 67.5 && time < 69.35
+      : time >= 76.5 && time < 78.35
         ? "pending"
         : time >= 55.4
           ? "passed"
           : "pending";
-    const testerLampState = time >= 60.8 && time < 71.2
+    const testerLampState = time >= 69.8 && time < 80.2
       ? "failed"
-      : time >= 98.2
+      : time >= 107.2
         ? "passed"
         : "pending";
     setVectorMachineLampStates(compiler.machines[0], [compilerLampState]);
     setVectorMachineLampStates(compiler.machines[1], [testerLampState]);
     setVectorMachineLampStates(compiler.machines[2], [
-      time >= 101.45
+      time >= 110.45
         ? "passed"
         : time >= 46 && time < 53.25
           ? "failed"
           : "pending",
-      time >= 103
+      time >= 112
         ? "passed"
-        : time >= 60.8 && time < 71.2
+        : time >= 69.8 && time < 80.2
           ? "failed"
           : "pending",
-      time >= 103.55 ? "passed" : "pending",
+      time >= 112.55 ? "passed" : "pending",
     ]);
     setVectorMachineProgress(compiler.machines[0], {
       visible: Boolean(activeCompileWindow),
@@ -471,11 +471,11 @@ export function createFactoryWorld({ getPlayerWorldPosition } = {}) {
     compiler.upgrades[0].visible = lockCacheRise > 0.001;
     compiler.upgrades[0].position.y = -0.85 + lockCacheRise * 0.5;
     compiler.upgrades[0].scale.set(2.55, Math.max(0.001, 0.56 * lockCacheRise), 1);
-    const byteJigRise = smootherstep(interval(time, 70, 71.2));
+    const byteJigRise = smootherstep(interval(time, 79, 80.2));
     compiler.upgrades[1].visible = byteJigRise > 0.001;
     compiler.upgrades[1].position.y = 2.15 + byteJigRise * 0.5;
     compiler.upgrades[1].scale.set(1.55, Math.max(0.001, 0.4 * byteJigRise), 1);
-    const drillKitRise = smootherstep(interval(time, 82, 83.2));
+    const drillKitRise = smootherstep(interval(time, 91, 92.2));
     compiler.upgrades[2].visible = drillKitRise > 0.001;
     compiler.upgrades[2].position.y = 1.3 + drillKitRise * 0.5;
     compiler.upgrades[2].scale.set(1.55, Math.max(0.001, 0.4 * drillKitRise), 1);
@@ -519,7 +519,7 @@ export function createFactoryWorld({ getPlayerWorldPosition } = {}) {
       compilerBody.scale.set(1 - 0.035 * rebound, 1 + 0.05 * rebound, 1);
     }
 
-    const compilerJoyWindow = [[55.4, 56.05], [69.35, 70]]
+    const compilerJoyWindow = [[55.4, 56.05], [78.35, 79]]
       .find(([start, end]) => time >= start && time < end);
     if (compilerJoyWindow) {
       const joy = interval(time, compilerJoyWindow[0], compilerJoyWindow[1]);
@@ -531,8 +531,8 @@ export function createFactoryWorld({ getPlayerWorldPosition } = {}) {
     }
 
     const twinPanelIntro = smootherstep(interval(time, 57.6, 57.95))
-      * (1 - smootherstep(interval(time, 70.25, 71)));
-    const twinResult = time >= 60.8 && time < 66.95
+      * (1 - smootherstep(interval(time, 79.25, 80)));
+    const twinResult = time >= 69.8 && time < 75.95
       ? "RED · BYTE DRIFT"
       : "WAITING";
     setTwinVerifierPanel(compiler.twinConsole, {
@@ -548,7 +548,7 @@ export function createFactoryWorld({ getPlayerWorldPosition } = {}) {
     archipelagoSequence.setTime(time);
     const compilerWindow = time >= FACTORY_SCENES.compiler.start && time < FACTORY_SCENES.compiler.end;
     const workshopAlpha = compilerWindow
-      ? 1 - smootherstep(interval(time, 111.75, 113.05))
+      ? 1 - smootherstep(interval(time, 120.75, 122.05))
       : 0;
     setFactoryOpacity(compiler.group, workshopAlpha);
 
@@ -576,7 +576,7 @@ export function createFactoryWorld({ getPlayerWorldPosition } = {}) {
     twins.hashPlates[0].visible = time >= 60.3;
     setLabelText(
       twins.resultLabel,
-      time >= 69.35 ? "EQUAL" : time >= 60.8 && time < 66.95 ? "RED · BYTE DRIFT" : "BUILDING A/B",
+      time >= 78.35 ? "EQUAL" : time >= 69.8 && time < 75.95 ? "RED · BYTE DRIFT" : "BUILDING A/B",
     );
 
     group.traverse((object) => object.userData.setRouteTime?.(time));

@@ -152,10 +152,10 @@ export function setTwinVerifierPanel(panel, {
 }
 
 export function setVerifierVerdict(verdict, time) {
-  const state = time >= 60.72 && time < 66.8
-    ? { kind: "denied", start: 60.72, end: 66.8, rotation: 180, punch: -18 }
-    : time >= 98.2 && time < 99
-      ? { kind: "granted", start: 98.2, end: 99, rotation: 0, punch: 14 }
+  const state = time >= 69.72 && time < 75.8
+    ? { kind: "denied", start: 69.72, end: 75.8, rotation: 180, punch: -18 }
+    : time >= 107.2 && time < 108
+      ? { kind: "granted", start: 107.2, end: 108, rotation: 0, punch: 14 }
       : null;
   if (!state) {
     verdict.group.visible = false;

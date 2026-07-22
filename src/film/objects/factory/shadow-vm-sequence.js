@@ -485,10 +485,10 @@ export function createShadowVmSequence(tracker, { getPlayerWorldPosition } = {})
     setShadowOpacity(subject, alpha);
 
     setVectorCallout(callout, time, {
-      start: 58.68,
-      introEnd: 59.08,
-      titleStart: 59.32,
-      end: 60.45,
+      start: 59,
+      introEnd: 59.8,
+      titleStart: 60.2,
+      end: 62,
       root,
       camera,
       targetObject: layer.body,
@@ -502,10 +502,10 @@ export function createShadowVmSequence(tracker, { getPlayerWorldPosition } = {})
     setShadowHud(hud, { act: 1 }, 0);
     setShadowByteStrip(byteStrip, {}, 0);
     comparisonPads.forEach((pad) => setVectorLayerLifecycle(pad, time, {
-      introStart: 83.28,
-      introEnd: 84.18,
-      outroStart: 88.65,
-      outroEnd: 89.08,
+      introStart: 92.28,
+      introEnd: 93.18,
+      outroStart: 97.65,
+      outroEnd: 98.08,
     }));
     setShadowComparisonBridge(comparisonBridge, { progress: 0, divergence: 100 }, 0);
     setShadowTendril(networkTendril, 0, 0);
@@ -520,38 +520,45 @@ export function createShadowVmSequence(tracker, { getPlayerWorldPosition } = {})
     if (rehearsal) {
       subject.position.y += Math.sin(time * Math.PI * 2.1) * 0.05;
       setRouteLifecycle(inputCable, time, {
-        introStart: 59.25, introEnd: 59.8,
+        introStart: 61, introEnd: 62.6,
         outroStart: cableOutroStart, outroEnd: cableOutroEnd,
       });
       setRouteLifecycle(framebufferCable, time, {
-        introStart: 59.42, introEnd: 59.86,
+        introStart: 62, introEnd: 63.5,
         outroStart: cableOutroStart, outroEnd: cableOutroEnd,
       });
       setRouteLifecycle(fileCable, time, {
-        introStart: 59.62, introEnd: 60.02,
+        introStart: 63, introEnd: 64.5,
         outroStart: cableOutroStart, outroEnd: cableOutroEnd,
       });
       inputPackets.forEach((packet, index) => {
-        const packetProgress = clamp01(interval(time, 59.18 + index * 0.12, 59.72 + index * 0.12));
+        const packetProgress = clamp01(interval(time, 61 + index * 0.42, 64 + index * 0.42));
         packet.position.copy(inputCurve.getPointAt(packetProgress));
         packet.visible = packetProgress > 0.001 && packetProgress < 0.999;
       });
-      const panelOpen = riseBetween(time, 59.35, 59.78);
+      const panelOpen = riseBetween(time, 61.8, 64);
       setShadowFramePanel(framePanel, panelOpen, panelOpen * alpha);
-      const fileDrop = riseBetween(time, 59.55, 60.05);
+      const fileDrop = riseBetween(time, 63.5, 66);
       fileObject.position.set(1, THREE.MathUtils.lerp(deckTop + 2.2, deckTop + 0.16, fileDrop), 2.55);
       fileObject.rotation.y = fileDrop * Math.PI * 1.5;
       setShadowOpacity(fileObject, fileDrop * alpha);
-      const claimProgress = riseBetween(time, 59.72, 60.35);
-      const failed = time >= 60.18;
+      const claimProgress = riseBetween(time, 65.5, 68.25);
+      const failed = time >= 67.9;
       setShadowHashBadge(hashBadge, { locked: false, broken: failed }, claimProgress * alpha);
+      const rehearsalStatus = time < 63.5
+        ? "MOCK I/O · FRAMEBUFFER + INPUT"
+        : time < 65.5
+          ? "FILE.SANDBOX · FIXTURE LOADED"
+          : failed
+            ? "653 / 654 · FRAME HASH MISMATCH"
+            : "REPLAYING 654 CLAIMS";
       setShadowHud(hud, {
         act: 1,
-        mode: failed ? "PREDICATE · FAILED" : "PREDICATE",
+        mode: failed ? "PREDICATE · FAILED" : time < 65.5 ? "MOCK ENVIRONMENT" : "PREDICATE",
         claims: Math.round(claimProgress * 653),
-        current: failed ? "FRAME HASH MISMATCH" : "MOCK I/O ONLY",
+        current: rehearsalStatus,
         accent: "#b77cff",
-      }, riseBetween(time, 59.2, 59.5) * alpha);
+      }, riseBetween(time, 60.8, 61.6) * alpha);
       return;
     }
 
@@ -582,7 +589,7 @@ export function createShadowVmSequence(tracker, { getPlayerWorldPosition } = {})
       fileObject.position.set(1, THREE.MathUtils.lerp(deckTop + 2.2, deckTop + 0.16, fileDrop), 2.55);
       fileObject.rotation.y = fileDrop * Math.PI * 1.5;
       setShadowOpacity(fileObject, fileDrop * alpha);
-      const hashLock = riseBetween(time, 77, 80.45);
+      const hashLock = riseBetween(time, 86, 89.45);
       setShadowHashBadge(hashBadge, { locked: hashLock > 0.78 }, hashLock * alpha);
       setShadowHud(hud, {
         act: 1,
@@ -590,11 +597,11 @@ export function createShadowVmSequence(tracker, { getPlayerWorldPosition } = {})
         claims: Math.round(hashLock * 654),
         current: beat?.caption,
         accent: "#b77cff",
-      }, riseBetween(time, 72.4, 73.25) * alpha);
+      }, riseBetween(time, 81.4, 82.25) * alpha);
     }
 
     if (actTwo) {
-      const split = riseBetween(time, 83.86, 84.62);
+      const split = riseBetween(time, 92.86, 93.62);
       setShadowOpacity(subject, alpha * (1 - split));
       [runA, runB].forEach((run, index) => {
         const side = index === 0 ? -1 : 1;
@@ -602,9 +609,9 @@ export function createShadowVmSequence(tracker, { getPlayerWorldPosition } = {})
         run.scale.setScalar(PLAYER_GHOST_SCALE);
         setShadowOpacity(run, split * alpha);
       });
-      const comparison = riseBetween(time, 84.35, 85.35)
-        * (1 - riseBetween(time, 88.2, 88.65));
-      const convergence = riseBetween(time, 85.1, 88.2);
+      const comparison = riseBetween(time, 93.35, 94.35)
+        * (1 - riseBetween(time, 97.2, 97.65));
+      const convergence = riseBetween(time, 94.1, 97.2);
       const divergence = THREE.MathUtils.lerp(100, 0, convergence);
       setShadowComparisonBridge(comparisonBridge, {
         progress: comparison,
@@ -697,7 +704,7 @@ export function createShadowVmSequence(tracker, { getPlayerWorldPosition } = {})
     }
 
     if (receiptPhase) {
-      const death = riseBetween(time, 98.2, 98.5);
+      const death = riseBetween(time, 107.2, 107.5);
       setShadowOpacity(subject, alpha * (1 - death));
       subject.position.set(0, deckTop + 0.02, 0);
       setShadowFragments(fragments, death, subject.position, death * alpha);
@@ -709,15 +716,15 @@ export function createShadowVmSequence(tracker, { getPlayerWorldPosition } = {})
         accent: "#8fd8ff",
       }, alpha);
       setRouteLifecycle(testimonyCable, time, {
-        introStart: 98.3,
-        introEnd: 98.5,
-        outroStart: 98.78,
-        outroEnd: 99,
+        introStart: 107.3,
+        introEnd: 107.5,
+        outroStart: 107.78,
+        outroEnd: 108,
       });
-      const receiptTravel = riseBetween(time, 98.35, 98.85);
+      const receiptTravel = riseBetween(time, 107.35, 107.85);
       receipt.group.position.copy(receiptFlight.getPointAt(receiptTravel));
       receipt.group.scale.setScalar(0.58 + Math.sin(receiptTravel * Math.PI) * 0.18);
-      setShadowOpacity(receipt.group, riseBetween(time, 98.25, 98.45) * alpha);
+      setShadowOpacity(receipt.group, riseBetween(time, 107.25, 107.45) * alpha);
       redWash.visible = true;
       redWash.material.opacity = 0.08 * alpha;
     }

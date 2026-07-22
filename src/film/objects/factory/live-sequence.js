@@ -157,10 +157,10 @@ function createEgressDots(tracker) {
 }
 
 function drawPlayerUi(surface, time) {
-  const track = smoothstep(interval(time, 116, 124.4));
-  const trapped = time >= 120.4 && time < 122.1;
-  const fresh = time >= 122.1;
-  const state = `${Math.round(track * 100)}|${trapped}|${fresh}|${time >= 121.25}`;
+  const track = smoothstep(interval(time, 125, 133.4));
+  const trapped = time >= 129.4 && time < 131.1;
+  const fresh = time >= 131.1;
+  const state = `${Math.round(track * 100)}|${trapped}|${fresh}|${time >= 130.25}`;
   if (surface.renderedState === state) return;
   surface.renderedState = state;
   const { canvas, context, texture } = surface;
@@ -235,7 +235,7 @@ function drawPlayerUi(surface, time) {
     context.font = "900 18px Consolas, monospace";
     context.fillStyle = trapped ? "#ff7772" : "#a9efc1";
     context.fillText(trapped ? "TRAP" : "FRESH", 748, 360);
-    if (trapped && time < 121.25) {
+    if (trapped && time < 130.25) {
       context.beginPath();
       context.arc(748, 310, 14, 0, Math.PI * 2);
       context.fillStyle = "#ff6464";
@@ -245,7 +245,7 @@ function drawPlayerUi(surface, time) {
       context.shadowBlur = 0;
     }
   }
-  if (time < 121.25) {
+  if (time < 130.25) {
     context.strokeStyle = trapped ? "#ff6865" : "#416989";
     context.lineWidth = 6;
     context.setLineDash([18, 14]);
@@ -330,11 +330,11 @@ export function createLiveSequence(tracker) {
   );
 
   function setTime(rawTime, camera) {
-    const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 139);
-    const domainAlpha = windowAlpha(time, 107.8, 139, 0.45);
-    const domainRise = smootherstep(interval(time, 108.2, 109.42));
-    const contraction = smootherstep(interval(time, 125, 128));
-    const finaleDrift = smootherstep(interval(time, 128, 136));
+    const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 148);
+    const domainAlpha = windowAlpha(time, 116.8, 148, 0.45);
+    const domainRise = smootherstep(interval(time, 117.2, 118.42));
+    const contraction = smootherstep(interval(time, 134, 137));
+    const finaleDrift = smootherstep(interval(time, 137, 145));
     const compactX = COMPACT_DOMAIN_CENTER.x + 4.1 * finaleDrift;
     const compactZ = COMPACT_DOMAIN_CENTER.z + 4.1 * finaleDrift;
     setOpacity(domain.group, domainAlpha);
@@ -344,21 +344,21 @@ export function createLiveSequence(tracker) {
       THREE.MathUtils.lerp(DOMAIN_CENTER.z, compactZ, contraction),
     );
     domain.group.scale.setScalar(THREE.MathUtils.lerp(1, 0.25, contraction));
-    const domainOutline = smootherstep(interval(time, 107.8, 108.2));
+    const domainOutline = smootherstep(interval(time, 116.8, 117.2));
     setVectorLayerBuild(domain.layer, {
       outlineAmount: domainOutline,
       riseAmount: domainRise,
       opacity: domainAlpha,
-      outlineOpacity: domainAlpha * (1 - smootherstep(interval(time, 108.2, 108.72))),
+      outlineOpacity: domainAlpha * (1 - smootherstep(interval(time, 117.2, 117.72))),
       titleOpacity: domainAlpha
-        * smootherstep(interval(time, 111.08, 111.35))
-        * (1 - smootherstep(interval(time, 125, 128))),
+        * smootherstep(interval(time, 120.08, 120.35))
+        * (1 - smootherstep(interval(time, 134, 137))),
     });
     setVectorCallout(domainCallout, time, {
-      start: 109.48,
-      introEnd: 109.98,
-      titleStart: 110.42,
-      end: 111.35,
+      start: 118.48,
+      introEnd: 118.98,
+      titleStart: 119.42,
+      end: 120.35,
       root: group,
       camera,
       targetObject: domain.layer.body,
@@ -367,40 +367,40 @@ export function createLiveSequence(tracker) {
     });
     domain.doors.forEach((door, index) => {
       const delay = index * 0.05;
-      const outline = smootherstep(interval(time, 111.35 + delay, 111.72 + delay));
-      const labelWrite = smootherstep(interval(time, 111.64 + delay, 112.04 + delay));
-      const rise = smootherstep(interval(time, 111.92 + delay, 112.55 + delay));
-      door.group.visible = outline > 0.001 && time < 125.55;
+      const outline = smootherstep(interval(time, 120.35 + delay, 120.72 + delay));
+      const labelWrite = smootherstep(interval(time, 120.64 + delay, 121.04 + delay));
+      const rise = smootherstep(interval(time, 120.92 + delay, 121.55 + delay));
+      door.group.visible = outline > 0.001 && time < 134.55;
       setFactoryDoorEmergence(door, {
         porchAmount: outline,
         labelAmount: labelWrite,
         riseAmount: rise,
         opacity: domainAlpha,
       });
-      setFactoryDoorOpen(door, smootherstep(interval(time, 112.55, 113.35)));
+      setFactoryDoorOpen(door, smootherstep(interval(time, 121.55, 122.35)));
     });
-    const routeProgress = smootherstep(interval(time, 111.35, 114.35));
+    const routeProgress = smootherstep(interval(time, 120.35, 123.35));
     routes.forEach((route, index) => {
-      route.visible = routeProgress > index * 0.08 && time < 125.6;
+      route.visible = routeProgress > index * 0.08 && time < 134.6;
       setOpacity(route, route.visible ? Math.min(1, (routeProgress - index * 0.08) / 0.32) : 0);
     });
 
     egress.dots.forEach((dot, index) => {
-      const start = 107 + index * 0.16;
-      const end = 108.28 + index * 0.16;
+      const start = 116 + index * 0.16;
+      const end = 117.28 + index * 0.16;
       const progress = smootherstep(interval(time, start, end));
       dot.position.copy(egress.curve.getPointAt(progress));
       dot.visible = windowAlpha(time, start, end, 0.18) > 0.001;
     });
 
-    const uiAlpha = windowAlpha(time, 115, 125, 0.45);
+    const uiAlpha = windowAlpha(time, 124, 134, 0.45);
     playerUi.sprite.visible = uiAlpha > 0.001;
     playerUi.material.opacity = uiAlpha;
     if (playerUi.sprite.visible) drawPlayerUi(playerUi, time);
-    const egressAlpha = windowAlpha(time, 107, 115, 0.6);
+    const egressAlpha = windowAlpha(time, 116, 124, 0.6);
     egressCaption.sprite.visible = egressAlpha > 0.001;
     egressCaption.material.opacity = egressAlpha;
-    const crashAlpha = windowAlpha(time, 115, 125, 0.45);
+    const crashAlpha = windowAlpha(time, 124, 134, 0.45);
     crashCaption.sprite.visible = crashAlpha > 0.001;
     crashCaption.material.opacity = crashAlpha;
   }

@@ -118,8 +118,8 @@ export const FOUNDATION_TIMELINE = Object.freeze({
     window(50.75, 52.55),
   ]),
   editTwo: Object.freeze([
-    window(64.4, 66.15),
-    window(64.8, 66.55),
-    window(65.2, 66.95),
+    window(73.4, 75.15),
+    window(73.8, 75.55),
+    window(74.2, 75.95),
   ]),
 });

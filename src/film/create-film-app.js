@@ -78,7 +78,7 @@ export function createFilmApp({
     const progress = currentTime / FILM_DURATION;
     const scene = sceneAt(currentTime);
     sceneTitle.textContent = `${String(scene.number).padStart(2, "0")} · ${scene.title}`;
-    timecode.textContent = `${formatTime(currentTime)} / 02:00.00`;
+    timecode.textContent = `${formatTime(currentTime)} / ${formatTime(FILM_DURATION)}`;
     progressFill.style.setProperty("--progress", `${(progress * 100).toFixed(4)}%`);
     const typed = Math.floor(THREE.MathUtils.clamp((currentTime - 1.15) / (3.72 - 1.15), 0, 1) * FILM_PROMPT.length);
     prompt.textContent = FILM_PROMPT.slice(0, typed);

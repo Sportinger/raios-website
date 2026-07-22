@@ -6,8 +6,8 @@ const deepFreeze = (value) => {
   return value;
 };
 
-export const FILM_DURATION = 139;
-export const FILM_POSTER_TIME = 137;
+export const FILM_DURATION = 148;
+export const FILM_POSTER_TIME = 146;
 export const FILM_PROMPT = "> build me a music player";
 
 export const FILM_SCENES = deepFreeze([
@@ -17,14 +17,14 @@ export const FILM_SCENES = deepFreeze([
   { number: 4, id: "build-site", title: "Unlock the builder deck", start: 25, end: 33, act: 2, camera: { scale: 0.82, focusX: 0.5, focusY: 0.5 } },
   { number: 5, id: "inert-source", title: "Material becomes one workpiece", start: 33, end: 41, act: 2, camera: { scale: 1.02, focusX: 0.72, focusY: 0.48 } },
   { number: 6, id: "compiler", title: "Compiler round one", start: 41, end: 52, act: 2, camera: { scale: 1.12, focusX: 0.74, focusY: 0.49 } },
-  { number: 7, id: "feedback", title: "Red report, precise fix", start: 52, end: 62, act: 2, camera: { scale: 0.98, focusX: 0.58, focusY: 0.49 } },
-  { number: 8, id: "twins", title: "Twin build, byte equal", start: 62, end: 72, act: 2, camera: { scale: 1.08, focusX: 0.74, focusY: 0.49 } },
-  { number: 9, id: "proof-cellar", title: "Harness tests in a disposable Shadow World", start: 72, end: 99, act: 2, camera: { scale: 1.08, focusX: 0.76, focusY: 0.51 } },
-  { number: 10, id: "ring", title: "Guard binds report, hash, rights and owner", start: 99, end: 107, act: 3, camera: { scale: 1.28, focusX: 0.5, focusY: 0.49 } },
-  { number: 11, id: "approval", title: "Guard opens the live door", start: 107, end: 115, act: 3, camera: { scale: 0.98, focusX: 0.58, focusY: 0.49 } },
-  { number: 12, id: "running", title: "Player lands beside Genesis", start: 115, end: 125, act: 3, camera: { scale: 1.38, focusX: 0.57, focusY: 0.49 } },
-  { number: 13, id: "compact-domain", title: "Player contracts to one private island", start: 125, end: 131, act: 3, camera: { scale: 1.18, focusX: 0.52, focusY: 0.45 } },
-  { number: 14, id: "archipelago", title: "Every app becomes its own island", start: 131, end: 139, act: 3, camera: { scale: 0.64, focusX: 0.5, focusY: 0.49 } },
+  { number: 7, id: "feedback", title: "Red report, precise fix", start: 52, end: 71, act: 2, camera: { scale: 0.98, focusX: 0.58, focusY: 0.49 } },
+  { number: 8, id: "twins", title: "Twin build, byte equal", start: 71, end: 81, act: 2, camera: { scale: 1.08, focusX: 0.74, focusY: 0.49 } },
+  { number: 9, id: "proof-cellar", title: "Harness tests in a disposable Shadow World", start: 81, end: 108, act: 2, camera: { scale: 1.08, focusX: 0.76, focusY: 0.51 } },
+  { number: 10, id: "ring", title: "Guard binds report, hash, rights and owner", start: 108, end: 116, act: 3, camera: { scale: 1.28, focusX: 0.5, focusY: 0.49 } },
+  { number: 11, id: "approval", title: "Guard opens the live door", start: 116, end: 124, act: 3, camera: { scale: 0.98, focusX: 0.58, focusY: 0.49 } },
+  { number: 12, id: "running", title: "Player lands beside Genesis", start: 124, end: 134, act: 3, camera: { scale: 1.38, focusX: 0.57, focusY: 0.49 } },
+  { number: 13, id: "compact-domain", title: "Player contracts to one private island", start: 134, end: 140, act: 3, camera: { scale: 1.18, focusX: 0.52, focusY: 0.45 } },
+  { number: 14, id: "archipelago", title: "Every app becomes its own island", start: 140, end: 148, act: 3, camera: { scale: 0.64, focusX: 0.5, focusY: 0.49 } },
 ]);
 
 export const FILM_TIMELINE_WAYPOINTS = deepFreeze([
@@ -44,21 +44,21 @@ export const FILM_CAMERA_KEYFRAMES = deepFreeze([
   { at: 28.5, scale: 1.5625, focusX: 0.45236168080038514, focusY: 0.5064492247101696 },
   { at: 33.31, scale: 1.4285714285714286, focusX: 0.49, focusY: 0.59 },
   { at: 45.91, scale: 1.5873015873015872, focusX: 0.57, focusY: 0.48 },
-  { at: 71.2, scale: 1.15, focusX: 0.73, focusY: 0.49 },
-  { at: 82, scale: 1.24, focusX: 0.71, focusY: 0.5 },
-  { at: 86.2, scale: 1.52, focusX: 0.73, focusY: 0.52 },
-  { at: 88.5, scale: 1.16, focusX: 0.7, focusY: 0.5 },
-  { at: 97, scale: 1.12, focusX: 0.68, focusY: 0.49 },
-  { at: 98.95, scale: 1.5384615384615383, focusX: 0.61, focusY: 0.49 },
-  { at: 100.26, scale: 1.0989010989010988, focusX: 0.48, focusY: 0.53 },
-  { at: 105.41, scale: 1.0309278350515465, focusX: 0.48, focusY: 0.5 },
-  { at: 107.44, scale: 1.639344262295082, focusX: 0.7, focusY: 0.39 },
-  { at: 111.03, scale: 1.4492753623188408, focusX: 0.49, focusY: 0.34 },
-  { at: 113.07, scale: 1.36986301369863, focusX: 0.52, focusY: 0.42 },
-  { at: 125.55, scale: 1.18, focusX: 0.52, focusY: 0.45 },
-  { at: 128.35, scale: 0.9, focusX: 0.5, focusY: 0.48 },
-  { at: 131, scale: 0.68, focusX: 0.5, focusY: 0.49 },
-  { at: 136.8, scale: 0.62, focusX: 0.5, focusY: 0.49 },
+  { at: 80.2, scale: 1.15, focusX: 0.73, focusY: 0.49 },
+  { at: 91, scale: 1.24, focusX: 0.71, focusY: 0.5 },
+  { at: 95.2, scale: 1.52, focusX: 0.73, focusY: 0.52 },
+  { at: 97.5, scale: 1.16, focusX: 0.7, focusY: 0.5 },
+  { at: 106, scale: 1.12, focusX: 0.68, focusY: 0.49 },
+  { at: 107.95, scale: 1.5384615384615383, focusX: 0.61, focusY: 0.49 },
+  { at: 109.26, scale: 1.0989010989010988, focusX: 0.48, focusY: 0.53 },
+  { at: 114.41, scale: 1.0309278350515465, focusX: 0.48, focusY: 0.5 },
+  { at: 116.44, scale: 1.639344262295082, focusX: 0.7, focusY: 0.39 },
+  { at: 120.03, scale: 1.4492753623188408, focusX: 0.49, focusY: 0.34 },
+  { at: 122.07, scale: 1.36986301369863, focusX: 0.52, focusY: 0.42 },
+  { at: 134.55, scale: 1.18, focusX: 0.52, focusY: 0.45 },
+  { at: 137.35, scale: 0.9, focusX: 0.5, focusY: 0.48 },
+  { at: 140, scale: 0.68, focusX: 0.5, focusY: 0.49 },
+  { at: 145.8, scale: 0.62, focusX: 0.5, focusY: 0.49 },
 ]);
 
 export const FILM_ACTION_TIMINGS = deepFreeze({
@@ -90,11 +90,11 @@ export const FILM_ACTION_TIMINGS = deepFreeze({
   compiler: {
     importCount: { start: 43.2, end: 48.4 },
     pageCount: { start: 43.2, end: 49.2 },
-    activeWindows: [[42.25, 46], [53.25, 55.4], [67.5, 69.35]],
-    successWindows: [[55.4, 56.05], [69.35, 70]],
+    activeWindows: [[42.25, 46], [53.25, 55.4], [76.5, 78.35]],
+    successWindows: [[55.4, 56.05], [78.35, 79]],
     successDeliveries: [
       { start: 55.4, attach: 55.72, carry: 56.18, handoff: 57.8, end: 58.55 },
-      { start: 69.35, attach: 69.67, carry: 70.1, handoff: 71.2, end: 71.95 },
+      { start: 78.35, attach: 78.67, carry: 79.1, handoff: 80.2, end: 80.95 },
     ],
     failureImprint: { start: 46, end: 52.55, punchSeconds: 0.15 },
     genesisImprintConsume: { start: 48.15, end: 49.55 },
@@ -108,41 +108,41 @@ export const FILM_ACTION_TIMINGS = deepFreeze({
     },
   },
   verification: {
-    firstTwinBuild: { start: 57.8, end: 60.8 },
-    mismatch: { start: 60.8, end: 66.95 },
-    secondTwinBuild: { start: 83, end: 89.5 },
-    reproducibilityLog: { revealAt: 83, start: 83, end: 89.5 },
-    shadowWorldFuel: { start: 90.5, end: 98.2 },
+    firstTwinBuild: { start: 57.8, end: 69.8 },
+    mismatch: { start: 69.8, end: 75.95 },
+    secondTwinBuild: { start: 92, end: 98.5 },
+    reproducibilityLog: { revealAt: 92, start: 92, end: 98.5 },
+    shadowWorldFuel: { start: 99.5, end: 107.2 },
   },
   approval: {
-    ringAttachments: { manifest: 100.8, hash: 101.7, report: 102.55, ownerApproval: 103.55 },
-    pointerTravel: { start: 101.15, end: 103.25 },
-    pointerWindow: { start: 101, end: 104.4, fade: 0.3 },
-    approvedAt: 103.55,
-    remoteDenied: { start: 104, end: 106.2, fade: 0.24 },
-    guardStep: { start: 103.55, end: 104.25 },
+    ringAttachments: { manifest: 109.8, hash: 110.7, report: 111.55, ownerApproval: 112.55 },
+    pointerTravel: { start: 110.15, end: 112.25 },
+    pointerWindow: { start: 110, end: 113.4, fade: 0.3 },
+    approvedAt: 112.55,
+    remoteDenied: { start: 113, end: 115.2, fade: 0.24 },
+    guardStep: { start: 112.55, end: 113.25 },
   },
   release: {
-    shutdownOrder: { start: 111.15, end: 111.95 },
-    liveGrantRevoke: { start: 111.15, end: 112 },
-    playerAttachedAt: 111,
-    builderReleasedAt: 114.8,
+    shutdownOrder: { start: 120.15, end: 120.95 },
+    liveGrantRevoke: { start: 120.15, end: 121 },
+    playerAttachedAt: 120,
+    builderReleasedAt: 123.8,
   },
   running: {
-    trackProgress: { start: 116, end: 124.4 },
-    neighborCrash: { start: 120.4, hiddenAt: 122.1, end: 123.3 },
+    trackProgress: { start: 125, end: 133.4 },
+    neighborCrash: { start: 129.4, hiddenAt: 131.1, end: 132.3 },
   },
   archipelago: {
-    domainContraction: { start: 125, end: 128 },
-    legacyWorldFade: { start: 125, end: 127.7 },
-    connection: { start: 125.45, end: 128.1 },
+    domainContraction: { start: 134, end: 137 },
+    legacyWorldFade: { start: 134, end: 136.7 },
+    connection: { start: 134.45, end: 137.1 },
     islandPopSeconds: 0.62,
     routeDrawSeconds: 0.88,
-    countFade: { start: 130.75, end: 131.45 },
+    countFade: { start: 139.75, end: 140.45 },
   },
   finale: {
-    cycles: { firstAt: 133.3, staggerSeconds: 0.48, duration: 0.35 },
-    title: { start: 134, end: 138.45, fade: 0.65 },
-    subtitle: { start: 134.35, end: 138.45, fade: 0.65 },
+    cycles: { firstAt: 142.3, staggerSeconds: 0.48, duration: 0.35 },
+    title: { start: 143, end: 147.45, fade: 0.65 },
+    subtitle: { start: 143.35, end: 147.45, fade: 0.65 },
   },
 });

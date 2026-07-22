@@ -1029,7 +1029,7 @@ export function createFoundationWorld() {
   );
 
   function setTime(rawTime, camera) {
-    const time = Math.min(139, Math.max(0, Number(rawTime) || 0));
+    const time = Math.min(148, Math.max(0, Number(rawTime) || 0));
     const kernelOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.kernelOutline);
     const kernelRise = timedProgress(time, FOUNDATION_TIMELINE.kernelRise);
     setVectorLayerBuild(kernel, {
@@ -1045,8 +1045,8 @@ export function createFoundationWorld() {
     if (group.userData.presentationBaseZ === undefined) {
       group.userData.presentationBaseZ = group.position.z;
     }
-    const compactComposition = progress(time, 125, 128);
-    const finaleComposition = progress(time, 128, 136);
+    const compactComposition = progress(time, 134, 137);
+    const finaleComposition = progress(time, 137, 145);
     group.position.x = group.userData.presentationBaseX
       + FOUNDATION_LAYOUT.expansionOffset[0] * foundationExpansion
       + 1.76 * compactComposition + 4.1 * finaleComposition;
@@ -1057,7 +1057,7 @@ export function createFoundationWorld() {
       time,
       FOUNDATION_TIMELINE.kernelSquareExpansion,
     );
-    const kernelFinalExpansion = progress(time, 125, 128);
+    const kernelFinalExpansion = progress(time, 134, 137);
     const kernelScaleX = THREE.MathUtils.lerp(
       1,
       THREE.MathUtils.lerp(
@@ -1136,7 +1136,7 @@ export function createFoundationWorld() {
       angle: -THREE.MathUtils.degToRad(26.565),
     });
 
-    const legacyWorldAlpha = 1 - progress(time, 125, 127.7);
+    const legacyWorldAlpha = 1 - progress(time, 134, 136.7);
     const agentOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.agentOutline);
     const agentRise = timedProgress(time, FOUNDATION_TIMELINE.agentRise);
     agent.group.position.set(
@@ -1251,7 +1251,7 @@ export function createFoundationWorld() {
 
     const builderOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.builderOutline);
     const builderRise = timedProgress(time, FOUNDATION_TIMELINE.builderRise);
-    const builderRelease = progress(time, 113.62, 114.8);
+    const builderRelease = progress(time, 122.62, 123.8);
     setVectorLayerBuild(builder, {
       outlineAmount: builderOutlineDraw,
       riseAmount: builderRise,
@@ -1276,7 +1276,7 @@ export function createFoundationWorld() {
 
     const buildDraw = timedProgress(time, FOUNDATION_TIMELINE.buildRequestRoute);
     setRouteProgress(buildLine, buildDraw, time, time >= FOUNDATION_TIMELINE.buildKey.insert);
-    const buildRequestWindowAlpha = 1 - progress(time, 113.58, 114.01);
+    const buildRequestWindowAlpha = 1 - progress(time, 122.58, 123.01);
     setFade(buildLine.group, buildDraw * buildRequestWindowAlpha);
     setEmergingDoor(
       buildDoor,
@@ -1294,19 +1294,19 @@ export function createFoundationWorld() {
       sysrootDoor,
       time,
       FOUNDATION_TIMELINE.sysrootDoorRise,
-      1 - progress(time, 112.9, 113.24),
+      1 - progress(time, 121.9, 122.24),
     );
     setEmergingDoor(
       srcDoor,
       time,
       FOUNDATION_TIMELINE.srcDoorRise,
-      1 - progress(time, 113.09, 113.43),
+      1 - progress(time, 122.09, 122.43),
     );
     setEmergingDoor(
       outDoor,
       time,
       FOUNDATION_TIMELINE.outDoorRise,
-      1 - progress(time, 113.29, 113.62),
+      1 - progress(time, 122.29, 122.62),
     );
     setVectorDoorOpen(sysrootDoor, progress(
       time,
@@ -1318,7 +1318,7 @@ export function createFoundationWorld() {
       getCapabilityUnlockEnd(FOUNDATION_TIMELINE.srcKey),
       FOUNDATION_TIMELINE.srcKey.insert + 0.9,
     ));
-    setVectorDoorOpen(outDoor, progress(time, 104.25, 105.15));
+    setVectorDoorOpen(outDoor, progress(time, 113.25, 114.15));
 
     setRouteProgress(
       requestToSysroot,
@@ -1329,11 +1329,11 @@ export function createFoundationWorld() {
     setFade(
       requestToSysroot.group,
       timedProgress(time, FOUNDATION_TIMELINE.sysrootRoute)
-        * (1 - progress(time, 113.53, 113.87)),
+        * (1 - progress(time, 122.53, 122.87)),
     );
     const srcRouteProgress = timedProgress(time, FOUNDATION_TIMELINE.srcRoute);
     setRouteProgress(sysrootToSrc, srcRouteProgress, time, time >= FOUNDATION_TIMELINE.srcRoute.end);
-    setFade(sysrootToSrc.group, srcRouteProgress * (1 - progress(time, 113.38, 113.72)));
+    setFade(sysrootToSrc.group, srcRouteProgress * (1 - progress(time, 122.38, 122.72)));
     const workpieceRouteProgress = timedProgress(time, FOUNDATION_TIMELINE.workpieceRoute);
     setRouteProgress(
       srcToWorkpiece,
@@ -1341,7 +1341,7 @@ export function createFoundationWorld() {
       time,
       time >= FOUNDATION_TIMELINE.workpieceRoute.end,
     );
-    setFade(srcToWorkpiece.group, workpieceRouteProgress * (1 - progress(time, 113.24, 113.58)));
+    setFade(srcToWorkpiece.group, workpieceRouteProgress * (1 - progress(time, 122.24, 122.58)));
 
     setCapabilityKey(
       buildKey,
@@ -1370,8 +1370,8 @@ export function createFoundationWorld() {
 
     const workpieceRise = timedProgress(time, FOUNDATION_TIMELINE.workpieceRise);
     production.workpiece.visible = workpieceRise > 0.001;
-    const residentRise = progress(time, 108.2, 111);
-    const compactPlayer = progress(time, 125, 128);
+    const residentRise = progress(time, 117.2, 120);
+    const compactPlayer = progress(time, 134, 137);
     production.workpiece.position.y = -(1 - workpieceRise) * 0.35 + residentRise;
     production.workpiece.scale.setScalar(Math.max(
       0.001,
@@ -1397,27 +1397,27 @@ export function createFoundationWorld() {
       { at: 56.25, x: workpieceHome[0], z: workpieceHome[2] },
       { at: 56.75, x: workpieceHome[0], z: workpieceHome[2] },
       { at: 57.8, x: testerDock[0], z: testerDock[2] },
-      { at: 60.8, x: testerDock[0], z: testerDock[2] },
-      { at: 61.65, x: workpieceHome[0], z: workpieceHome[2] },
-      { at: 63.85, x: workpieceHome[0], z: workpieceHome[2] },
-      { at: 66.95, x: workpieceHome[0], z: workpieceHome[2] },
-      { at: 67.5, x: compilerDock[0], z: compilerDock[2] },
-      { at: 69.35, x: compilerDock[0], z: compilerDock[2] },
-      { at: 69.95, x: workpieceHome[0], z: workpieceHome[2] },
-      { at: 70.35, x: workpieceHome[0], z: workpieceHome[2] },
-      { at: 71.2, x: testerDock[0], z: testerDock[2] },
-      { at: 98.8, x: testerDock[0], z: testerDock[2] },
-      { at: 99.4, x: workpieceHome[0], z: workpieceHome[2] },
-      { at: 99.8, x: workpieceHome[0], z: workpieceHome[2] },
-      { at: 100.8, x: guardDock[0], z: guardDock[2] },
-      { at: 104.25, x: guardDock[0], z: guardDock[2] },
-      { at: 105.1, x: workpieceHome[0], z: workpieceHome[2] },
-      { at: 107, x: workpieceHome[0], z: workpieceHome[2] },
-      { at: 108.6, x: -1.816, z: -0.312 },
-      { at: 111, x: -6.108, z: 1.912 },
-      { at: 125, x: -6.108, z: 1.912 },
-      { at: 128, x: -0.574, z: 6.885 },
-      { at: 139, x: -0.574, z: 6.885 },
+      { at: 69.8, x: testerDock[0], z: testerDock[2] },
+      { at: 70.65, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 72.85, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 75.95, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 76.5, x: compilerDock[0], z: compilerDock[2] },
+      { at: 78.35, x: compilerDock[0], z: compilerDock[2] },
+      { at: 78.95, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 79.35, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 80.2, x: testerDock[0], z: testerDock[2] },
+      { at: 107.8, x: testerDock[0], z: testerDock[2] },
+      { at: 108.4, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 108.8, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 109.8, x: guardDock[0], z: guardDock[2] },
+      { at: 113.25, x: guardDock[0], z: guardDock[2] },
+      { at: 114.1, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 116, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 117.6, x: -1.816, z: -0.312 },
+      { at: 120, x: -6.108, z: 1.912 },
+      { at: 134, x: -6.108, z: 1.912 },
+      { at: 137, x: -0.574, z: 6.885 },
+      { at: 148, x: -0.574, z: 6.885 },
     ];
     const beforeFrame = workpieceFrames.reduce(
       (best, frame) => (frame.at <= time ? frame : best),
@@ -1430,16 +1430,16 @@ export function createFoundationWorld() {
     const workpieceCopy = time >= 55.4 ? "PLAYER.WASM" : "PLAYER.RS";
     setVectorMachineTitle(production.machine, workpieceCopy);
     const earlyCompilerCargo = time >= 55.4 && time < 58.55;
-    const finalCompilerCargo = time >= 69.35 && time < 101.45;
+    const finalCompilerCargo = time >= 78.35 && time < 110.45;
     const successPop = earlyCompilerCargo
       ? progress(time, 55.4, 55.72)
       : finalCompilerCargo
-        ? progress(time, 69.35, 69.67)
+        ? progress(time, 78.35, 78.67)
         : 0;
     const successHandoff = earlyCompilerCargo
       ? progress(time, 57.8, 58.55)
       : finalCompilerCargo
-        ? progress(time, 100.8, 101.45)
+        ? progress(time, 109.8, 110.45)
         : 0;
     const successOpacity = successPop * (1 - progress(successHandoff, 0.72, 1));
     const compilerCargoTarget = earlyCompilerCargo
@@ -1455,8 +1455,8 @@ export function createFoundationWorld() {
       Math.max(0.001, 0.76 * successPop * THREE.MathUtils.lerp(1, 0.12, successHandoff)),
     );
     setFade(production.compilerSuccess, successOpacity);
-    const evidencePickupTimes = [98.25, 98.5, 98.75];
-    const evidenceDeliveryTimes = [101.7, 102.15, 102.6];
+    const evidencePickupTimes = [107.25, 107.5, 107.75];
+    const evidenceDeliveryTimes = [110.7, 111.15, 111.6];
     production.evidenceSeals.forEach((seal, index) => {
       const pickup = progress(
         time,
@@ -1481,9 +1481,9 @@ export function createFoundationWorld() {
     });
     setMovingFile(production.main, materialPath, time, FOUNDATION_TIMELINE.materialMain);
     setMovingFile(production.cargo, materialPath, time, FOUNDATION_TIMELINE.materialCargo);
-    const activeEditTiming = time < 60 ? FOUNDATION_TIMELINE.editOne : FOUNDATION_TIMELINE.editTwo;
+    const activeEditTiming = time < 69.8 ? FOUNDATION_TIMELINE.editOne : FOUNDATION_TIMELINE.editTwo;
     production.edits.forEach((edit, index) => {
-      setMovingFile(edit, materialPath, time, activeEditTiming[index], 0, time < 60 ? 1.25 : 0.88);
+      setMovingFile(edit, materialPath, time, activeEditTiming[index], 0, time < 69.8 ? 1.25 : 0.88);
     });
     const failureActive = time >= 46 && time < 52.55;
     failureDecal.visible = failureActive;
