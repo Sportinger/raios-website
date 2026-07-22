@@ -1,11 +1,6 @@
 import * as THREE from "three";
 import { createCanvasSprite, roundedRect } from "./canvas-primitives.js";
 import { interval, smoothstep, smootherstep } from "./timeline.js";
-import {
-  createVectorCable,
-  setVectorCableState,
-  VECTOR_CABLE_DIRECTIONS,
-} from "../shared/vector-cable.js";
 
 const CARD_LOGICAL_WIDTH = 674;
 const CARD_LOGICAL_HEIGHT = 516;
@@ -245,38 +240,6 @@ function createRemoteDenied(tracker) {
   return surface;
 }
 
-function createGrantRoute(tracker) {
-  return createVectorCable({
-    tracker,
-    points: [
-    new THREE.Vector3(-7.465, 1.16, 2.436),
-    new THREE.Vector3(-7.465, 0.76, 2.436),
-    new THREE.Vector3(-5.85, 0.76, 0.7),
-    new THREE.Vector3(-3.865, 0.76, -1.164),
-    new THREE.Vector3(-3.865, 2.56, -1.164),
-    ],
-    color: 0x69e498,
-    underlayColor: 0x173828,
-    radius: 0.066,
-    underlayRadius: 0.045,
-    direction: VECTOR_CABLE_DIRECTIONS.forward,
-    pulseRadius: 0.12,
-    name: "guard-live-grant-route",
-  });
-}
-
-function setGrantRoute(route, time) {
-  const grant = smootherstep(interval(time, 112.55, 113.25));
-  const revoke = smootherstep(interval(time, 120.15, 121));
-  const amount = grant * (1 - revoke);
-  setVectorCableState(route, {
-    progress: amount,
-    time,
-    persistent: amount >= 0.999,
-    active: amount >= 0.999 && time < 120.15,
-  });
-}
-
 export function createApprovalSequence(tracker, { guardMachine }) {
   const group = new THREE.Group();
   group.name = "approval-sequence";
@@ -290,17 +253,16 @@ export function createApprovalSequence(tracker, { guardMachine }) {
   card.sprite.position.set(-8.305, -1.8, 5.415);
   const remoteDenied = createRemoteDenied(tracker);
   remoteDenied.sprite.position.set(-17.165, -6.6, 14.275);
-  const grantRoute = createGrantRoute(tracker);
-  group.add(card.sprite, remoteDenied.sprite, grantRoute.group);
+  group.add(card.sprite, remoteDenied.sprite);
 
   const guardBase = guardMachine.group.position.clone();
   // In the film projection +Z reads as a clear left/down sidestep. It keeps
   // the Guard on the Builder surface while exposing /out.
-  const guardShift = new THREE.Vector3(0, 0, 2.4);
+  const guardShift = new THREE.Vector3(0, 0, 1.2);
 
   function setTime(rawTime) {
     const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 148);
-    const cardAlpha = windowAlpha(time, 109.8, 116, 0.7);
+    const cardAlpha = windowAlpha(time, 109.8, 112.85, 0.3);
     card.sprite.visible = cardAlpha > 0.001;
     card.material.opacity = cardAlpha;
     if (card.sprite.visible) drawApprovalCard(card, time);
@@ -311,9 +273,8 @@ export function createApprovalSequence(tracker, { guardMachine }) {
 
     const guardStep = smootherstep(interval(time, 112.55, 113.25));
     guardMachine.group.position.copy(guardBase).addScaledVector(guardShift, guardStep);
-    setGrantRoute(grantRoute, time);
   }
 
   setTime(0);
-  return { group, setTime, card, remoteDenied, grantRoute };
+  return { group, setTime, card, remoteDenied };
 }

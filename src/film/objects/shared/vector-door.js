@@ -291,6 +291,20 @@ export function createVectorDoor({
     Math.cos(rotationY) * porchOffset * porchSide,
   );
   group.add(hatch.group, frame);
+  const accentColors = new Set([
+    new THREE.Color(edgeColor).getHex(),
+    new THREE.Color(panelEdgeColor).getHex(),
+  ]);
+  const accentMaterials = new Set();
+  group.traverse((object) => {
+    if (!object.material) return;
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    materials.forEach((material) => {
+      if (material.color && accentColors.has(material.color.getHex())) {
+        accentMaterials.add(material);
+      }
+    });
+  });
   return {
     group,
     frame,
@@ -301,6 +315,7 @@ export function createVectorDoor({
     rotationY,
     porchOffset,
     porchSide,
+    accentMaterials: [...accentMaterials],
   };
 }
 
@@ -422,6 +437,10 @@ export function setVectorDoorOpen(door, amount, maxAngle = Math.PI * 0.62) {
   // A negative local swing moves the leaf toward the positive porch normal.
   // porchSide reverses both the landing and the swing as one invariant.
   door.leafPivot.rotation.y = -door.porchSide * maxAngle * open;
+}
+
+export function setVectorDoorAccent(door, color) {
+  door.accentMaterials?.forEach((material) => material.color.set(color));
 }
 
 function setVectorDoorPorchGrowth(door, amount, opacity) {

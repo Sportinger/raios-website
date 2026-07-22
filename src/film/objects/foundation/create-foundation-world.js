@@ -29,6 +29,7 @@ import {
   createVectorDoor,
   createVectorDoorLabel,
   setSlidingFloorHatch,
+  setVectorDoorAccent,
   setVectorDoorEmergence,
   setVectorDoorOpen,
 } from "../shared/vector-door.js";
@@ -924,6 +925,9 @@ export function createFoundationWorld() {
   });
   anchorFoundationDoor(outDoor, FOUNDATION_LAYOUT.outDoor);
   outDoor.group.scale.setScalar(FOUNDATION_DOOR_SCALE);
+  const outDoorLockedAccent = new THREE.Color(PALETTE.red);
+  const outDoorApprovedAccent = new THREE.Color(PALETTE.green);
+  const outDoorAccent = new THREE.Color();
   const buildDoorPosition = buildDoor.group.position;
   const sysrootDoorPosition = sysrootDoor.group.position;
   const srcDoorPosition = srcDoor.group.position;
@@ -1318,7 +1322,13 @@ export function createFoundationWorld() {
       getCapabilityUnlockEnd(FOUNDATION_TIMELINE.srcKey),
       FOUNDATION_TIMELINE.srcKey.insert + 0.9,
     ));
-    setVectorDoorOpen(outDoor, progress(time, 113.25, 114.15));
+    outDoorAccent.lerpColors(
+      outDoorLockedAccent,
+      outDoorApprovedAccent,
+      progress(time, 112.55, 112.95),
+    );
+    setVectorDoorAccent(outDoor, outDoorAccent);
+    setVectorDoorOpen(outDoor, progress(time, 112.85, 113.55));
 
     setRouteProgress(
       requestToSysroot,

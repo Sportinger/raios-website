@@ -85,7 +85,9 @@ Eine Maschine wird über ihre Trägerfläche und X/Z-Koordinaten verankert; ihre
 Höhe darf nicht in einzelnen Szenen frei geschätzt werden. Auf dem Builder Deck
 stehen der Compiler in der unteren Ecke, der Tester in der rechten Ecke und der
 Guard direkt vor `/out`. Erst die Freigabeanimation bewegt den Guard auf
-derselben Ebene zur Seite.
+derselben Ebene eine halbe Position zur Seite. Nach der Bestätigung verschwindet
+der Dialog sofort, die dritte Guard-Lampe wird grün und `/out` wechselt ohne
+zusätzliche Verbindungsleitung auf Grün, bevor sich die Tür öffnet.
 
 Die optionale Fortschrittsanzeige ist ebenfalls Teil von `vector-machine.js`
 und standardmäßig ausgeblendet. Sie wird über die gemeinsame Maschinen-API
