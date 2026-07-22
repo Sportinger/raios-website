@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import {
   BUILDER_FOOTPRINT,
+  FOUNDATION_DOOR_SCALE,
   FOUNDATION_LAYER_HEIGHT,
   FOUNDATION_LAYOUT,
   FOUNDATION_TIMELINE,
@@ -1035,7 +1036,7 @@ export function createFoundationWorld() {
   keyForge.group.scale.setScalar(1.5);
   const internet = createDoorAndKey("net.https");
   place(internet.group, FOUNDATION_LAYOUT.netDoor);
-  internet.group.scale.setScalar(0.76);
+  internet.group.scale.setScalar(FOUNDATION_DOOR_SCALE);
   const netTower = createNetTower();
   place(netTower.group, FOUNDATION_LAYOUT.netTower);
   netTower.group.scale.setScalar(1.18);
@@ -1095,20 +1096,20 @@ export function createFoundationWorld() {
   group.add(failureDecal, genesisFailureDecal);
   const buildDoor = createDoorAndKey("build.request", { keyTagText: "REQUEST" });
   place(buildDoor.group, FOUNDATION_LAYOUT.buildDoor);
-  buildDoor.group.scale.setScalar(0.72);
+  buildDoor.group.scale.setScalar(FOUNDATION_DOOR_SCALE);
   const sysrootDoor = createDoorAndKey("/sysroot", { positiveSlope: true, keyTagText: "READ" });
   place(sysrootDoor.group, FOUNDATION_LAYOUT.sysrootDoor);
-  sysrootDoor.group.scale.setScalar(0.72);
+  sysrootDoor.group.scale.setScalar(FOUNDATION_DOOR_SCALE);
   const srcDoor = createDoorAndKey("/src", { positiveSlope: true, keyTagText: "READ/WRITE" });
   place(srcDoor.group, FOUNDATION_LAYOUT.srcDoor);
-  srcDoor.group.scale.setScalar(0.72);
+  srcDoor.group.scale.setScalar(FOUNDATION_DOOR_SCALE);
   const outDoor = createDoorAndKey("/out", {
     edgeColor: 0xf06962,
     labelColor: PALETTE.muted,
     keyTagText: "EGRESS",
   });
   place(outDoor.group, FOUNDATION_LAYOUT.outDoor);
-  outDoor.group.scale.setScalar(0.72);
+  outDoor.group.scale.setScalar(FOUNDATION_DOOR_SCALE);
 
   const buildKey = buildDoor.key;
   const sysrootKey = sysrootDoor.key;

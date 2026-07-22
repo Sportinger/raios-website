@@ -298,14 +298,6 @@ export function createVectorDoor({
   };
 }
 
-export function setVectorDoorPorchAngle(door, angleY) {
-  door.hatch.group.position.set(
-    Math.sin(angleY) * door.porchOffset * door.porchSide,
-    0,
-    Math.cos(angleY) * door.porchOffset * door.porchSide,
-  );
-}
-
 export function setVectorDoorEmergence(door, {
   outlineAmount = 1,
   openAmount = 1,

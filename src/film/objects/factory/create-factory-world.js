@@ -38,7 +38,7 @@ import { createApprovalSequence } from "./approval-sequence.js";
 import { createArchipelagoSequence } from "./archipelago-sequence.js";
 import {
   createFactoryDoor as createDoor,
-  orientFactoryDoor,
+  FACTORY_STANDARD_DOOR_SCALE,
   setFactoryDoorEmergence,
 } from "./door-primitives.js";
 import { createLiveSequence } from "./live-sequence.js";
@@ -331,15 +331,15 @@ function createProofScene(tracker) {
   }
   const halfWidth = shadowLayout.width * 0.5;
   const halfDepth = shadowLayout.depth * 0.5;
-  const shadowDoorScale = 0.44;
+  const shadowDoorScale = FACTORY_STANDARD_DOOR_SCALE;
   const entryDoorPosition = new THREE.Vector3(halfWidth, deckTop, -2.2);
   const entryDoor = createDoor(
     tracker,
     0xd8acff,
     entryDoorPosition.toArray(),
     shadowDoorScale,
+    { rotationY: Math.PI / 2 },
   );
-  orientFactoryDoor(entryDoor, { porchWorldAngle: Math.PI / 2 });
   group.add(entryDoor.group);
   const shadowTitle = createTextLabel(tracker, {
     text: "SHADOW WORLD · DISPOSABLE · ZERO LIVE EFFECT", width: 7.8, height: 0.58,
@@ -353,7 +353,6 @@ function createProofScene(tracker) {
   entryDoor.group.add(entryLabel);
   const mockDoors = [-3.7, -1.35, 1].map((x, index) => {
     const door = createDoor(tracker, 0xc28bff, [x, deckTop, halfDepth], shadowDoorScale);
-    orientFactoryDoor(door, { porchWorldAngle: 0 });
     const label = createTextLabel(tracker, {
       text: ["fb.mock", "input.inject", "file.sandbox"][index],
       width: 2.2, height: 0.36, color: 0xdcc3f6, background: 0x130b1c,

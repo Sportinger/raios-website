@@ -3,7 +3,7 @@ import { createCanvasSprite, roundedRect } from "./canvas-primitives.js";
 import { FACTORY_LAYOUT, FACTORY_PALETTE } from "./config.js";
 import {
   createFactoryDoor,
-  orientFactoryDoor,
+  FACTORY_STANDARD_DOOR_SCALE,
   setFactoryDoorEmergence,
 } from "./door-primitives.js";
 import { createRoute, createTextLabel, createVectorBox } from "./primitives.js";
@@ -75,8 +75,12 @@ function createDomain(tracker) {
 
   const labels = ["fb region", "input", "file door"];
   const doors = DOMAIN_DOOR_X.map((x, index) => {
-    const door = createFactoryDoor(tracker, FACTORY_PALETTE.edge, [x, 0, depth / 2], 0.32);
-    orientFactoryDoor(door, { porchWorldAngle: 0 });
+    const door = createFactoryDoor(
+      tracker,
+      FACTORY_PALETTE.edge,
+      [x, 0, depth / 2],
+      FACTORY_STANDARD_DOOR_SCALE,
+    );
     const label = createTextLabel(tracker, {
       text: labels[index], width: 1.45, height: 0.3,
       color: 0xa9bdad, background: 0x07110e,
