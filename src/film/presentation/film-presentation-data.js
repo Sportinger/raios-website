@@ -66,7 +66,6 @@ export const FILM_STATUS_WINDOWS = freezeEntries([
   { start: 55.4, end: 56.05, tone: "success", text: "COMPILE OK" },
   { start: 62, end: 69.35, tone: "active", text: "REPRODUCIBLE TWIN BUILD" },
   { start: 69.35, end: 70, tone: "success", text: "BYTE EQUAL" },
-  { start: 72, end: 80, tone: "active", text: "SHADOW WORLD · ZERO LIVE EFFECT" },
   { start: 80, end: 84.55, tone: "active", text: "GUARD · VERIFYING BINDINGS" },
   { start: 84.55, end: 88, tone: "success", text: "OWNER APPROVED" },
   { start: 88, end: 96, tone: "success", text: "LIVE DOOR OPEN" },

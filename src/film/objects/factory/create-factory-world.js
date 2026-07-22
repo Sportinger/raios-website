@@ -360,11 +360,6 @@ function createProofScene(tracker) {
     labelColor: 0xdcc3f6,
   });
   group.add(entryDoor.group);
-  const shadowTitle = createTextLabel(tracker, {
-    text: "SHADOW WORLD · DISPOSABLE · ZERO LIVE EFFECT", width: 7.8, height: 0.58,
-    color: 0xd9b8ff, background: 0x12091e, position: [0, 0.38, 4.08], fontSize: 48,
-  });
-  group.add(shadowTitle);
   const mockDoors = [-3.7, -1.35, 1].map((x, index) => {
     const label = ["fb.mock", "input.inject", "file.sandbox"][index];
     const door = createFactoryDoorOnSurface(tracker, 0xc28bff, {

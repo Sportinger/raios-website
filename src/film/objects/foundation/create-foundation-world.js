@@ -1208,14 +1208,6 @@ export function createFoundationWorld() {
     38,
   );
   hashCaption.position.set(2.259, 2.35 + DECK_HEIGHT_DELTA, -7.959);
-  const shadowTitle = createWideLabel(
-    "SHADOW WORLD \u00b7 DISPOSABLE \u00b7 ZERO LIVE EFFECT",
-    0xc9b6dc,
-    6.3,
-    46,
-  );
-  shadowTitle.position.set(3.845, 2.1 + DECK_HEIGHT_DELTA, -1.272);
-
   group.add(
     kernel.group,
     kernelCallout.group,
@@ -1250,7 +1242,6 @@ export function createFoundationWorld() {
     forgeToSrc.group,
     sourceCaption,
     hashCaption,
-    shadowTitle,
   );
 
   function setTime(rawTime, camera) {
@@ -1803,10 +1794,6 @@ export function createFoundationWorld() {
     const sourceCaptionAlpha = progress(time, 33, 33.5) * (1 - progress(time, 39.8, 40.25));
     setFade(sourceCaption, sourceCaptionAlpha);
     setFade(hashCaption, sourceCaptionAlpha);
-    setFade(
-      shadowTitle,
-      progress(time, 33.4, 33.9) * (1 - progress(time, 88, 88.5)),
-    );
     const builderRelease = progress(time, 94.62, 95.8);
     builder.group.position.y = FOUNDATION_LAYOUT.builder[1] - builderRelease * 0.58;
     setFade(builder.group, builderRise * (1 - builderRelease));
