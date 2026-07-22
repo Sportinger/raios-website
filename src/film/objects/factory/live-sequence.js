@@ -311,16 +311,15 @@ export function createLiveSequence(tracker) {
     domain.doors.forEach((door, index) => {
       const delay = index * 0.05;
       const outline = smootherstep(interval(time, 92.35 + delay, 92.72 + delay));
-      const hatchOpen = smootherstep(interval(time, 92.64 + delay, 93.04 + delay));
+      const labelWrite = smootherstep(interval(time, 92.64 + delay, 93.04 + delay));
       const rise = smootherstep(interval(time, 92.92 + delay, 93.55 + delay));
       door.group.visible = outline > 0.001 && time < 106.55;
       setFactoryDoorEmergence(door, {
-        outlineAmount: outline,
-        openAmount: hatchOpen,
+        porchAmount: outline,
+        labelAmount: labelWrite,
         riseAmount: rise,
         opacity: domainAlpha,
       });
-      door.label.visible = rise > 0.65 && time < 106.55;
       setFactoryDoorOpen(door, smootherstep(interval(time, 93.55, 94.35)));
     });
     const routeProgress = smootherstep(interval(time, 92.35, 95.35));

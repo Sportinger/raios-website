@@ -689,25 +689,25 @@ export function createFactoryWorld() {
     const shadowDoorIntro = scanWindow
       ? smootherstep(interval(time, scanWindow[0] + 0.22, scanWindow[0] + 0.72))
       : 0;
-    const shadowHatchOpen = scanWindow
+    const shadowLabelWrite = scanWindow
       ? smootherstep(interval(time, scanWindow[0] + 0.42, scanWindow[0] + 0.82))
       : 0;
     const shadowDoorRise = scanWindow
       ? smootherstep(interval(time, scanWindow[0] + 0.68, scanWindow[0] + 1.18))
       : 0;
     setFactoryDoorEmergence(proof.entryDoor, {
-      outlineAmount: shadowDoorIntro,
-      openAmount: shadowHatchOpen,
+      porchAmount: shadowDoorIntro,
+      labelAmount: shadowLabelWrite,
       riseAmount: shadowDoorRise,
       opacity: scanAlpha * 0.72,
     });
     proof.mockDoors.forEach((door, index) => {
       const delay = index * 0.09;
       setFactoryDoorEmergence(door, {
-        outlineAmount: scanWindow
+        porchAmount: scanWindow
           ? smootherstep(interval(time, scanWindow[0] + 0.34 + delay, scanWindow[0] + 0.68 + delay))
           : 0,
-        openAmount: scanWindow
+        labelAmount: scanWindow
           ? smootherstep(interval(time, scanWindow[0] + 0.52 + delay, scanWindow[0] + 0.86 + delay))
           : 0,
         riseAmount: scanWindow

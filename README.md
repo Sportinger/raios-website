@@ -61,6 +61,10 @@ rechtwinklige Ausrichtung, den vollständig außerhalb liegenden Vorbau, die
 diese Werte nicht nachträglich per `position`, `rotation` oder `hinge` ändern.
 Font und Größe sämtlicher Türlabels werden ebenfalls ausschließlich dort
 definiert; Szenen liefern nur Text und Farbe.
+Der deterministische Aufbau ist ebenfalls Teil des Moduls: Der Vorbau wächst
+von der Deckkante nach außen, danach schreibt sich das Label und erst dann
+fährt der Türrahmen aus der Ebene hoch. Die geteilte Bodenklappe wird nur für
+eigenständige Objekte wie den NET-Turm verwendet, nicht für Türen.
 Nur bewusst freistehende Objekte wie die kompakte Finaltür verwenden die
 separat benannte `createFreestandingFactoryDoor`-API.
 

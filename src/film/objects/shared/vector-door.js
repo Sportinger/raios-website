@@ -181,6 +181,8 @@ export function createSlidingFloorHatch({
     panels,
     leftPanel,
     rightPanel,
+    width,
+    depth,
     panelClosedX: width * 0.245,
     panelTravel: width * 0.62,
   };
@@ -375,6 +377,7 @@ export function createVectorDoorLabel({
   );
   label.renderOrder = 50;
   label.userData.labelTexture = texture;
+  label.userData.vectorDoorFullText = String(text);
   let renderedText = null;
   const drawText = (nextText) => {
     const copy = String(nextText);
@@ -419,21 +422,49 @@ export function setVectorDoorOpen(door, amount, maxAngle = Math.PI * 0.62) {
   door.leafPivot.rotation.y = -door.porchSide * maxAngle * open;
 }
 
+function setVectorDoorPorchGrowth(door, amount, opacity) {
+  const grow = smoothstep(amount);
+  const alpha = clamp01(opacity);
+  const halfDepth = door.hatch.depth * 0.5;
+  const edgeGap = Math.max(0, door.porchOffset - halfDepth);
+  const offset = edgeGap + halfDepth * grow;
+  door.hatch.group.visible = grow > 0.001 && alpha > 0.001;
+  door.hatch.group.scale.set(1, 1, Math.max(0.001, grow));
+  door.hatch.group.position.set(
+    Math.sin(door.rotationY) * offset * door.porchSide,
+    0,
+    Math.cos(door.rotationY) * offset * door.porchSide,
+  );
+  setFootprintOutline(door.hatch.outline, 1, alpha);
+  door.hatch.recess.visible = false;
+  door.hatch.panels.visible = false;
+}
+
+function setVectorDoorLabelTyping(door, amount, opacity) {
+  if (!door.label) return;
+  const write = clamp01(amount);
+  const copy = door.label.userData.vectorDoorFullText ?? "";
+  const characterCount = Math.ceil(copy.length * write);
+  door.label.userData.setText(copy.slice(0, characterCount));
+  setVectorOpacity(door.label, write > 0 ? clamp01(opacity) : 0);
+}
+
 export function setVectorDoorEmergence(door, {
-  outlineAmount = 1,
-  openAmount = 1,
+  porchAmount = 1,
+  labelAmount = 1,
   riseAmount = 1,
   opacity = 1,
-  frameOpacity = opacity * riseAmount,
+  frameOpacity,
   undergroundY = -1.62,
 } = {}) {
-  const rise = clamp01(riseAmount);
-  setSlidingFloorHatch(door.hatch, outlineAmount, openAmount, opacity);
+  const alpha = clamp01(opacity);
+  const labelWrite = clamp01(labelAmount);
+  const labelFinished = smoothstep((labelWrite - 0.9) / 0.1);
+  const rise = clamp01(riseAmount) * labelFinished;
+  setVectorDoorPorchGrowth(door, porchAmount, alpha);
+  setVectorDoorLabelTyping(door, labelWrite, alpha);
   door.frame.position.y = THREE.MathUtils.lerp(undergroundY, 0, rise);
   door.frame.scale.y = 1;
-  setVectorOpacity(door.frame, frameOpacity);
-  if (door.label) {
-    const labelOpacity = smoothstep((rise - 0.72) / 0.28) * clamp01(opacity);
-    setVectorOpacity(door.label, labelOpacity);
-  }
+  const resolvedFrameOpacity = frameOpacity ?? alpha * rise;
+  setVectorOpacity(door.frame, clamp01(resolvedFrameOpacity) * labelFinished);
 }

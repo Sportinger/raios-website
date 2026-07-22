@@ -797,11 +797,11 @@ function setEmergingDoor(door, time, timing, opacity = 1) {
   const outlineEnd = timing.start + duration * 0.3;
   const hatchEnd = timing.start + duration * 0.55;
   const outlineDraw = progress(time, timing.start, outlineEnd);
-  const hatchOpen = progress(time, outlineEnd, hatchEnd);
+  const labelWrite = progress(time, outlineEnd, hatchEnd);
   const rise = progress(time, hatchEnd, timing.end);
   setVectorDoorEmergence(door, {
-    outlineAmount: outlineDraw,
-    openAmount: hatchOpen,
+    porchAmount: outlineDraw,
+    labelAmount: labelWrite,
     riseAmount: rise,
     opacity,
     frameOpacity: progress(time, hatchEnd, hatchEnd + duration * 0.16) * clamp01(opacity),
