@@ -32,7 +32,7 @@ weiterhin ausschließlich den dramaturgischen Zustand bestimmt. So können
 laufende Energieeffekte auch ohne Scrollereignis weiterfließen. Bei
 `prefers-reduced-motion` wird die Animationszeit auf null gesetzt.
 
-Ein mittiger Play/Pause-Button bewegt die Seite mit `0.24` Viewporthöhen pro
+Ein mittiger Play/Pause-Button bewegt die Seite mit `0.48` Viewporthöhen pro
 Sekunde automatisch durch die Story. Am Ende pausiert er selbstständig; ein
 erneuter Start springt an den Anfang. Bei reduzierter Bewegung ist Autoplay
 deaktiviert.
