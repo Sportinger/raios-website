@@ -82,7 +82,7 @@ objects/
 ```
 
 Alle Chip-Gehäuse aus `objects/cards/` verwenden gemeinsam das goldene
-Metal048A-PBR-Set mit Color-, Metalness-, OpenGL-Normal- und Roughness-Map.
+Light-Gold-BL-PBR-Set mit Albedo-, Metallic-, OpenGL-Normal- und Roughness-Map.
 Sie ignorieren die globale HDR-Reflexion und werden von einem warmen gerichteten
 Sonnenlicht modelliert, damit ihr Goldton nicht vom Studiopanorama ausgewaschen
 wird. Cyanfarbene Konturen begleiten nur den Aufbau und verschwinden am Ende

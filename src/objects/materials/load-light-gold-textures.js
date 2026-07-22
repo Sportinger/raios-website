@@ -2,19 +2,19 @@ import * as THREE from "three";
 
 const TEXTURE_URLS = Object.freeze({
   map: new URL(
-    "../../assets/materials/metal048a/Metal048A_1K-JPG_Color.jpg",
+    "../../assets/materials/light-gold-bl/lightgold_albedo.png",
     import.meta.url,
   ).href,
   metalnessMap: new URL(
-    "../../assets/materials/metal048a/Metal048A_1K-JPG_Metalness.jpg",
+    "../../assets/materials/light-gold-bl/lightgold_metallic.png",
     import.meta.url,
   ).href,
   normalMap: new URL(
-    "../../assets/materials/metal048a/Metal048A_1K-JPG_NormalGL.jpg",
+    "../../assets/materials/light-gold-bl/lightgold_normal-ogl.png",
     import.meta.url,
   ).href,
   roughnessMap: new URL(
-    "../../assets/materials/metal048a/Metal048A_1K-JPG_Roughness.jpg",
+    "../../assets/materials/light-gold-bl/lightgold_roughness.png",
     import.meta.url,
   ).href,
 });
@@ -27,7 +27,7 @@ function configureTexture(texture, colorSpace = THREE.NoColorSpace) {
   return texture;
 }
 
-export function loadMetal048ATextures() {
+export function loadLightGoldTextures() {
   const loader = new THREE.TextureLoader();
   return {
     map: configureTexture(loader.load(TEXTURE_URLS.map), THREE.SRGBColorSpace),
