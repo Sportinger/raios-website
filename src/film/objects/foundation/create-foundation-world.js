@@ -4,7 +4,6 @@ import {
   FOUNDATION_TIMELINE,
   GENESIS_FOOTPRINT,
   KERNEL_FOOTPRINT,
-  NETWORK_EXTENSION_FOOTPRINT,
 } from "./foundation-config.js";
 
 const PALETTE = Object.freeze({
@@ -694,20 +693,6 @@ export function createFoundationWorld() {
   );
   kernel.body.add(kernelFacets);
   place(kernel.group, FOUNDATION_LAYOUT.kernel);
-  const networkExtension = createDeck({
-    width: NETWORK_EXTENSION_FOOTPRINT.width,
-    depth: NETWORK_EXTENSION_FOOTPRINT.depth,
-    height: 0.72,
-    color: 0x05080d,
-    edgeColor: PALETTE.blue,
-    label: "",
-  });
-  networkExtension.body.add(createSlabFacets(
-    NETWORK_EXTENSION_FOOTPRINT.width,
-    NETWORK_EXTENSION_FOOTPRINT.depth,
-    0.72,
-  ));
-  place(networkExtension.group, FOUNDATION_LAYOUT.networkExtension);
   const genesis = createDeck({
     width: GENESIS_FOOTPRINT.width, depth: GENESIS_FOOTPRINT.depth, height: 0.34,
     color: PALETTE.panel, edgeColor: PALETTE.greenHigh, label: "GENESIS DECK",
@@ -772,7 +757,6 @@ export function createFoundationWorld() {
   group.add(
     prompt.group,
     kernel.group,
-    networkExtension.group,
     genesis.group,
     agent,
     keyForge.group,
@@ -817,9 +801,6 @@ export function createFoundationWorld() {
       FOUNDATION_LAYOUT.kernel[2],
     );
     setDeckFootprint(kernel, kernelScaleX, kernelScaleZ);
-    setDeckRise(networkExtension, foundationExpansion);
-    const extensionPlanScale = Math.max(0.04, foundationExpansion);
-    setDeckFootprint(networkExtension, extensionPlanScale, extensionPlanScale);
     const compactGenesisWidth = KERNEL_FOOTPRINT.compact.width * (510 / 630);
     const compactGenesisDepth = KERNEL_FOOTPRINT.compact.depth * (510 / 630);
     setDeckFootprint(

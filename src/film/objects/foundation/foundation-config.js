@@ -3,8 +3,7 @@ const window = (start, end) => Object.freeze({ start, end });
 
 export const FOUNDATION_LAYOUT = Object.freeze({
   kernel: point(-3.05, 0, 0),
-  kernelExpanded: point(-0.4, 0, 0),
-  networkExtension: point(6.4, -0.01, 1.5),
+  kernelExpanded: point(1.525, 0, 0),
   genesisCompact: point(-3.05, 0.72, 0),
   genesis: point(-0.4, 0.72, 0),
   agentCompact: point(-2.0, 1.06, 0.87),
@@ -19,17 +18,12 @@ export const FOUNDATION_LAYOUT = Object.freeze({
 
 export const KERNEL_FOOTPRINT = Object.freeze({
   compact: Object.freeze({ width: 5.45, depth: 5.45 }),
-  expanded: Object.freeze({ width: 9.15, depth: 9.15 }),
+  expanded: Object.freeze({ width: 14.6, depth: 9.15 }),
 });
 
 export const GENESIS_FOOTPRINT = Object.freeze({
-  width: KERNEL_FOOTPRINT.expanded.width * (510 / 630),
-  depth: KERNEL_FOOTPRINT.expanded.depth * (510 / 630),
-});
-
-export const NETWORK_EXTENSION_FOOTPRINT = Object.freeze({
-  width: 5.2,
-  depth: 3.2,
+  width: 7.41,
+  depth: 7.41,
 });
 
 export const FOUNDATION_TIMELINE = Object.freeze({
