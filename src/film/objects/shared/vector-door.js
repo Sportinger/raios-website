@@ -11,7 +11,7 @@ const trackMaterial = (tracker, material) => tracker?.material?.(material) ?? ma
 const trackTexture = (tracker, texture) => tracker?.texture?.(texture) ?? texture;
 const VECTOR_DOOR_LABEL_FONT = "Consolas, monospace";
 const VECTOR_DOOR_LABEL_FONT_SIZE = 190;
-const VECTOR_DOOR_LABEL_WIDTH = 1.05;
+const VECTOR_DOOR_LABEL_WIDTH = 2.1;
 
 function createMaterial(tracker, color, options = {}) {
   const material = trackMaterial(tracker, new THREE.MeshBasicMaterial({
@@ -385,11 +385,7 @@ export function createVectorDoorLabel({
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.letterSpacing = "4px";
-    context.lineJoin = "round";
-    context.lineWidth = VECTOR_DOOR_LABEL_FONT_SIZE * 0.16;
-    context.strokeStyle = "#05080d";
     context.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
-    context.strokeText(copy, canvas.width / 2, canvas.height / 2, 920);
     context.fillText(copy, canvas.width / 2, canvas.height / 2, 920);
     texture.needsUpdate = true;
   };
