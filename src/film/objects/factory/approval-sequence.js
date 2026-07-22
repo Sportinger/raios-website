@@ -294,7 +294,7 @@ export function createApprovalSequence(tracker, { guardMachine, guardChecklist }
   group.add(card.sprite, remoteDenied.sprite, grantRoute.group);
 
   const guardBase = guardMachine.group.position.clone();
-  const guardShift = new THREE.Vector3(-1.9, -0.75, 1.9);
+  const guardShift = new THREE.Vector3(1.5, 0, 1.5);
 
   function setTime(rawTime) {
     const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 120);

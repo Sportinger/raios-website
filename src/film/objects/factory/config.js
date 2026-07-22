@@ -18,6 +18,27 @@ export const FACTORY_PALETTE = Object.freeze({
   white: 0xeaf7ff,
 });
 
+// The visible Builder Deck is owned by Foundation. These coordinates map its
+// scaled top surface into the Factory root so machines can be anchored to the
+// real quadrant instead of the old hidden 16×10 prototype deck.
+export const FACTORY_BUILDER_SURFACE = Object.freeze({
+  id: "canonical-builder-factory-space",
+  color: 0x111c2b,
+  centerX: 0.285,
+  centerZ: -3.36,
+  width: FILM_QUADRANT_SIZE * FOUNDATION_PRESENTATION_SCALE,
+  depth: FILM_QUADRANT_SIZE * FOUNDATION_PRESENTATION_SCALE,
+  top: 0.57,
+});
+
+const BUILDER_CORNER_INSET = 1.25;
+const BUILDER_RIGHT = FACTORY_BUILDER_SURFACE.centerX
+  + FACTORY_BUILDER_SURFACE.width / 2 - BUILDER_CORNER_INSET;
+const BUILDER_FRONT = FACTORY_BUILDER_SURFACE.centerZ
+  + FACTORY_BUILDER_SURFACE.depth / 2 - BUILDER_CORNER_INSET;
+const BUILDER_BACK = FACTORY_BUILDER_SURFACE.centerZ
+  - FACTORY_BUILDER_SURFACE.depth / 2 + BUILDER_CORNER_INSET;
+
 export const FACTORY_SCENES = Object.freeze({
   builder: Object.freeze({ start: 25, end: 33 }),
   inert: Object.freeze({ start: 33, end: 41 }),
@@ -28,9 +49,21 @@ export const FACTORY_SCENES = Object.freeze({
 });
 
 export const FACTORY_LANES = Object.freeze([
-  Object.freeze({ id: "compiler", x: 2.411, z: 4.295, baseY: 0.286, scale: 0.96, revealAt: 39, color: FACTORY_PALETTE.cyan }),
-  Object.freeze({ id: "verifier", x: 1.527, z: -3.395, baseY: 0.243, scale: 0.87, revealAt: 41.6, color: FACTORY_PALETTE.violet }),
-  Object.freeze({ id: "guard", x: -5.565, z: 0.536, baseY: 0.269, scale: 0.83, revealAt: 41.9, color: FACTORY_PALETTE.green }),
+  Object.freeze({
+    id: "compiler", title: "COMPILER", subtitle: "rustc → WASM",
+    x: BUILDER_RIGHT, z: BUILDER_FRONT,
+    scale: 1, revealAt: 39, color: FACTORY_PALETTE.cyan,
+  }),
+  Object.freeze({
+    id: "verifier", title: "TESTER", subtitle: "HARNESS",
+    x: BUILDER_RIGHT, z: BUILDER_BACK,
+    scale: 1, revealAt: 41.6, color: FACTORY_PALETTE.violet,
+  }),
+  Object.freeze({
+    id: "guard", title: "GUARD", subtitle: "LIVE GATE",
+    x: -3.65, z: -2.16,
+    scale: 1, revealAt: 41.9, color: FACTORY_PALETTE.green,
+  }),
 ]);
 
 export const FACTORY_LAYOUT = Object.freeze({

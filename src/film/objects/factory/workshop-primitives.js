@@ -1,10 +1,10 @@
 import * as THREE from "three";
+import { createTextLabel } from "./primitives.js";
+import { FACTORY_BUILDER_SURFACE, FACTORY_PALETTE } from "./config.js";
 import {
-  createFlatMaterial,
-  createTextLabel,
-  createVectorBox,
-} from "./primitives.js";
-import { FACTORY_PALETTE } from "./config.js";
+  anchorVectorMachineToSurface,
+  createVectorMachine,
+} from "../shared/vector-machine.js";
 
 function createSolidSprite(tracker, color, width, height, opacity = 1) {
   const material = tracker.material(new THREE.SpriteMaterial({
@@ -64,64 +64,25 @@ function createBadgeSprite(tracker, copy, owner = false) {
 }
 
 export function createWorkshopMachine(tracker, lane) {
-  const group = new THREE.Group();
-  group.name = `workshop-machine-${lane.id}`;
-  group.position.set(lane.x, lane.baseY, lane.z);
-
-  const shadow = new THREE.Mesh(
-    tracker.geometry(new THREE.CircleGeometry(0.92, 4)),
-    createFlatMaterial(tracker, 0x000000, { transparent: true, opacity: 0.42 }),
-  );
-  shadow.rotation.x = -Math.PI / 2;
-  shadow.rotation.z = Math.PI / 4;
-  shadow.scale.y = 0.46;
-  shadow.position.y = 0.015;
-
-  const body = new THREE.Group();
-  body.name = `${lane.id}-animated-body`;
-  const block = createVectorBox(tracker, {
+  const machine = createVectorMachine({
+    tracker,
+    id: lane.id,
+    title: lane.title,
+    subtitle: lane.subtitle,
     size: [1.68, 1.28, 1.48],
-    color: FACTORY_PALETTE.panel,
+    panelColor: FACTORY_PALETTE.panel,
+    panelTopColor: FACTORY_PALETTE.panelLight,
     edgeColor: FACTORY_PALETTE.edge,
-    position: [0, 0.64, 0],
+    statusColor: lane.color,
+    titleColor: FACTORY_PALETTE.white,
+    subtitleColor: 0xaab5c5,
+    detailColor: FACTORY_PALETTE.amber,
   });
-  const status = new THREE.Mesh(
-    tracker.geometry(new THREE.SphereGeometry(0.075, 12, 8)),
-    createFlatMaterial(tracker, FACTORY_PALETTE.green),
-  );
-  status.position.set(0, 1.38, 0);
-  const title = createTextLabel(tracker, {
-    text: lane.id === "verifier" ? "PRÜFER" : lane.id.toUpperCase(),
-    width: 1.68,
-    height: 0.34,
-    color: FACTORY_PALETTE.white,
-    background: FACTORY_PALETTE.panel,
-    position: [0, 0.72, 0.755],
-    fontSize: 56,
-    billboard: true,
+  return anchorVectorMachineToSurface(machine, {
+    surface: FACTORY_BUILDER_SURFACE,
+    x: lane.x,
+    z: lane.z,
   });
-  const subtitle = createTextLabel(tracker, {
-    text: lane.id === "compiler" ? "rustc → WASM" : lane.id === "verifier" ? "HARNESS" : "LIVE GATE",
-    width: 1.66,
-    height: 0.3,
-    color: 0xaab5c5,
-    background: FACTORY_PALETTE.panel,
-    position: [0, 0.45, 0.757],
-    fontSize: 42,
-    billboard: true,
-  });
-  const bars = new THREE.Group();
-  [0.38, 0.62, 0.86].forEach((y, index) => {
-    const bar = createVectorBox(tracker, {
-      size: [0.035, 0.055, 0.34 - index * 0.045],
-      color: FACTORY_PALETTE.amber,
-      position: [0.858, y, 0.29],
-    });
-    bars.add(bar);
-  });
-  body.add(block, status, title, subtitle, bars);
-  group.add(shadow, body);
-  return { group, body, status, shadow };
 }
 
 export function createWorkshopConsole(tracker, {

@@ -66,6 +66,18 @@ es anschließend zum Ziel und aktualisiert die Verbindungslinie bei jeder
 Kamera- oder Objektbewegung. Inhalt, Akzentfarbe, Zielpunkt und Zeitfenster
 bleiben reine Konfiguration.
 
+### Maschinenvertrag
+
+Agent, Compiler, Tester und Guard verwenden
+`objects/shared/vector-machine.js`. Das Modul definiert die gemeinsame
+Körpergeometrie, Flächen, Outlines, Statuslicht, Detailstreifen, Beschriftung,
+Schatten und den Aufbau vom gezeichneten Grundriss zum aufwachsenden Programm.
+Eine Maschine wird über ihre Trägerfläche und X/Z-Koordinaten verankert; ihre
+Höhe darf nicht in einzelnen Szenen frei geschätzt werden. Auf dem Builder Deck
+stehen der Compiler in der unteren Ecke, der Tester in der rechten Ecke und der
+Guard direkt vor `/out`. Erst die Freigabeanimation bewegt den Guard auf
+derselben Ebene zur Seite.
+
 ### Türvertrag
 
 Alle regulären Filmtüren verwenden `objects/shared/vector-door.js`. Eine Tür

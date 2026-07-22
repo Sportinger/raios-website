@@ -50,6 +50,7 @@ import {
 } from "../shared/vector-cable.js";
 import { createVectorCallout, setVectorCallout } from "../shared/vector-callout.js";
 import { createVectorLayer, setVectorLayerBuild } from "../shared/vector-layer.js";
+import { setVectorMachineBuild } from "../shared/vector-machine.js";
 
 const setLabelText = (label, text) => label.userData.setText?.(text);
 
@@ -61,7 +62,9 @@ function setFactoryOpacity(root, opacity) {
     const materials = Array.isArray(object.material) ? object.material : [object.material];
     materials.forEach((material) => {
       if (material.userData.factoryBaseOpacity === undefined) {
-        material.userData.factoryBaseOpacity = material.opacity;
+        material.userData.factoryBaseOpacity = material.userData.vectorMachineBaseOpacity
+          ?? material.userData.vectorLayerBaseOpacity
+          ?? material.opacity;
       }
       const baseOpacity = material.userData.factoryBaseOpacity;
       material.transparent = material.userData.preserveTransparency || baseOpacity < 0.999 || value < 0.999;
@@ -525,10 +528,19 @@ export function createFactoryWorld() {
 
     compiler.machines.forEach((machine, index) => {
       const lane = FACTORY_LANES[index];
-      const reveal = smootherstep(interval(time, lane.revealAt, lane.revealAt + 1));
-      machine.group.visible = reveal > 0.001;
-      machine.group.scale.setScalar(lane.scale * Math.max(0.001, reveal));
-      machine.group.position.y = lane.baseY - 1.3 * (1 - reveal);
+      const outline = smootherstep(interval(time, lane.revealAt, lane.revealAt + 0.36));
+      const rise = smootherstep(interval(time, lane.revealAt + 0.36, lane.revealAt + 1));
+      machine.group.scale.setScalar(lane.scale);
+      machine.group.position.y = machine.supportSurface.top;
+      setVectorMachineBuild(machine, {
+        outlineAmount: outline,
+        riseAmount: rise,
+        outlineOpacity: 1 - smootherstep(interval(
+          time,
+          lane.revealAt + 0.36,
+          lane.revealAt + 0.72,
+        )),
+      });
       machine.status.scale.setScalar(0.88 + Math.sin(time * 3.2 + index) * 0.12);
     });
     [79.8, 80.7, 81.55, 84.55].forEach((at, index) => {

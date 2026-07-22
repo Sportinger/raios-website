@@ -1,0 +1,303 @@
+import * as THREE from "three";
+
+const UNIT_Y = new THREE.Vector3(0, 1, 0);
+const clamp01 = (value) => Math.min(1, Math.max(0, value));
+const trackGeometry = (tracker, geometry) => tracker?.geometry?.(geometry) ?? geometry;
+const trackMaterial = (tracker, material) => tracker?.material?.(material) ?? material;
+const trackTexture = (tracker, texture) => tracker?.texture?.(texture) ?? texture;
+
+function createMaterial(tracker, color, opacity = 1, options = {}) {
+  const material = trackMaterial(tracker, new THREE.MeshBasicMaterial({
+    color,
+    transparent: opacity < 0.999,
+    opacity,
+    depthWrite: options.depthWrite ?? opacity >= 0.999,
+    side: options.side ?? THREE.FrontSide,
+  }));
+  material.userData.vectorMachineBaseOpacity = opacity;
+  return material;
+}
+
+function createBeamBetween(tracker, start, end, radius, color) {
+  const direction = new THREE.Vector3().subVectors(end, start);
+  const beam = new THREE.Mesh(
+    trackGeometry(tracker, new THREE.CylinderGeometry(radius, radius, direction.length(), 8)),
+    createMaterial(tracker, color),
+  );
+  beam.position.copy(start).add(end).multiplyScalar(0.5);
+  beam.quaternion.setFromUnitVectors(UNIT_Y, direction.normalize());
+  return beam;
+}
+
+function createThickBoxEdges(tracker, size, color, radius = 0.024) {
+  const group = new THREE.Group();
+  const half = size.clone().multiplyScalar(0.5);
+  [-1, 1].forEach((ySign) => {
+    [-1, 1].forEach((zSign) => {
+      group.add(createBeamBetween(
+        tracker,
+        new THREE.Vector3(-half.x, ySign * half.y, zSign * half.z),
+        new THREE.Vector3(half.x, ySign * half.y, zSign * half.z),
+        radius,
+        color,
+      ));
+    });
+    [-1, 1].forEach((xSign) => {
+      group.add(createBeamBetween(
+        tracker,
+        new THREE.Vector3(xSign * half.x, ySign * half.y, -half.z),
+        new THREE.Vector3(xSign * half.x, ySign * half.y, half.z),
+        radius,
+        color,
+      ));
+    });
+  });
+  [-1, 1].forEach((xSign) => {
+    [-1, 1].forEach((zSign) => {
+      group.add(createBeamBetween(
+        tracker,
+        new THREE.Vector3(xSign * half.x, -half.y, zSign * half.z),
+        new THREE.Vector3(xSign * half.x, half.y, zSign * half.z),
+        radius,
+        color,
+      ));
+    });
+  });
+  return group;
+}
+
+function createOutlinedBox(tracker, size, color, edgeColor) {
+  const group = new THREE.Group();
+  const geometry = trackGeometry(tracker, new THREE.BoxGeometry(size.x, size.y, size.z));
+  group.add(
+    new THREE.Mesh(geometry, createMaterial(tracker, color)),
+    createThickBoxEdges(tracker, size, edgeColor),
+  );
+  return group;
+}
+
+function createGlowTexture(tracker, color) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 128;
+  const context = canvas.getContext("2d");
+  const hex = `#${new THREE.Color(color).getHexString()}`;
+  const gradient = context.createRadialGradient(64, 64, 4, 64, 64, 62);
+  gradient.addColorStop(0, `${hex}ee`);
+  gradient.addColorStop(0.26, `${hex}88`);
+  gradient.addColorStop(1, `${hex}00`);
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, 128, 128);
+  const texture = trackTexture(tracker, new THREE.CanvasTexture(canvas));
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+function createMachineLabel(tracker, text, color, width, fontSize) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024;
+  canvas.height = 256;
+  const context = canvas.getContext("2d");
+  const texture = trackTexture(tracker, new THREE.CanvasTexture(canvas));
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.font = `900 ${fontSize}px Consolas, monospace`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.lineJoin = "round";
+  context.lineWidth = Math.max(10, fontSize * 0.14);
+  context.strokeStyle = "#05080d";
+  context.fillStyle = `#${new THREE.Color(color).getHexString()}`;
+  context.strokeText(text, canvas.width / 2, canvas.height / 2, 940);
+  context.fillText(text, canvas.width / 2, canvas.height / 2, 940);
+  texture.needsUpdate = true;
+  const material = trackMaterial(tracker, new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+  }));
+  material.userData.preserveTransparency = true;
+  material.userData.vectorMachineBaseOpacity = 1;
+  const label = new THREE.Sprite(material);
+  label.scale.set(width, width * canvas.height / canvas.width, 1);
+  label.renderOrder = 52;
+  return label;
+}
+
+function createFootprintOutline(tracker, width, depth, color) {
+  const halfWidth = width * 0.5;
+  const halfDepth = depth * 0.5;
+  const points = [
+    new THREE.Vector3(-halfWidth, 0.025, halfDepth),
+    new THREE.Vector3(halfWidth, 0.025, halfDepth),
+    new THREE.Vector3(halfWidth, 0.025, -halfDepth),
+    new THREE.Vector3(-halfWidth, 0.025, -halfDepth),
+  ];
+  const group = new THREE.Group();
+  const segments = points.map((start, index) => {
+    const end = points[(index + 1) % points.length];
+    const beam = createBeamBetween(tracker, start, end, 0.026, color);
+    beam.material.transparent = true;
+    beam.material.opacity = 0;
+    group.add(beam);
+    return { beam, start, end };
+  });
+  return { group, segments };
+}
+
+function setFootprintOutline(outline, drawAmount, opacity) {
+  const draw = clamp01(drawAmount);
+  const alpha = clamp01(opacity);
+  outline.group.visible = draw * alpha > 0.001;
+  outline.segments.forEach(({ beam, start, end }, index) => {
+    const segmentProgress = clamp01(draw * outline.segments.length - index);
+    beam.visible = segmentProgress * alpha > 0.001;
+    beam.position.lerpVectors(start, end, segmentProgress * 0.5);
+    beam.scale.y = Math.max(0.001, segmentProgress);
+    beam.material.opacity = alpha;
+  });
+}
+
+function setObjectOpacity(root, opacity) {
+  const value = clamp01(opacity);
+  root.traverse((object) => {
+    if (!object.material) return;
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    materials.forEach((material) => {
+      if (material.userData.vectorMachineBaseOpacity === undefined) {
+        material.userData.vectorMachineBaseOpacity = material.opacity;
+      }
+      const baseOpacity = material.userData.vectorMachineBaseOpacity;
+      material.transparent = material.userData.preserveTransparency
+        || baseOpacity < 0.999
+        || value < 0.999;
+      material.opacity = baseOpacity * value;
+    });
+  });
+}
+
+export function createVectorMachine({
+  tracker,
+  id,
+  title,
+  subtitle = "",
+  size = [1.34, 1.12, 1.18],
+  panelColor = 0x1c2a3d,
+  panelTopColor = 0x263a52,
+  edgeColor = 0x8bc5ff,
+  statusColor = edgeColor,
+  titleColor = 0xf1f7ff,
+  subtitleColor = 0x9fb2c9,
+  detailColor = 0xf6c769,
+} = {}) {
+  const [width, height, depth] = size;
+  const group = new THREE.Group();
+  group.name = `vector-machine-${id}`;
+  const solid = new THREE.Group();
+  const body = new THREE.Group();
+  body.name = `${id}-animated-body`;
+  const shadow = new THREE.Mesh(
+    trackGeometry(tracker, new THREE.CircleGeometry(Math.max(width, depth) * 0.66, 4)),
+    createMaterial(tracker, 0x000000, 0.38, { depthWrite: false }),
+  );
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.rotation.z = Math.PI / 4;
+  shadow.scale.y = 0.48;
+  shadow.position.y = 0.015;
+  const block = createOutlinedBox(
+    tracker,
+    new THREE.Vector3(width, height, depth),
+    panelColor,
+    edgeColor,
+  );
+  block.position.y = height / 2;
+  const topInset = new THREE.Mesh(
+    trackGeometry(tracker, new THREE.BoxGeometry(width * 0.7, 0.035, depth * 0.68)),
+    createMaterial(tracker, panelTopColor),
+  );
+  topInset.position.y = height + 0.065;
+  const status = new THREE.Mesh(
+    trackGeometry(tracker, new THREE.SphereGeometry(0.075, 12, 8)),
+    createMaterial(tracker, statusColor),
+  );
+  status.position.set(0, height + 0.15, 0);
+  const statusGlow = new THREE.Sprite(trackMaterial(tracker, new THREE.SpriteMaterial({
+    map: createGlowTexture(tracker, statusColor),
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  })));
+  statusGlow.material.userData.preserveTransparency = true;
+  statusGlow.material.userData.vectorMachineBaseOpacity = 0.78;
+  statusGlow.position.copy(status.position);
+  statusGlow.scale.setScalar(Math.max(width, depth) * 0.72);
+  const bars = new THREE.Group();
+  [0.34, 0.56, 0.78].forEach((heightRatio, index) => {
+    const bar = new THREE.Mesh(
+      trackGeometry(tracker, new THREE.BoxGeometry(0.035, 0.055, depth * (0.3 - index * 0.04))),
+      createMaterial(tracker, detailColor),
+    );
+    bar.position.set(width / 2 + 0.018, height * heightRatio, depth * 0.23);
+    bars.add(bar);
+  });
+  const titleLabel = createMachineLabel(tracker, title, titleColor, width * 0.9, 170);
+  titleLabel.position.set(0, height * 0.58, depth / 2 + 0.035);
+  const subtitleLabel = subtitle
+    ? createMachineLabel(tracker, subtitle, subtitleColor, width * 0.88, 102)
+    : null;
+  if (subtitleLabel) subtitleLabel.position.set(0, height * 0.36, depth / 2 + 0.038);
+  body.add(block, topInset, status, statusGlow, bars, titleLabel);
+  if (subtitleLabel) body.add(subtitleLabel);
+  solid.add(shadow, body);
+  const outline = createFootprintOutline(tracker, width, depth, edgeColor);
+  group.add(outline.group, solid);
+  const machine = {
+    group,
+    solid,
+    body,
+    block,
+    status,
+    statusGlow,
+    shadow,
+    outline,
+    titleLabel,
+    subtitleLabel,
+    width,
+    height,
+    depth,
+  };
+  setVectorMachineBuild(machine, { outlineAmount: 0, riseAmount: 0 });
+  return machine;
+}
+
+export function setVectorMachineBuild(machine, {
+  outlineAmount = 1,
+  riseAmount = 1,
+  opacity = 1,
+  outlineOpacity = opacity,
+} = {}) {
+  const rise = clamp01(riseAmount);
+  const alpha = clamp01(opacity);
+  const solidVisible = rise > 0.001 && alpha > 0.001;
+  machine.solid.scale.y = Math.max(0.001, rise);
+  setObjectOpacity(machine.solid, alpha);
+  machine.solid.visible = solidVisible;
+  setFootprintOutline(machine.outline, outlineAmount, outlineOpacity);
+  machine.group.visible = solidVisible
+    || clamp01(outlineAmount) * clamp01(outlineOpacity) > 0.001;
+}
+
+export function anchorVectorMachineToSurface(machine, {
+  surface,
+  x,
+  z,
+} = {}) {
+  if (!Number.isFinite(surface?.top) || !Number.isFinite(x) || !Number.isFinite(z)) {
+    throw new TypeError("A vector machine requires a support surface and finite x/z coordinates.");
+  }
+  machine.group.position.set(x, surface.top, z);
+  machine.supportSurface = surface;
+  return machine;
+}

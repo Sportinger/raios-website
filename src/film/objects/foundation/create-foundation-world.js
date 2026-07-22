@@ -15,6 +15,7 @@ import {
   setVectorLayerBuild,
   setVectorLayerFootprint,
 } from "../shared/vector-layer.js";
+import { createVectorMachine, setVectorMachineBuild } from "../shared/vector-machine.js";
 import {
   anchorVectorDoorToSurface,
   attachVectorDoorLabel,
@@ -516,85 +517,6 @@ function createDeck({ width, depth, height, color, edgeColor, label, labelColor 
   });
 }
 
-function createFootprintOutline(width, depth, color) {
-  const halfWidth = width * 0.5;
-  const halfDepth = depth * 0.5;
-  const points = [
-    new THREE.Vector3(-halfWidth, 0.025, halfDepth),
-    new THREE.Vector3(halfWidth, 0.025, halfDepth),
-    new THREE.Vector3(halfWidth, 0.025, -halfDepth),
-    new THREE.Vector3(-halfWidth, 0.025, -halfDepth),
-  ];
-  const group = new THREE.Group();
-  const segments = points.map((start, index) => {
-    const end = points[(index + 1) % points.length];
-    const beam = createBeamBetween(start, end, 0.026, color);
-    beam.material.transparent = true;
-    beam.material.opacity = 0;
-    group.add(beam);
-    return { beam, start, end };
-  });
-  return { group, segments };
-}
-
-function setFootprintOutline(outline, drawAmount, opacity = 1) {
-  const draw = clamp01(drawAmount);
-  const alpha = clamp01(opacity);
-  outline.group.visible = draw * alpha > 0.001;
-  outline.segments.forEach(({ beam, start, end }, index) => {
-    const segmentProgress = clamp01(draw * outline.segments.length - index);
-    beam.visible = segmentProgress * alpha > 0.001;
-    beam.position.lerpVectors(start, end, segmentProgress * 0.5);
-    beam.scale.y = Math.max(0.001, segmentProgress);
-    beam.material.opacity = alpha;
-  });
-}
-
-function createAgent() {
-  const group = new THREE.Group();
-  const solid = new THREE.Group();
-  const shadow = new THREE.Mesh(
-    new THREE.CircleGeometry(0.92, 4),
-    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.38, depthWrite: false }),
-  );
-  shadow.rotation.x = -Math.PI / 2;
-  shadow.rotation.z = Math.PI / 4;
-  shadow.scale.y = 0.48;
-  shadow.position.y = 0.015;
-  const body = createOutlinedBox(new THREE.Vector3(1.34, 1.12, 1.18), PALETTE.panelHigh, PALETTE.blueHigh);
-  body.position.y = 0.61;
-  const topInset = new THREE.Mesh(
-    new THREE.BoxGeometry(0.94, 0.035, 0.8),
-    new THREE.MeshBasicMaterial({ color: 0x263a52 }),
-  );
-  topInset.position.y = 1.185;
-  const status = new THREE.Mesh(
-    new THREE.SphereGeometry(0.075, 10, 6),
-    new THREE.MeshBasicMaterial({ color: PALETTE.blueHigh }),
-  );
-  status.position.set(0, 1.27, 0);
-  const statusGlow = createGlow(PALETTE.blue, 0.75, 0.75);
-  statusGlow.position.copy(status.position);
-  const kerbMaterial = new THREE.LineBasicMaterial({ color: PALETTE.blueHigh });
-  const kerbs = new THREE.Group();
-  [-0.28, 0, 0.28].forEach((offset) => {
-    const line = new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(0.678, 0.35 + offset, 0.26),
-        new THREE.Vector3(0.678, 0.35 + offset, 0.48),
-      ]),
-      kerbMaterial,
-    );
-    kerbs.add(line);
-  });
-  const label = createLabel("AGENT", PALETTE.ink, 1.18, 62);
-  label.position.set(0, 0.66, 0.616);
-  solid.add(shadow, body, topInset, status, statusGlow, kerbs, label);
-  const outline = createFootprintOutline(1.34, 1.18, PALETTE.blueHigh);
-  group.add(outline.group, solid);
-  return { group, solid, outline };
-}
-
 function createKeyForge() {
   const group = new THREE.Group();
   const socket = new THREE.Mesh(
@@ -972,7 +894,18 @@ export function createFoundationWorld() {
     GENESIS_FOOTPRINT.depth * 0.5 + 0.04,
   );
 
-  const agent = createAgent();
+  const agent = createVectorMachine({
+    id: "agent",
+    title: "AGENT",
+    subtitle: "GENESIS",
+    panelColor: PALETTE.panelHigh,
+    panelTopColor: 0x263a52,
+    edgeColor: PALETTE.blueHigh,
+    statusColor: PALETTE.blueHigh,
+    titleColor: PALETTE.ink,
+    subtitleColor: PALETTE.greenHigh,
+    detailColor: PALETTE.blueHigh,
+  });
   place(agent.group, FOUNDATION_LAYOUT.agentCompact);
   // Compensates for the authored Foundation-set scale so the Agent retains
   // the original block-to-deck ratio while the two decks fill the frame.
@@ -1316,15 +1249,13 @@ export function createFoundationWorld() {
       FOUNDATION_LAYOUT.agentCompact[2]
         - FOUNDATION_LAYOUT.expansionOffset[2] * foundationExpansion / foundationScaleZ,
     );
-    agent.group.visible = (agentOutlineDraw > 0.001 || agentRise > 0.001)
-      && legacyWorldAlpha > 0.001;
-    agent.solid.scale.y = Math.max(0.001, agentRise);
-    setFade(agent.solid, agentRise * legacyWorldAlpha);
-    setFootprintOutline(
-      agent.outline,
-      agentOutlineDraw,
-      legacyWorldAlpha * (1 - progress(time, FOUNDATION_TIMELINE.agentRise.start, 14.02)),
-    );
+    setVectorMachineBuild(agent, {
+      outlineAmount: agentOutlineDraw,
+      riseAmount: agentRise,
+      opacity: legacyWorldAlpha,
+      outlineOpacity: legacyWorldAlpha
+        * (1 - progress(time, FOUNDATION_TIMELINE.agentRise.start, 14.02)),
+    });
 
     const netOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.netOutline);
     const netHatchOpen = timedProgress(time, FOUNDATION_TIMELINE.netHatch);
