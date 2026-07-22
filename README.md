@@ -10,8 +10,8 @@ werden nicht kopiert.
 Aus der festgelegten orthografischen Filmkamera soll der native 3D-Nachbau die
 Komposition des Originals möglichst genau erhalten. Alle Decks, Maschinen,
 Türen, Leitungen, Workpieces und App-Inseln besitzen jedoch echte räumliche
-Tiefe. Dadurch kann später eine freie Orbit-Kamera ergänzt werden, ohne die
-Filmfassung neu zu modellieren.
+Tiefe. Über `FREE ORBIT` lässt sich jedes aktuelle Filmbild frei im Raum
+betrachten, ohne die deterministische Filmfassung zu verändern.
 
 ## Filmvertrag
 
@@ -57,8 +57,9 @@ Die SVG-Kamera des Referenzfilms war ein 2D-Pan/Zoom mit `scale`, `focusX` und
 `focusY`. Der Nachbau übersetzt diese Werte auf eine echte orthografische Kamera
 mit einer räumlichen isometrischen Blickrichtung. Referenzformat, Widescreen-
 Korrektur, vertikaler Bias, die 18 Original-Keyframes und deren Smoothstep-
-Interpolation bleiben erhalten. Eine freie Orbit-Steuerung ist bewusst noch
-nicht Teil der Filmoberfläche.
+Interpolation bleiben erhalten. `FREE ORBIT` friert die aktuelle Filmzeit ein
+und aktiviert Drehen, Zoomen und Verschieben mit Maus oder Touch. `EXIT ORBIT`,
+PLAY oder ein Kapitelsprung stellt die Filmkamera wieder exakt her.
 
 Für gezielte Bildvergleiche kann eine Filmsekunde direkt geöffnet werden, zum
 Beispiel `http://127.0.0.1:5174/?time=17`.

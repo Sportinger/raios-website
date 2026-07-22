@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { FILM_DURATION, FILM_PROMPT, FILM_SCENES } from "./film-data.js";
 import { createFilmCamera } from "./create-film-camera.js";
 import { createFilmWorld } from "./create-film-world.js";
@@ -21,6 +22,7 @@ function formatTime(time) {
 export function createFilmApp({
   canvas,
   chapterNavigation,
+  orbitToggle,
   playToggle,
   progressFill,
   prompt,
@@ -41,17 +43,29 @@ export function createFilmApp({
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   const filmCamera = createFilmCamera();
+  const orbitControls = new OrbitControls(filmCamera.camera, canvas);
+  orbitControls.enabled = false;
+  orbitControls.enableDamping = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  orbitControls.dampingFactor = 0.08;
+  orbitControls.screenSpacePanning = true;
+  orbitControls.minZoom = 0.08;
+  orbitControls.maxZoom = 4;
+  orbitControls.minPolarAngle = 0.04;
+  orbitControls.maxPolarAngle = Math.PI - 0.04;
   const world = createFilmWorld();
-  const overlays = createFilmOverlays({ host: canvas.closest(".film-viewport") });
+  const viewport = canvas.closest(".film-viewport");
+  const overlays = createFilmOverlays({ host: viewport });
   let currentTime = 0;
   let playing = false;
+  let orbitEnabled = false;
   let frame = 0;
   let previousTimestamp = performance.now();
   let scrollFrame = 0;
 
   const render = () => {
-    filmCamera.setTime(currentTime);
+    if (!orbitEnabled) filmCamera.setTime(currentTime);
     world.setTime(currentTime);
+    if (orbitEnabled) orbitControls.update();
     renderer.render(world.scene, filmCamera.camera);
   };
 
@@ -81,6 +95,33 @@ export function createFilmApp({
     render();
   };
 
+  const setPlaying = (nextPlaying) => {
+    playing = nextPlaying;
+    playToggle.setAttribute("aria-pressed", String(playing));
+    playToggle.textContent = playing ? "PAUSE" : "PLAY";
+  };
+
+  const setOrbitEnabled = (enabled) => {
+    const nextEnabled = Boolean(enabled);
+    if (nextEnabled === orbitEnabled) return;
+    if (nextEnabled) {
+      setPlaying(false);
+      filmCamera.setTime(currentTime);
+      orbitControls.target.copy(filmCamera.target);
+      orbitControls.update();
+    }
+    orbitEnabled = nextEnabled;
+    orbitControls.enabled = orbitEnabled;
+    viewport.classList.toggle("is-orbiting", orbitEnabled);
+    orbitToggle.setAttribute("aria-pressed", String(orbitEnabled));
+    orbitToggle.textContent = orbitEnabled ? "EXIT ORBIT" : "FREE ORBIT";
+    orbitToggle.title = orbitEnabled
+      ? "Return to the film camera"
+      : "Explore the current film frame in 3D";
+    if (!orbitEnabled) setTime(currentTime, true);
+    else render();
+  };
+
   FILM_SCENES.forEach((scene) => {
     const button = document.createElement("button");
     button.type = "button";
@@ -88,9 +129,8 @@ export function createFilmApp({
     button.title = scene.title;
     button.style.setProperty("--chapter-y", `${5 + (scene.start / FILM_DURATION) * 90}%`);
     button.addEventListener("click", () => {
-      playing = false;
-      playToggle.setAttribute("aria-pressed", "false");
-      playToggle.textContent = "PLAY";
+      setOrbitEnabled(false);
+      setPlaying(false);
       setTime(scene.start, true);
     });
     chapterNavigation.append(button);
@@ -106,7 +146,7 @@ export function createFilmApp({
 
   const syncFromScroll = () => {
     scrollFrame = 0;
-    if (playing || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (playing || orbitEnabled || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const travel = Math.max(1, stage.offsetHeight - window.innerHeight);
     setTime((window.scrollY - stage.offsetTop) / travel * FILM_DURATION);
   };
@@ -116,17 +156,17 @@ export function createFilmApp({
   };
   const stopForUserInput = () => {
     if (!playing) return;
-    playing = false;
-    playToggle.setAttribute("aria-pressed", "false");
-    playToggle.textContent = "PLAY";
+    setPlaying(false);
   };
 
-  playToggle.addEventListener("click", () => {
+  const onPlayToggle = () => {
+    if (orbitEnabled) setOrbitEnabled(false);
     if (!playing && currentTime >= FILM_DURATION - 0.001) setTime(0, true);
-    playing = !playing;
-    playToggle.setAttribute("aria-pressed", String(playing));
-    playToggle.textContent = playing ? "PAUSE" : "PLAY";
-  });
+    setPlaying(!playing);
+  };
+  const onOrbitToggle = () => setOrbitEnabled(!orbitEnabled);
+  playToggle.addEventListener("click", onPlayToggle);
+  orbitToggle.addEventListener("click", onOrbitToggle);
   window.addEventListener("resize", resize, { passive: true });
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("wheel", stopForUserInput, { passive: true });
@@ -138,9 +178,7 @@ export function createFilmApp({
     if (playing) {
       setTime(currentTime + delta * AUTOPLAY_SECONDS_PER_SECOND, true);
       if (currentTime >= FILM_DURATION) {
-        playing = false;
-        playToggle.setAttribute("aria-pressed", "false");
-        playToggle.textContent = "PLAY";
+        setPlaying(false);
       }
     } else {
       render();
@@ -160,7 +198,11 @@ export function createFilmApp({
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("wheel", stopForUserInput);
       window.removeEventListener("touchstart", stopForUserInput);
+      playToggle.removeEventListener("click", onPlayToggle);
+      orbitToggle.removeEventListener("click", onOrbitToggle);
       chapterNavigation.replaceChildren();
+      viewport.classList.remove("is-orbiting");
+      orbitControls.dispose();
       overlays.dispose();
       world.dispose();
       renderer.dispose();

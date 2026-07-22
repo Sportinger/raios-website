@@ -5,6 +5,7 @@ const requestedTime = Number.parseFloat(new URL(window.location.href).searchPara
 let app = createFilmApp({
   canvas: document.getElementById("film-canvas"),
   chapterNavigation: document.getElementById("chapter-navigation"),
+  orbitToggle: document.getElementById("orbit-toggle"),
   playToggle: document.getElementById("play-toggle"),
   progressFill: document.getElementById("progress-fill"),
   prompt: document.getElementById("prompt"),
