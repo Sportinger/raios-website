@@ -818,10 +818,21 @@ function getCapabilityUnlockEnd(timing) {
   return timing.insert + Math.min(0.24, (timing.end - timing.insert) * 0.48);
 }
 
-function getKeyForgeHatchOpen(time, timing) {
+function getKeyForgeHatchState(
+  time,
+  timing,
+  revealStart = timing.start - 0.55,
+  revealEnd = timing.start - 0.34,
+) {
+  const outline = progress(time, revealStart, revealEnd);
   const opening = progress(time, timing.start - 0.34, timing.start + 0.06);
   const closing = progress(time, timing.detach, timing.detach + 0.28);
-  return opening * (1 - closing);
+  const opacity = outline * (1 - progress(time, getCapabilityUnlockEnd(timing), timing.end));
+  return {
+    outline,
+    open: opening * (1 - closing),
+    opacity,
+  };
 }
 
 function setMovingFile(file, route, time, timing, delay = 0, sizeScale = 1) {
@@ -1255,20 +1266,31 @@ export function createFoundationWorld() {
       getCapabilityUnlockEnd(FOUNDATION_TIMELINE.netKey),
       FOUNDATION_TIMELINE.netKey.insert + 0.9,
     ));
-    const forgeOutline = timedProgress(time, FOUNDATION_TIMELINE.keyForgeRise);
     const forgeTimings = [
       FOUNDATION_TIMELINE.netKey,
       FOUNDATION_TIMELINE.buildKey,
       FOUNDATION_TIMELINE.sysrootKey,
       FOUNDATION_TIMELINE.srcKey,
     ];
-    const forgeOpen = forgeTimings.reduce(
-      (maximum, timing) => Math.max(maximum, getKeyForgeHatchOpen(time, timing)),
-      0,
-    );
+    const forgeState = forgeTimings
+      .map((timing, index) => getKeyForgeHatchState(
+        time,
+        timing,
+        index === 0 ? FOUNDATION_TIMELINE.keyForgeRise.start : undefined,
+        index === 0 ? FOUNDATION_TIMELINE.keyForgeRise.end : undefined,
+      ))
+      .reduce(
+        (active, candidate) => candidate.opacity > active.opacity ? candidate : active,
+        { outline: 0, open: 0, opacity: 0 },
+      );
     keyForge.group.position.set(...FOUNDATION_LAYOUT.keyForge);
     keyForge.group.scale.set(KEY_FORGE_SCALE_XZ, KEY_FORGE_SCALE_Y, KEY_FORGE_SCALE_XZ);
-    setSlidingFloorHatch(keyForge.hatch, forgeOutline, forgeOpen, legacyWorldAlpha);
+    setSlidingFloorHatch(
+      keyForge.hatch,
+      forgeState.outline,
+      forgeState.open,
+      forgeState.opacity * legacyWorldAlpha,
+    );
     const keyStart = new THREE.Vector3(
       FOUNDATION_LAYOUT.keyForge[0],
       FOUNDATION_LAYOUT.keyForge[1] - 0.18,
