@@ -1,6 +1,6 @@
 # raiOS · The Factory Moves In · Real 3D
 
-Dieser Branch rekonstruiert den rund zweiminütigen 2,5D-Architekturfilm der raiOS-
+Dieser Branch rekonstruiert den rund zweieinhalbminütigen 2,5D-Architekturfilm der raiOS-
 Website als eigenständige, echte Three.js-Szene. Der Film auf `main` dient nur
 als visuelle und zeitliche Referenz; UI-Lab-SVG, CSS und Produktionskomponenten
 werden nicht kopiert.
@@ -15,7 +15,8 @@ betrachten, ohne die deterministische Filmfassung zu verändern.
 
 ## Filmvertrag
 
-- Dauer: `148` Sekunden
+- Dauer bei PLAY: `150,764` Sekunden
+- Kanonische Animationszeit: `148` Sekunden
 - Szenen: `14`
 - Kamera-Keyframes: `23`
 - Scrollstrecke: `1600svh` plus ein sichtbarer Viewport
@@ -23,9 +24,11 @@ betrachten, ohne die deterministische Filmfassung zu verändern.
 - Finale: `1` kompakte Player-Insel plus `60` echte App-Layer
 - Reduced Motion: deterministisches Poster bei Sekunde `146`
 
-Die Zeitachse liegt in `src/film/film-data.js`. Jede Objektwelt besitzt nur eine
-deterministische `setTime(time)`-API; vorwärts scrollen, rückwärts scrollen und
-direktes Springen auf Kapitel erzeugen deshalb denselben Zustand.
+Die kanonische Objektzeit liegt in `src/film/film-data.js`. Jede Objektwelt
+besitzt nur eine deterministische `setTime(time)`-API. Die hörbare Playback-Zeit
+wird zentral in `presentation/film-playback-timeline.js` auf diese Objektzeit
+abgebildet. Vorwärts scrollen, rückwärts scrollen, PLAY und direktes Springen
+auf Kapitel erzeugen deshalb denselben Zustand.
 
 ## Architektur
 
@@ -47,8 +50,8 @@ src/
         └── factory/        Builder, Shadow World, Guard und Archipelago
 ```
 
-Die Foundation-Welt deckt die Sekunden `0–41` ab. Die Factory-Welt modelliert
-die Sekunden `41–148`. Wiederholte Produktionspfade und das Insel-Finale nutzen
+Die Foundation-Welt deckt die Animationssekunden `0–41` ab. Die Factory-Welt
+modelliert die Animationssekunden `41–148`. Wiederholte Produktionspfade und das Insel-Finale nutzen
 gemeinsame Konfiguration und wiederverwendbare Objektverträge statt duplizierter
 Szenenlogik.
 
@@ -57,11 +60,13 @@ Szenenlogik.
 Die vierzehn vorhandenen Sprecherpassagen liegen unter
 `src/assets/audio/` und werden über das eigenständige Modul
 `presentation/create-film-narration.js` an dieselbe deterministische Filmzeit
-wie ihre Captions gebunden. Nach der ersten Nutzerinteraktion folgen sie sowohl
-PLAY als auch der Scrollrichtung; bei rückwärts laufender Timeline werden die
-vorhandenen Reverse-Fassungen verwendet. Reduced Motion deaktiviert die
-Wiedergabe. Der vollständige Bestand sowie die noch aufzunehmenden Texte stehen
-in `NARRATION.md`.
+wie ihre Captions gebunden. `film-playback-timeline.js` dehnt oder staucht das
+jeweilige Animationsfenster auf die echte Quelldauer der Aufnahme; bei PLAY
+läuft deshalb jede Stimme unverändert mit `1×`. Nach der ersten
+Nutzerinteraktion folgen die Stimmen auch der Scrollrichtung; bei rückwärts
+laufender Timeline werden die vorhandenen Reverse-Fassungen verwendet. Reduced
+Motion deaktiviert die Wiedergabe. Der vollständige Bestand sowie der noch
+aufzunehmende Text stehen in `NARRATION.md`.
 
 ### Layer- und Callout-Vertrag
 
@@ -241,7 +246,7 @@ Shadow-VM-Keyframes und deren Smoothstep-Interpolation bleiben erhalten.
 und aktiviert Drehen, Zoomen und Verschieben mit Maus oder Touch. `EXIT ORBIT`,
 PLAY oder ein Kapitelsprung stellt die Filmkamera wieder exakt her.
 
-Für gezielte Bildvergleiche kann eine Filmsekunde direkt geöffnet werden, zum
+Für gezielte Bildvergleiche kann eine kanonische Animationssekunde direkt geöffnet werden, zum
 Beispiel `http://127.0.0.1:5174/?time=17`.
 
 ## Visueller A/B-Abgleich
@@ -279,9 +284,12 @@ Danach ist der Film unter <http://127.0.0.1:5174/> erreichbar.
 
 ```powershell
 npm run check
+npm run check:narration
 npm run build
 ```
 
 `npm run check` prüft Syntax, lokalen Modulgraph, Dead Code und den statischen
 Produktions-Build. `pages-dist/` wird ausschließlich generiert und nicht
-committed.
+committed. `npm run check:narration` benötigt `ffprobe` und vergleicht die
+tatsächliche Dauer jeder Forward-/Reverse-Datei mit Narrationsvertrag,
+Playback-Slot und Zeit-Mapping.

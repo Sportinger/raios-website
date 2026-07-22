@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { FILM_ANIMATION_DURATION } from "../../film-data.js";
 import {
   FACTORY_LANES,
   FACTORY_LAYOUT,
@@ -363,7 +364,10 @@ export function createFactoryWorld({ getPlayerWorldPosition } = {}) {
   );
 
   function setTime(nextTime, camera) {
-    const time = Math.min(148, Math.max(0, Number.isFinite(nextTime) ? nextTime : 0));
+    const time = Math.min(
+      FILM_ANIMATION_DURATION,
+      Math.max(0, Number.isFinite(nextTime) ? nextTime : 0),
+    );
     Object.entries(scenes).forEach(([id, scene]) => showScene(scene.group, time, FACTORY_SCENES[id]));
 
     // Foundation owns the canonical Builder Layer, source material and

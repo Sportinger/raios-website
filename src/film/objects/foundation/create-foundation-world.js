@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { FILM_ANIMATION_DURATION } from "../../film-data.js";
 import {
   BUILDER_FOOTPRINT,
   FOUNDATION_DOOR_SCALE,
@@ -1034,7 +1035,7 @@ export function createFoundationWorld() {
   );
 
   function setTime(rawTime, camera) {
-    const time = Math.min(148, Math.max(0, Number(rawTime) || 0));
+    const time = Math.min(FILM_ANIMATION_DURATION, Math.max(0, Number(rawTime) || 0));
     const kernelOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.kernelOutline);
     const kernelRise = timedProgress(time, FOUNDATION_TIMELINE.kernelRise);
     setVectorLayerBuild(kernel, {

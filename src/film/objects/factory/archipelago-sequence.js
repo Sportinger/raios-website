@@ -1,5 +1,8 @@
 import * as THREE from "three";
-import { FILM_ACTION_TIMINGS } from "../../film-data.js";
+import {
+  FILM_ACTION_TIMINGS,
+  FILM_ANIMATION_DURATION,
+} from "../../film-data.js";
 import { createCanvasSprite, roundedRect } from "./canvas-primitives.js";
 import {
   FACTORY_LAYOUT,
@@ -412,7 +415,11 @@ export function createArchipelagoSequence(tracker) {
   );
 
   function setTime(rawTime) {
-    const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 148);
+    const time = THREE.MathUtils.clamp(
+      Number(rawTime) || 0,
+      0,
+      FILM_ANIMATION_DURATION,
+    );
     group.position.set(0, 0, 0);
 
     const captionAlpha = windowAlpha(time, 134, 140.7, 0.7);

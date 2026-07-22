@@ -6,8 +6,8 @@ const deepFreeze = (value) => {
   return value;
 };
 
-export const FILM_DURATION = 148;
-export const FILM_POSTER_TIME = 146;
+export const FILM_ANIMATION_DURATION = 148;
+export const FILM_POSTER_ANIMATION_TIME = 146;
 export const FILM_PROMPT = "> build me a music player";
 
 export const FILM_SCENES = deepFreeze([

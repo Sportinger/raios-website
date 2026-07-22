@@ -1,18 +1,23 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import {
-  FILM_DURATION,
-  FILM_POSTER_TIME,
+  FILM_POSTER_ANIMATION_TIME,
   FILM_PROMPT,
   FILM_SCENES,
 } from "./film-data.js";
 import { createFilmCamera } from "./create-film-camera.js";
 import { createFilmWorld } from "./create-film-world.js";
-import { createFilmNarration, createFilmOverlays } from "./presentation/index.js";
+import {
+  FILM_PLAYBACK_DURATION,
+  animationTimeAtPlaybackTime,
+  createFilmNarration,
+  createFilmOverlays,
+  playbackTimeAtAnimationTime,
+} from "./presentation/index.js";
 
 const AUTOPLAY_SECONDS_PER_SECOND = 1;
 
-const clampTime = (time) => THREE.MathUtils.clamp(time, 0, FILM_DURATION);
+const clampPlaybackTime = (time) => THREE.MathUtils.clamp(time, 0, FILM_PLAYBACK_DURATION);
 const sceneAt = (time) => FILM_SCENES.find(({ start, end }) => (
   time >= start && time < end
 )) ?? FILM_SCENES[FILM_SCENES.length - 1];
@@ -34,7 +39,7 @@ export function createFilmApp({
   sceneTitle,
   stage,
   timecode,
-  initialTime,
+  initialAnimationTime,
 }) {
   const renderer = new THREE.WebGLRenderer({
     canvas,
@@ -61,7 +66,8 @@ export function createFilmApp({
   const viewport = canvas.closest(".film-viewport");
   const overlays = createFilmOverlays({ host: viewport });
   const narration = createFilmNarration({ host: viewport });
-  let currentTime = 0;
+  let playbackTime = 0;
+  let animationTime = 0;
   let playing = false;
   let orbitEnabled = false;
   let frame = 0;
@@ -69,22 +75,22 @@ export function createFilmApp({
   let scrollFrame = 0;
 
   const render = () => {
-    if (!orbitEnabled) filmCamera.setTime(currentTime);
+    if (!orbitEnabled) filmCamera.setTime(animationTime);
     if (orbitEnabled) orbitControls.update();
-    world.setTime(currentTime, filmCamera.camera);
+    world.setTime(animationTime, filmCamera.camera);
     renderer.render(world.scene, filmCamera.camera);
   };
 
   const updateUi = () => {
-    const progress = currentTime / FILM_DURATION;
-    const scene = sceneAt(currentTime);
+    const progress = playbackTime / FILM_PLAYBACK_DURATION;
+    const scene = sceneAt(animationTime);
     sceneTitle.textContent = `${String(scene.number).padStart(2, "0")} · ${scene.title}`;
-    timecode.textContent = `${formatTime(currentTime)} / ${formatTime(FILM_DURATION)}`;
+    timecode.textContent = `${formatTime(playbackTime)} / ${formatTime(FILM_PLAYBACK_DURATION)}`;
     progressFill.style.setProperty("--progress", `${(progress * 100).toFixed(4)}%`);
-    const typed = Math.floor(THREE.MathUtils.clamp((currentTime - 1.15) / (3.72 - 1.15), 0, 1) * FILM_PROMPT.length);
+    const typed = Math.floor(THREE.MathUtils.clamp((animationTime - 1.15) / (3.72 - 1.15), 0, 1) * FILM_PROMPT.length);
     prompt.textContent = FILM_PROMPT.slice(0, typed);
-    prompt.classList.toggle("is-visible", currentTime < 3.89 && currentTime >= 0.8);
-    overlays.setTime(currentTime);
+    prompt.classList.toggle("is-visible", animationTime < 3.89 && animationTime >= 0.8);
+    overlays.setTime(animationTime);
     Array.from(chapterNavigation.children).forEach((button, index) => {
       if (index === FILM_SCENES.indexOf(scene)) button.setAttribute("aria-current", "step");
       else button.removeAttribute("aria-current");
@@ -92,12 +98,15 @@ export function createFilmApp({
   };
 
   const setTime = (time, syncScroll = false, source = "seek") => {
-    currentTime = clampTime(time);
+    playbackTime = clampPlaybackTime(time);
+    animationTime = animationTimeAtPlaybackTime(playbackTime);
     if (syncScroll) {
       const travel = Math.max(1, stage.offsetHeight - window.innerHeight);
-      window.scrollTo({ top: stage.offsetTop + travel * currentTime / FILM_DURATION });
+      window.scrollTo({
+        top: stage.offsetTop + travel * playbackTime / FILM_PLAYBACK_DURATION,
+      });
     }
-    narration.setTime(currentTime, { source });
+    narration.setTime(playbackTime, { source });
     updateUi();
     render();
   };
@@ -114,7 +123,7 @@ export function createFilmApp({
     if (nextEnabled === orbitEnabled) return;
     if (nextEnabled) {
       setPlaying(false);
-      filmCamera.setTime(currentTime);
+      filmCamera.setTime(animationTime);
       orbitControls.target.copy(filmCamera.target);
       orbitControls.update();
     }
@@ -126,7 +135,7 @@ export function createFilmApp({
     orbitToggle.title = orbitEnabled
       ? "Return to the film camera"
       : "Explore the current film frame in 3D";
-    if (!orbitEnabled) setTime(currentTime, true);
+    if (!orbitEnabled) setTime(playbackTime, true);
     else render();
   };
 
@@ -135,11 +144,15 @@ export function createFilmApp({
     button.type = "button";
     button.textContent = String(scene.number).padStart(2, "0");
     button.title = scene.title;
-    button.style.setProperty("--chapter-y", `${5 + (scene.start / FILM_DURATION) * 90}%`);
+    const chapterTime = playbackTimeAtAnimationTime(scene.start);
+    button.style.setProperty(
+      "--chapter-y",
+      `${5 + (chapterTime / FILM_PLAYBACK_DURATION) * 90}%`,
+    );
     button.addEventListener("click", () => {
       setOrbitEnabled(false);
       setPlaying(false);
-      setTime(scene.start, true);
+      setTime(chapterTime, true);
     });
     chapterNavigation.append(button);
   });
@@ -156,7 +169,11 @@ export function createFilmApp({
     scrollFrame = 0;
     if (playing || orbitEnabled || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const travel = Math.max(1, stage.offsetHeight - window.innerHeight);
-    setTime((window.scrollY - stage.offsetTop) / travel * FILM_DURATION, false, "scroll");
+    setTime(
+      (window.scrollY - stage.offsetTop) / travel * FILM_PLAYBACK_DURATION,
+      false,
+      "scroll",
+    );
   };
   const onScroll = () => {
     if (scrollFrame) return;
@@ -169,7 +186,7 @@ export function createFilmApp({
 
   const onPlayToggle = () => {
     if (orbitEnabled) setOrbitEnabled(false);
-    if (!playing && currentTime >= FILM_DURATION - 0.001) setTime(0, true);
+    if (!playing && playbackTime >= FILM_PLAYBACK_DURATION - 0.001) setTime(0, true);
     setPlaying(!playing);
   };
   const onOrbitToggle = () => setOrbitEnabled(!orbitEnabled);
@@ -184,8 +201,8 @@ export function createFilmApp({
     const delta = Math.min(0.05, (timestamp - previousTimestamp) / 1000);
     previousTimestamp = timestamp;
     if (playing) {
-      setTime(currentTime + delta * AUTOPLAY_SECONDS_PER_SECOND, true, "play");
-      if (currentTime >= FILM_DURATION) {
+      setTime(playbackTime + delta * AUTOPLAY_SECONDS_PER_SECOND, true, "play");
+      if (playbackTime >= FILM_PLAYBACK_DURATION) {
         setPlaying(false);
       }
     } else {
@@ -195,9 +212,10 @@ export function createFilmApp({
   };
 
   resize();
-  setTime(initialTime ?? (
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches ? FILM_POSTER_TIME : 0
-  ));
+  const posterAnimationTime = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ? FILM_POSTER_ANIMATION_TIME
+    : 0;
+  setTime(playbackTimeAtAnimationTime(initialAnimationTime ?? posterAnimationTime));
   frame = requestAnimationFrame(animate);
 
   return {

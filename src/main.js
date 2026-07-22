@@ -12,7 +12,7 @@ let app = createFilmApp({
   sceneTitle: document.getElementById("scene-title"),
   stage: document.getElementById("film-stage"),
   timecode: document.getElementById("timecode"),
-  initialTime: Number.isFinite(requestedTime) ? requestedTime : undefined,
+  initialAnimationTime: Number.isFinite(requestedTime) ? requestedTime : undefined,
 });
 
 const dispose = () => app.dispose();

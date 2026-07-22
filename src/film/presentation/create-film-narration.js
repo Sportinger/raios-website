@@ -1,4 +1,4 @@
-import { FILM_NARRATION_AUDIO_CUES } from "./film-narration-data.js";
+import { FILM_NARRATION_AUDIO_CUES } from "./film-playback-timeline.js";
 
 const SCROLL_AUDIO_BRIDGE_MS = 820;
 const MIN_PLAYBACK_RATE = 0.25;
@@ -99,9 +99,7 @@ export function createFilmNarration({ host } = {}) {
         activeTrackKey = trackKey;
       }
 
-      const playbackRate = playing
-        ? cue.duration / (cue.end - cue.start)
-        : scrollRate;
+      const playbackRate = playing ? 1 : scrollRate;
       track.playbackRate = clamp(playbackRate, MIN_PLAYBACK_RATE, MAX_PLAYBACK_RATE);
       track.volume = cue.volume;
       pauseTrack(inactiveTrack);

@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { FILM_ANIMATION_DURATION } from "../../film-data.js";
 import { createCanvasSprite, roundedRect } from "./canvas-primitives.js";
 import { interval, smoothstep, smootherstep } from "./timeline.js";
 
@@ -261,7 +262,11 @@ export function createApprovalSequence(tracker, { guardMachine }) {
   const guardShift = new THREE.Vector3(0, 0, 1.2);
 
   function setTime(rawTime) {
-    const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 148);
+    const time = THREE.MathUtils.clamp(
+      Number(rawTime) || 0,
+      0,
+      FILM_ANIMATION_DURATION,
+    );
     const cardAlpha = windowAlpha(time, 109.8, 112.85, 0.3);
     card.sprite.visible = cardAlpha > 0.001;
     card.material.opacity = cardAlpha;

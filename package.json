@@ -6,6 +6,7 @@
     "build": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/build-pages-site.ps1",
     "capture:compare": "node ./scripts/capture-film-comparison.mjs",
     "check": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/check-experiment.ps1",
+    "check:narration": "node ./scripts/check-narration-timeline.mjs",
     "dev": "vite --host 127.0.0.1"
   },
   "devDependencies": {
