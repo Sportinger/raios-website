@@ -99,7 +99,9 @@ function setVectorOpacity(root, opacity) {
         material.userData.vectorDoorBaseOpacity = material.opacity;
       }
       const baseOpacity = material.userData.vectorDoorBaseOpacity;
-      material.transparent = baseOpacity < 0.999 || value < 0.999;
+      material.transparent = material.userData.preserveTransparency
+        || baseOpacity < 0.999
+        || value < 0.999;
       material.opacity = baseOpacity * value;
     });
   });
