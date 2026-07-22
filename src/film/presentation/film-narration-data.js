@@ -142,6 +142,18 @@ export const FILM_NARRATION_TRACKS = freezeTracks([
     volume: 0.72,
   },
   {
+    id: "running-isolation",
+    animationStart: 124,
+    animationEnd: 134,
+    duration: 8.724875,
+    syncPoints: [
+      { animationOffset: 5.4, audioOffset: 5.369 },
+    ],
+    forwardUrl: audioUrl("running-isolation.mp3"),
+    reverseUrl: audioUrl("running-isolation-reversed.mp3"),
+    volume: 0.72,
+  },
+  {
     id: "compact-domain",
     animationStart: 134,
     animationEnd: 140,

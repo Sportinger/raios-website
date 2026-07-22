@@ -77,6 +77,10 @@ export const FILM_VOICE_CUES = freezeEntries([
     { start: 0, end: 3.55, text: "The approved program leaves the Builder layer." },
     { start: 3.55, end: 8, text: "Every disposable door, cable, and machine closes behind it." },
   ]),
+  captionCue("running-isolation", [
+    { start: 0, end: 5.4, text: "The player runs beside Genesis with only the space and rights it needs." },
+    { start: 5.4, end: 10, text: "A neighboring crash cannot cross its boundary." },
+  ]),
   captionCue("compact-domain", [
     { start: 0, end: 6, text: "Now the complete player domain contracts into one private app island." },
   ]),

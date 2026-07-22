@@ -5,7 +5,7 @@ reverse files are technical playback derivatives and do not need to be recorded.
 
 ## Available and integrated
 
-Fourteen forward recordings and their generated or original reverse versions
+Fifteen forward recordings and their generated or original reverse versions
 now live under `src/assets/audio/`. The central playback timeline gives every
 cue exactly its source duration, so all narration runs at 1× during PLAY while
 the corresponding animation window follows the recording.
@@ -24,16 +24,13 @@ the corresponding animation window follows the recording.
 | 01:27.396–01:52.134 | `shadow-acts.mp3` | 24.738 s | The corrected program repeats the claims test. This time, all 654 claims lock. Two fresh cells run the same test at the same time. Their divergence falls to zero across the comparison bridge. A third cell attacks every boundary. Seven attacks. Seven fail-closed walls. Only then does the tester hand over the proof. |
 | 01:52.134–01:59.500 | `guard-bindings.mp3` | 7.367 s | The guard binds the compiler package and all three test seals. Owner approval opens the live door. |
 | 01:59.500–02:06.788 | `live-release.mp3` | 7.288 s | The approved program leaves the Builder layer. Every disposable door, cable, and machine closes behind it. |
-| 02:16.788–02:21.987 | `compact-domain.mp3` | 5.198 s | Now the complete player domain contracts into one private app island. |
-| 02:21.987–02:30.764 | `archipelago.mp3` | 8.777 s | Every app receives its own isolated island: sixty apps, sixty boundaries, on one shared Rust kernel. |
+| 02:06.788–02:15.513 | `running-isolation.mp3` | 8.725 s | The player runs beside Genesis with only the space and rights it needs. A neighboring crash cannot cross its boundary. |
+| 02:15.513–02:20.712 | `compact-domain.mp3` | 5.198 s | Now the complete player domain contracts into one private app island. |
+| 02:20.712–02:29.489 | `archipelago.mp3` | 8.777 s | Every app receives its own isolated island: sixty apps, sixty boundaries, on one shared Rust kernel. |
 
-## Still required from the narrator
+## Recording set complete
 
-Only one forward recording is missing:
-
-| Timeline slot | Requested file | Target length | Script |
-| --- | --- | ---: | --- |
-| 02:06.788–02:16.788 | `running-isolation.mp3` | about 10.0 s | The player runs beside Genesis with only the space and rights it needs. A neighboring crash cannot cross its boundary. |
+No further narrator recording is currently missing.
 
 ## Delivery format
 
@@ -45,5 +42,4 @@ Only one forward recording is missing:
 - Use the requested file name. MP3 is accepted when the original WAV is
   unavailable.
 
-After delivery, its reverse version and cue can be added without changing the
-film's visual timeline.
+All forward and reverse tracks are integrated into the shared playback timeline.

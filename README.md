@@ -15,7 +15,7 @@ betrachten, ohne die deterministische Filmfassung zu verändern.
 
 ## Filmvertrag
 
-- Dauer bei PLAY: `150,764` Sekunden
+- Dauer bei PLAY: `149,489` Sekunden
 - Kanonische Animationszeit: `148` Sekunden
 - Szenen: `14`
 - Kamera-Keyframes: `23`
@@ -57,7 +57,7 @@ Szenenlogik.
 
 ### Sprecher und Audio
 
-Die vierzehn vorhandenen Sprecherpassagen liegen unter
+Die fünfzehn vorhandenen Sprecherpassagen liegen unter
 `src/assets/audio/` und werden über das eigenständige Modul
 `presentation/create-film-narration.js` an dieselbe deterministische Filmzeit
 wie ihre Captions gebunden. `film-playback-timeline.js` dehnt oder staucht das
