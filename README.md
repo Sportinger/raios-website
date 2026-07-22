@@ -30,7 +30,9 @@ durchlaufende Website-Raster hinter der Szene sichtbar bleibt und mit der Seite
 scrollt. Der eigenständige Three.js-Film behält weiterhin sein eigenes Raster.
 Foundation und Factory hängen im eingebetteten Film gemeinsam an einem stabilen
 Transform-Träger im Mittelpunkt des Rust-Kernel-Layers, sodass spätere
-Layer-Rotationen den vollständigen Objektverbund geschlossen mitnehmen.
+Layer-Rotationen den vollständigen Objektverbund geschlossen mitnehmen. Zwischen
+Playback `00:28.29` und `00:40.72` dreht sich dieser Verbund weich um `90°` im
+Uhrzeigersinn und behält die neue Ausrichtung anschließend bei.
 
 ## Lokal starten
 
