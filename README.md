@@ -41,9 +41,10 @@ src/
     ├── create-film-app.js
     ├── create-film-camera.js
     ├── create-film-world.js
+    ├── presentation/       Original-Kamera, Voice-Captions und HUD-Daten
     └── objects/
-        ├── foundation/   Prompt, Kernel, Genesis, Agent, Builder, Source
-        └── factory/      parallele Lanes, Guard, Player und Archipelago
+        ├── foundation/     Kernel, Genesis, Agent, NET und Türen
+        └── factory/        Builder, Shadow World, Guard und Archipelago
 ```
 
 Die Foundation-Welt deckt die Sekunden `0–41` ab. Die Factory-Welt modelliert
@@ -54,9 +55,13 @@ Konfiguration beziehungsweise `THREE.InstancedMesh` statt duplizierter Szenen.
 
 Die SVG-Kamera des Referenzfilms war ein 2D-Pan/Zoom mit `scale`, `focusX` und
 `focusY`. Der Nachbau übersetzt diese Werte auf eine echte orthografische Kamera
-mit einer räumlichen isometrischen Blickrichtung. Die 18 Original-Keyframes und
-deren Smoothstep-Interpolation bleiben erhalten. Eine freie Orbit-Steuerung ist
-bewusst noch nicht Teil der Filmoberfläche.
+mit einer räumlichen isometrischen Blickrichtung. Referenzformat, Widescreen-
+Korrektur, vertikaler Bias, die 18 Original-Keyframes und deren Smoothstep-
+Interpolation bleiben erhalten. Eine freie Orbit-Steuerung ist bewusst noch
+nicht Teil der Filmoberfläche.
+
+Für gezielte Bildvergleiche kann eine Filmsekunde direkt geöffnet werden, zum
+Beispiel `http://127.0.0.1:5174/?time=17`.
 
 ## Lokal starten
 

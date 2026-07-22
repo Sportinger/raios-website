@@ -13,7 +13,9 @@ export const FACTORY_PALETTE = Object.freeze({
 });
 
 export const FACTORY_SCENES = Object.freeze({
-  compiler: Object.freeze({ start: 41, end: 52 }),
+  builder: Object.freeze({ start: 25, end: 33 }),
+  inert: Object.freeze({ start: 33, end: 41 }),
+  compiler: Object.freeze({ start: 41, end: 80 }),
   feedback: Object.freeze({ start: 52, end: 62 }),
   twins: Object.freeze({ start: 62, end: 72 }),
   proof: Object.freeze({ start: 72, end: 80 }),
@@ -25,10 +27,18 @@ export const FACTORY_SCENES = Object.freeze({
 });
 
 export const FACTORY_LANES = Object.freeze([
-  Object.freeze({ id: "compiler", x: -5.2, color: FACTORY_PALETTE.cyan }),
-  Object.freeze({ id: "verifier", x: 0, color: FACTORY_PALETTE.violet }),
-  Object.freeze({ id: "guard", x: 5.2, color: FACTORY_PALETTE.green }),
+  Object.freeze({ id: "compiler", x: 1.2, z: 2.35, scale: 1, color: FACTORY_PALETTE.cyan }),
+  Object.freeze({ id: "verifier", x: 5.15, z: -1.7, scale: 0.82, color: FACTORY_PALETTE.violet }),
+  Object.freeze({ id: "guard", x: -4.25, z: -2.1, scale: 0.78, color: FACTORY_PALETTE.green }),
 ]);
+
+export const FACTORY_LAYOUT = Object.freeze({
+  deck: Object.freeze({ width: 16, depth: 10, thickness: 0.72, gridStep: 2 }),
+  hatch: Object.freeze({ width: 5.2, depth: 3.6 }),
+  shadow: Object.freeze({ width: 12, depth: 8, thickness: 0.72, gridStep: 2 }),
+  inputDoor: Object.freeze({ x: -6.1, z: -2.7, yaw: Math.PI / 5 }),
+  outputDoor: Object.freeze({ x: 6.1, z: -2.7, yaw: -Math.PI / 5 }),
+});
 
 const islandNames = [
   "player", "browser", "mail", "video", "photos", "notes", "files",

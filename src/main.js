@@ -1,5 +1,7 @@
 import { createFilmApp } from "./film/create-film-app.js";
 
+const requestedTime = Number.parseFloat(new URL(window.location.href).searchParams.get("time"));
+
 let app = createFilmApp({
   canvas: document.getElementById("film-canvas"),
   chapterNavigation: document.getElementById("chapter-navigation"),
@@ -9,6 +11,7 @@ let app = createFilmApp({
   sceneTitle: document.getElementById("scene-title"),
   stage: document.getElementById("film-stage"),
   timecode: document.getElementById("timecode"),
+  initialTime: Number.isFinite(requestedTime) ? requestedTime : undefined,
 });
 
 const dispose = () => app.dispose();

@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { FILM_DURATION, FILM_PROMPT, FILM_SCENES } from "./film-data.js";
 import { createFilmCamera } from "./create-film-camera.js";
 import { createFilmWorld } from "./create-film-world.js";
+import { createFilmOverlays } from "./presentation/index.js";
 
 const AUTOPLAY_SECONDS_PER_SECOND = 1;
 
@@ -26,6 +27,7 @@ export function createFilmApp({
   sceneTitle,
   stage,
   timecode,
+  initialTime,
 }) {
   const renderer = new THREE.WebGLRenderer({
     canvas,
@@ -34,14 +36,13 @@ export function createFilmApp({
     powerPreference: "high-performance",
   });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.NoToneMapping;
+  renderer.shadowMap.enabled = false;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   const filmCamera = createFilmCamera();
   const world = createFilmWorld();
+  const overlays = createFilmOverlays({ host: canvas.closest(".film-viewport") });
   let currentTime = 0;
   let playing = false;
   let frame = 0;
@@ -63,6 +64,7 @@ export function createFilmApp({
     const typed = Math.floor(THREE.MathUtils.clamp((currentTime - 1.15) / (3.72 - 1.15), 0, 1) * FILM_PROMPT.length);
     prompt.textContent = FILM_PROMPT.slice(0, typed);
     prompt.classList.toggle("is-visible", currentTime < 3.89 && currentTime >= 0.8);
+    overlays.setTime(currentTime);
     Array.from(chapterNavigation.children).forEach((button, index) => {
       if (index === FILM_SCENES.indexOf(scene)) button.setAttribute("aria-current", "step");
       else button.removeAttribute("aria-current");
@@ -147,7 +149,7 @@ export function createFilmApp({
   };
 
   resize();
-  setTime(window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 118 : 0);
+  setTime(initialTime ?? (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 118 : 0));
   frame = requestAnimationFrame(animate);
 
   return {
@@ -159,6 +161,7 @@ export function createFilmApp({
       window.removeEventListener("wheel", stopForUserInput);
       window.removeEventListener("touchstart", stopForUserInput);
       chapterNavigation.replaceChildren();
+      overlays.dispose();
       world.dispose();
       renderer.dispose();
     },

@@ -42,6 +42,7 @@ body { overflow-x: hidden; }
   top: 1.3rem;
   left: 1.5rem;
   pointer-events: none;
+  opacity: 0;
 }
 
 .film-kicker { margin: 0 0 .36rem; color: #76b9e5; font: 700 .66rem/1.2 ui-monospace, monospace; letter-spacing: .14em; text-transform: uppercase; }
@@ -84,7 +85,12 @@ body { overflow-x: hidden; }
   border-radius: 999px;
   background: rgba(3, 12, 19, .86);
   backdrop-filter: blur(12px);
+  opacity: 0;
+  transition: opacity 160ms ease;
 }
+
+.film-viewport:hover .film-transport,
+.film-transport:focus-within { opacity: 1; }
 
 .film-transport button {
   min-width: 5.2rem;
@@ -127,6 +133,7 @@ body { overflow-x: hidden; }
   .film-kicker { display: none; }
   .chapter-navigation { right: .25rem; }
   .film-transport { bottom: .6rem; }
+  .film-transport { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
