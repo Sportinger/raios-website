@@ -9,14 +9,16 @@ import {
 function createSolidSprite(tracker, color, width, height, opacity = 1) {
   const material = tracker.material(new THREE.SpriteMaterial({
     color,
-    transparent: opacity < 1,
+    transparent: true,
     opacity,
     depthTest: false,
     depthWrite: false,
   }));
+  material.userData.preserveTransparency = true;
+  material.userData.factoryBaseOpacity = opacity;
   const sprite = new THREE.Sprite(material);
   sprite.scale.set(width, height, 1);
-  sprite.renderOrder = 42;
+  sprite.renderOrder = 76;
   return sprite;
 }
 
@@ -44,17 +46,17 @@ export function createWorkshopConsole(tracker, {
   version = null,
 }) {
   const group = new THREE.Group();
-  const railBorder = createSolidSprite(tracker, 0x36536f, width + 0.06, 0.16);
+  const railBorder = createSolidSprite(tracker, 0x8bc5ff, width + 0.06, 0.18);
   const rail = createSolidSprite(tracker, FACTORY_PALETTE.ink, width, 0.11);
   rail.position.z = 0.01;
-  const fill = createSolidSprite(tracker, 0x7894b3, width - 0.08, 0.075);
+  const fill = createSolidSprite(tracker, 0x8bc5ff, width - 0.08, 0.08);
   fill.position.z = 0.02;
   fill.scale.x = 0.001;
   const caption = createTextLabel(tracker, {
     text: initialCopy,
     width: width + 1.15,
     height: 0.36,
-    color: 0xafc2d9,
+    color: FACTORY_PALETTE.white,
     background: FACTORY_PALETTE.ink,
     position: [0, 0.34, 0.03],
     fontSize: 43,
@@ -70,13 +72,21 @@ export function createWorkshopConsole(tracker, {
     fontSize: 36,
     billboard: true,
   }) : null;
+  caption.renderOrder = 78;
+  caption.material.userData.preserveTransparency = true;
+  caption.material.userData.factoryBaseOpacity = 1;
+  if (versionCaption) {
+    versionCaption.renderOrder = 77;
+    versionCaption.material.userData.preserveTransparency = true;
+    versionCaption.material.userData.factoryBaseOpacity = 1;
+  }
   group.add(railBorder, rail, fill, caption);
   if (versionCaption) group.add(versionCaption);
   return { group, railBorder, rail, fill, caption, versionCaption, width: width - 0.08 };
 }
 
 export function attachWorkshopConsoleToMachine(machine, console) {
-  console.group.position.set(0, machine.height + 0.78, 0);
+  console.group.position.set(0, machine.height + 1.02, 0);
   machine.group.add(console.group);
   console.machine = machine;
   return console;
@@ -87,7 +97,7 @@ export function setWorkshopConsole(console, value, copy, state = "building") {
   console.fill.scale.x = Math.max(0.001, progress * console.width);
   console.fill.position.x = -console.width / 2 + progress * console.width / 2;
   console.fill.material.color.setHex(
-    state === "failed" ? 0xb7605c : state === "passed" ? 0x78947f : 0x7894b3,
+    state === "failed" ? 0xff5573 : state === "passed" ? 0x64c991 : 0x8bc5ff,
   );
   console.caption.userData.setText?.(copy);
 }

@@ -87,14 +87,20 @@ derselben Ebene zur Seite.
 
 Nur Compiler und Tester besitzen eine Fortschrittsanzeige. Sie wird an die
 jeweilige Maschine angeheftet und sitzt deshalb bei jeder Kamerapose direkt
-über ihr. Guard und `PLAYER.WASM` erzeugen keine Progress-Bar und kein
-schwebendes Statuspanel.
+über ihr. Beide Anzeigen rendern als heller, tiefenunabhängiger Vordergrundpass,
+damit Deck, Kabel, Workpiece und transparente Panels sie nicht überzeichnen.
+Guard und `PLAYER.WASM` erzeugen keine Progress-Bar und kein schwebendes
+Statuspanel.
 
 `PLAYER.WASM` verwendet feste Dock-Positionen neben Tester, hinter Compiler und
 vor Guard. Es holt ein sichtbares Compiler-Paket am Compiler ab, nimmt beim
 Tester nacheinander drei Prüfsiegel auf und transportiert alle vier Objekte zum
 Guard. Erst die sichtbare Übergabe schaltet die zugehörigen Guard-Lampen auf
 Grün; Prozessstatus darf den stabilen Objektnamen `PLAYER.WASM` nicht ersetzen.
+Jeder Stationsbesuch beginnt und endet an derselben freien Mittelposition. Die
+Dockpunkte halten mindestens eine Gehäusebreite Abstand zur jeweiligen
+Maschine, sodass Workpiece, Programmname und Fortschrittsanzeige nicht
+überlappen.
 
 ### Türvertrag
 

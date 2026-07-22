@@ -58,10 +58,10 @@ export const FOUNDATION_LAYOUT = Object.freeze({
 // docks one body-width away from each program instead of hovering near the
 // quadrant center.
 export const FOUNDATION_WORKPIECE_STATIONS = Object.freeze({
-  home: point(1.2, 0, -1.15),
-  compiler: point(2.05, 0, 1.85),
-  tester: point(1.35, 0, -1.7),
-  guard: point(-1.7, 0, 1.15),
+  home: point(0.55, 0, -0.45),
+  compiler: point(1.4, 0, 1.4),
+  tester: point(0.65, 0, -1.3),
+  guard: point(-1.45, 0, 0.8),
 });
 
 export const KERNEL_FOOTPRINT = Object.freeze({
