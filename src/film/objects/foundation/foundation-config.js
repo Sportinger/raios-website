@@ -5,6 +5,7 @@ export const FOUNDATION_LAYER_HEIGHT = 0.72;
 
 export const FOUNDATION_LAYOUT = Object.freeze({
   kernel: point(-3.05, 0, 0),
+  expansionOffset: point(-1.9, 0, 1),
   genesisCompact: point(-3.05, FOUNDATION_LAYER_HEIGHT, 0),
   genesis: point(-0.4, FOUNDATION_LAYER_HEIGHT, 0),
   agentCompact: point(-2.0, FOUNDATION_LAYER_HEIGHT * 2, 0.87),
@@ -22,7 +23,7 @@ export const FOUNDATION_LAYOUT = Object.freeze({
 
 export const KERNEL_FOOTPRINT = Object.freeze({
   compact: Object.freeze({ width: 8.5, depth: 8.5 }),
-  expanded: Object.freeze({ width: 14.6, depth: 9.15 }),
+  expanded: Object.freeze({ width: 17, depth: 8.5 }),
 });
 
 export const GENESIS_FOOTPRINT = Object.freeze({
@@ -36,7 +37,8 @@ export const BUILDER_FOOTPRINT = Object.freeze({
 });
 
 export const FOUNDATION_TIMELINE = Object.freeze({
-  kernelRise: window(3.89, 6.14),
+  kernelOutline: window(3.89, 4.69),
+  kernelRise: window(4.69, 6.14),
   genesisOutline: window(8.28, 9.08),
   genesisRise: window(9.08, 10.58),
   agentRise: window(13.02, 14.82),

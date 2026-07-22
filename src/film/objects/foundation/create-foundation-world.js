@@ -1023,6 +1023,12 @@ export function createFoundationWorld() {
   );
   kernel.body.add(kernelFacets);
   place(kernel.group, FOUNDATION_LAYOUT.kernel);
+  const kernelOutline = createFootprintOutline(
+    KERNEL_FOOTPRINT.compact.width,
+    KERNEL_FOOTPRINT.compact.depth,
+    PALETTE.blueHigh,
+  );
+  kernel.group.add(kernelOutline.group);
   const kernelCallout = createLayerCallout({
     title: "RUST-KERNEL",
     copy: "OWNS CPU · RAM · USB · DISPLAY · NET",
@@ -1259,8 +1265,20 @@ export function createFoundationWorld() {
 
   function setTime(rawTime, camera) {
     const time = Math.min(120, Math.max(0, Number(rawTime) || 0));
+    const kernelOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.kernelOutline);
     const kernelRise = timedProgress(time, FOUNDATION_TIMELINE.kernelRise);
     setDeckRise(kernel, kernelRise);
+    const kernelSolidVisible = kernelRise > 0.001;
+    kernel.body.visible = kernelSolidVisible;
+    kernel.top.visible = kernelSolidVisible;
+    kernel.grid.visible = kernelSolidVisible;
+    kernel.underglow.visible = kernelSolidVisible;
+    kernel.group.visible = kernelOutlineDraw > 0.001 || kernelSolidVisible;
+    setFootprintOutline(
+      kernelOutline,
+      kernelOutlineDraw,
+      1 - progress(time, FOUNDATION_TIMELINE.kernelRise.start, 5.13),
+    );
     setOpacity(kernel.title, progress(time, 8.06, 8.28));
     const foundationExpansion = timedProgress(time, FOUNDATION_TIMELINE.agentRise);
     if (group.userData.presentationBaseX === undefined) {
@@ -1271,9 +1289,11 @@ export function createFoundationWorld() {
     }
     const compactComposition = progress(time, 106, 109);
     const finaleComposition = progress(time, 109, 117);
-    group.position.x = group.userData.presentationBaseX - 1.9 * foundationExpansion
+    group.position.x = group.userData.presentationBaseX
+      + FOUNDATION_LAYOUT.expansionOffset[0] * foundationExpansion
       + 1.76 * compactComposition + 4.1 * finaleComposition;
-    group.position.z = group.userData.presentationBaseZ + foundationExpansion
+    group.position.z = group.userData.presentationBaseZ
+      + FOUNDATION_LAYOUT.expansionOffset[2] * foundationExpansion
       + 3.45 * compactComposition + 4.1 * finaleComposition;
     const kernelFinalExpansion = progress(time, 106, 109);
     const kernelScaleX = THREE.MathUtils.lerp(
@@ -1296,17 +1316,19 @@ export function createFoundationWorld() {
     );
     kernel.group.position.set(
       FOUNDATION_LAYOUT.kernel[0]
-        + KERNEL_FOOTPRINT.compact.width * (kernelScaleX - 1) * 0.5,
-      FOUNDATION_LAYOUT.kernel[1] - (1 - kernelRise) * 2.15,
+        + KERNEL_FOOTPRINT.compact.width * (kernelScaleX - 1) * 0.5
+        - FOUNDATION_LAYOUT.expansionOffset[0] * foundationExpansion,
+      FOUNDATION_LAYOUT.kernel[1],
       FOUNDATION_LAYOUT.kernel[2]
-        + KERNEL_FOOTPRINT.compact.depth * (kernelScaleZ - 1) * 0.5,
+        + KERNEL_FOOTPRINT.compact.depth * (kernelScaleZ - 1) * 0.5
+        - FOUNDATION_LAYOUT.expansionOffset[2] * foundationExpansion,
     );
     setDeckFootprint(kernel, kernelScaleX, kernelScaleZ);
-    kernel.title.position.x = 2.3 * foundationExpansion;
+    kernel.title.position.x = -KERNEL_FOOTPRINT.compact.width * (kernelScaleX - 1) * 0.5;
     setLayerCallout(kernelCallout, time, {
-      start: 3.99,
-      introEnd: 4.79,
-      titleStart: 7.38,
+      start: 6.24,
+      introEnd: 7.04,
+      titleStart: 7.28,
       end: 8.28,
       root: group,
       camera,

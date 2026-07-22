@@ -65,6 +65,8 @@ export const FILM_ACTION_TIMINGS = deepFreeze({
     submittedAt: 5.1,
   },
   layers: {
+    kernelOutline: { start: 3.89, end: 4.69 },
+    kernelRise: { start: 4.69, end: 6.14 },
     genesisOutline: { start: 8.28, end: 9.08 },
     genesisRise: { start: 9.08, end: 10.58 },
     worldExpansion: { start: 13.02, end: 14.82 },
