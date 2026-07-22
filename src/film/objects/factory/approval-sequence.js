@@ -294,7 +294,9 @@ export function createApprovalSequence(tracker, { guardMachine, guardChecklist }
   group.add(card.sprite, remoteDenied.sprite, grantRoute.group);
 
   const guardBase = guardMachine.group.position.clone();
-  const guardShift = new THREE.Vector3(1.5, 0, 1.5);
+  // In the film projection +Z reads as a clear left/down sidestep. It keeps
+  // the Guard on the Builder surface while exposing /out.
+  const guardShift = new THREE.Vector3(0, 0, 2.4);
 
   function setTime(rawTime) {
     const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 120);

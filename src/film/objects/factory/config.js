@@ -18,26 +18,28 @@ export const FACTORY_PALETTE = Object.freeze({
   white: 0xeaf7ff,
 });
 
-// The visible Builder Deck is owned by Foundation. These coordinates map its
-// scaled top surface into the Factory root so machines can be anchored to the
-// real quadrant instead of the old hidden 16×10 prototype deck.
+// The visible Builder Deck is owned by Foundation. By the time workshop
+// programs appear, Foundation's one-sided world expansion has translated its
+// root by (-1.9, +1). These coordinates map that settled, scaled top surface
+// into the Factory root instead of the old hidden 16×10 prototype deck.
 export const FACTORY_BUILDER_SURFACE = Object.freeze({
   id: "canonical-builder-factory-space",
   color: 0x111c2b,
-  centerX: 0.285,
-  centerZ: -3.36,
+  centerX: -1.615,
+  centerZ: -2.36,
   width: FILM_QUADRANT_SIZE * FOUNDATION_PRESENTATION_SCALE,
   depth: FILM_QUADRANT_SIZE * FOUNDATION_PRESENTATION_SCALE,
   top: 0.57,
 });
 
-const BUILDER_CORNER_INSET = 1.25;
-const BUILDER_RIGHT = FACTORY_BUILDER_SURFACE.centerX
-  + FACTORY_BUILDER_SURFACE.width / 2 - BUILDER_CORNER_INSET;
-const BUILDER_FRONT = FACTORY_BUILDER_SURFACE.centerZ
-  + FACTORY_BUILDER_SURFACE.depth / 2 - BUILDER_CORNER_INSET;
-const BUILDER_BACK = FACTORY_BUILDER_SURFACE.centerZ
-  - FACTORY_BUILDER_SURFACE.depth / 2 + BUILDER_CORNER_INSET;
+const BUILDER_HALF_SIZE = FACTORY_BUILDER_SURFACE.width / 2;
+// Insets are reconstructed from the original 1200px SVG composition. The
+// Compiler hugs the bottom vertex, while the wider right-side composition
+// leaves the Tester farther inside the right vertex.
+const COMPILER_CORNER_INSET = 0.95;
+const TESTER_CORNER_INSET = 1.78;
+const OUT_DOOR_ALONG = 0.8 * FOUNDATION_PRESENTATION_SCALE;
+const GUARD_DOOR_INSET = 1.3;
 
 export const FACTORY_SCENES = Object.freeze({
   builder: Object.freeze({ start: 25, end: 33 }),
@@ -51,17 +53,21 @@ export const FACTORY_SCENES = Object.freeze({
 export const FACTORY_LANES = Object.freeze([
   Object.freeze({
     id: "compiler", title: "COMPILER", subtitle: "rustc → WASM",
-    x: BUILDER_RIGHT, z: BUILDER_FRONT,
+    x: FACTORY_BUILDER_SURFACE.centerX + BUILDER_HALF_SIZE - COMPILER_CORNER_INSET,
+    z: FACTORY_BUILDER_SURFACE.centerZ + BUILDER_HALF_SIZE - COMPILER_CORNER_INSET,
     scale: 1, revealAt: 39, color: FACTORY_PALETTE.cyan,
   }),
   Object.freeze({
     id: "verifier", title: "TESTER", subtitle: "HARNESS",
-    x: BUILDER_RIGHT, z: BUILDER_BACK,
+    x: FACTORY_BUILDER_SURFACE.centerX + BUILDER_HALF_SIZE - TESTER_CORNER_INSET,
+    z: FACTORY_BUILDER_SURFACE.centerZ - BUILDER_HALF_SIZE + TESTER_CORNER_INSET,
     scale: 1, revealAt: 41.6, color: FACTORY_PALETTE.violet,
   }),
   Object.freeze({
     id: "guard", title: "GUARD", subtitle: "LIVE GATE",
-    x: -3.65, z: -2.16,
+    // Same projected axis as /out, one program-width inside the deck.
+    x: FACTORY_BUILDER_SURFACE.centerX - BUILDER_HALF_SIZE + GUARD_DOOR_INSET,
+    z: FACTORY_BUILDER_SURFACE.centerZ + OUT_DOOR_ALONG + GUARD_DOOR_INSET,
     scale: 1, revealAt: 41.9, color: FACTORY_PALETTE.green,
   }),
 ]);
