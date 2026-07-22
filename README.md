@@ -28,6 +28,9 @@ aus dessen Kapitelsteuerung wieder als Seitenscroll entgegen. Der eingebettete
 Renderer ist transparent und deaktiviert seinen internen GridHelper, sodass das
 durchlaufende Website-Raster hinter der Szene sichtbar bleibt und mit der Seite
 scrollt. Der eigenständige Three.js-Film behält weiterhin sein eigenes Raster.
+Foundation und Factory hängen im eingebetteten Film gemeinsam an einem stabilen
+Transform-Träger im Mittelpunkt des Rust-Kernel-Layers, sodass spätere
+Layer-Rotationen den vollständigen Objektverbund geschlossen mitnehmen.
 
 ## Lokal starten
 
