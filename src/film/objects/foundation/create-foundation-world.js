@@ -519,48 +519,15 @@ function createDeck({ width, depth, height, color, edgeColor, label, labelColor 
 
 function createKeyForge() {
   const group = new THREE.Group();
-  const socket = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.45, 0.45, 0.09, 4),
-    new THREE.MeshBasicMaterial({ color: PALETTE.panelHigh }),
-  );
-  socket.position.y = 0.045;
-  const socketEdges = new THREE.LineSegments(
-    new THREE.EdgesGeometry(socket.geometry),
-    new THREE.LineBasicMaterial({ color: PALETTE.greenHigh }),
-  );
-  socketEdges.rotation.copy(socket.rotation);
-  socketEdges.position.copy(socket.position);
-  const stem = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.025, 0.025, 0.64, 8),
-    new THREE.MeshBasicMaterial({ color: PALETTE.greenHigh }),
-  );
-  stem.position.y = 0.4;
-  const core = new THREE.Mesh(
-    new THREE.SphereGeometry(0.11, 12, 8),
-    new THREE.MeshBasicMaterial({ color: PALETTE.amber }),
-  );
-  core.position.y = 0.74;
-  const glow = createGlow(PALETTE.green, 1.4, 1.4);
-  glow.position.copy(core.position);
-  const burst = new THREE.Group();
-  const burstMaterial = new THREE.LineBasicMaterial({ color: PALETTE.greenHigh, transparent: true });
-  for (let index = 0; index < 4; index += 1) {
-    const angle = index * Math.PI / 4;
-    const dx = Math.cos(angle) * 0.34;
-    const dy = Math.sin(angle) * 0.34;
-    burst.add(new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(-dx, -dy, 0),
-        new THREE.Vector3(dx, dy, 0),
-      ]),
-      burstMaterial,
-    ));
-  }
-  burst.position.y = 0.74;
-  const label = createLabel("GENESIS · KEY FORGE", PALETTE.greenHigh, 1.25, 43);
-  label.position.set(0, 0.02, 0.72);
-  group.add(socket, socketEdges, stem, core, glow, burst, label);
-  return { group, core, glow, burst };
+  const hatch = createSlidingFloorHatch({
+    width: 0.94,
+    depth: 0.94,
+    color: PALETTE.greenHigh,
+    fillColor: FOUNDATION_SURFACES.genesis.color,
+  });
+  group.name = "genesis-key-forge-hatch";
+  group.add(hatch.group);
+  return { group, hatch };
 }
 
 function createNetTower() {
@@ -817,21 +784,42 @@ function setRouteProgress(route, amount, time, persistent = false) {
 }
 
 function setCapabilityKey(key, time, timing, start, end, finalScale = 0.72) {
-  const growing = progress(time, timing.start, timing.detach);
+  const riseEnd = THREE.MathUtils.lerp(timing.start, timing.detach, 0.55);
+  const rising = progress(time, timing.start, riseEnd);
+  const presenting = progress(time, riseEnd, timing.detach);
   const flying = progress(time, timing.detach, timing.insert);
-  const outro = 1 - progress(time, timing.insert + 0.12, timing.end);
+  const unlockEnd = timing.insert + Math.min(0.24, (timing.end - timing.insert) * 0.48);
+  const turning = progress(time, timing.insert, unlockEnd);
+  const outro = 1 - progress(time, unlockEnd, timing.end);
+  const presentation = start.clone();
+  presentation.y += 0.92;
   key.visible = time >= timing.start && time < timing.end;
-  key.position.lerpVectors(start, end, flying);
-  key.position.y += Math.sin(flying * Math.PI) * 0.5;
-  const snap = time >= timing.detach && time < timing.detach + 0.2
-    ? Math.sin(progress(time, timing.detach, timing.detach + 0.2) * Math.PI)
-    : 0;
-  key.scale.setScalar(Math.max(0.001, growing * finalScale * (1 + snap * 0.16)));
-  key.rotation.y = 0;
+  if (time < timing.detach) {
+    key.position.lerpVectors(start, presentation, rising);
+  } else {
+    key.position.lerpVectors(presentation, end, flying);
+    key.position.y += Math.sin(flying * Math.PI) * 0.56;
+  }
+  key.scale.setScalar(Math.max(0.001, THREE.MathUtils.lerp(0.62, 1, rising) * finalScale));
+  key.rotation.x = turning * Math.PI * 0.5;
+  key.rotation.y = presenting * Math.PI * 2 + flying * Math.PI * 0.35;
   key.rotation.z = THREE.MathUtils.degToRad(
-    THREE.MathUtils.lerp(-22, 0, growing) + flying * 58 - Math.sin(flying * Math.PI) * 16,
+    THREE.MathUtils.lerp(-72, -14, rising)
+      + presenting * 22
+      + flying * 54
+      - Math.sin(flying * Math.PI) * 16,
   );
-  setFade(key, growing * outro);
+  setFade(key, progress(time, timing.start, timing.start + 0.08) * outro);
+}
+
+function getCapabilityUnlockEnd(timing) {
+  return timing.insert + Math.min(0.24, (timing.end - timing.insert) * 0.48);
+}
+
+function getKeyForgeHatchOpen(time, timing) {
+  const opening = progress(time, timing.start - 0.34, timing.start + 0.06);
+  const closing = progress(time, timing.detach, timing.detach + 0.28);
+  return opening * (1 - closing);
 }
 
 function setMovingFile(file, route, time, timing, delay = 0, sizeScale = 1) {
@@ -918,6 +906,8 @@ export function createFoundationWorld() {
   anchorFoundationDoor(internet, FOUNDATION_LAYOUT.netDoor);
   internet.group.scale.setScalar(FOUNDATION_DOOR_SCALE);
   const internetPosition = internet.group.position;
+  const internetKey = internet.key;
+  internet.group.remove(internetKey);
   const netTower = createNetTower();
   place(netTower.group, FOUNDATION_LAYOUT.netTower);
   netTower.group.scale.setScalar(1.18);
@@ -936,13 +926,6 @@ export function createFoundationWorld() {
     cableSurfacePoint(FOUNDATION_SURFACES.kernel, 6.6, 2.1),
     cableSurfacePoint(FOUNDATION_SURFACES.kernel, 8.65, 2.3),
   ], PALETTE.blue, 30, 1, VECTOR_CABLE_DIRECTIONS.bidirectional);
-  const forgeToDoor = createSignalRoute([
-    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.52, -1.12),
-    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.55, 0.15),
-    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.75, 1.4),
-    cableSurfacePoint(FOUNDATION_SURFACES.genesis, internetPosition.x, internetPosition.z),
-  ], PALETTE.green, 30, 0.45);
-
   const builder = createDeck({
     width: BUILDER_FOOTPRINT.width,
     depth: BUILDER_FOOTPRINT.depth,
@@ -1051,36 +1034,6 @@ export function createFoundationWorld() {
       FOUNDATION_LAYOUT.production[2],
     ),
   ], false, "centripetal");
-  const forgeToBuild = createSignalRoute([
-    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.52, -1.12),
-    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 1.38, -0.82),
-    cableSurfacePoint(FOUNDATION_SURFACES.genesis, buildDoorPosition.x, buildDoorPosition.z),
-  ], PALETTE.green, 22, 0.45);
-  const forgeToSysroot = createSignalRoute([
-    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.52, -1.12),
-    ...cableDoorLandingDrop(
-      buildDoor,
-      FOUNDATION_SURFACES.kernel,
-    ),
-    cableSurfacePoint(FOUNDATION_SURFACES.kernel, 3.5, -3.4),
-    ...cableDoorLandingDrop(
-      sysrootDoor,
-      FOUNDATION_SURFACES.kernel,
-    ).reverse(),
-  ], PALETTE.green, 28, 0.45);
-  const forgeToSrc = createSignalRoute([
-    cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.52, -1.12),
-    ...cableDoorLandingDrop(
-      buildDoor,
-      FOUNDATION_SURFACES.kernel,
-    ),
-    cableSurfacePoint(FOUNDATION_SURFACES.kernel, 4.9, -3.7),
-    ...cableDoorLandingDrop(
-      srcDoor,
-      FOUNDATION_SURFACES.kernel,
-    ).reverse(),
-  ], PALETTE.green, 32, 0.45);
-
   const sourceCaption = createWideLabel(
     "SOURCE FILES \u00b7 AGENT \u2192 /sysroot \u2192 /src",
     PALETTE.muted,
@@ -1103,10 +1056,10 @@ export function createFoundationWorld() {
     agent.group,
     keyForge.group,
     internet.group,
+    internetKey,
     netTower.group,
     agentToDoor.group,
     doorToNet.group,
-    forgeToDoor.group,
     builder.group,
     builderCallout.group,
     buildDoor.group,
@@ -1124,9 +1077,6 @@ export function createFoundationWorld() {
     requestToSysroot.group,
     sysrootToSrc.group,
     srcToWorkpiece.group,
-    forgeToBuild.group,
-    forgeToSysroot.group,
-    forgeToSrc.group,
     sourceCaption,
     hashCaption,
   );
@@ -1300,85 +1250,36 @@ export function createFoundationWorld() {
     );
     setVectorDoorOpen(internet, progress(
       time,
-      FOUNDATION_TIMELINE.netKey.insert,
+      getCapabilityUnlockEnd(FOUNDATION_TIMELINE.netKey),
       FOUNDATION_TIMELINE.netKey.insert + 0.9,
     ));
-    const forgeRise = timedProgress(time, FOUNDATION_TIMELINE.keyForgeRise);
-    keyForge.group.position.y = FOUNDATION_LAYOUT.keyForge[1] - (1 - forgeRise) * 0.42;
-    keyForge.group.scale.y = 1.5 * Math.max(0.001, forgeRise);
-    const keyGrow = progress(
+    const forgeOutline = timedProgress(time, FOUNDATION_TIMELINE.keyForgeRise);
+    const forgeTimings = [
+      FOUNDATION_TIMELINE.netKey,
+      FOUNDATION_TIMELINE.buildKey,
+      FOUNDATION_TIMELINE.sysrootKey,
+      FOUNDATION_TIMELINE.srcKey,
+    ];
+    const forgeOpen = forgeTimings.reduce(
+      (maximum, timing) => Math.max(maximum, getKeyForgeHatchOpen(time, timing)),
+      0,
+    );
+    keyForge.group.position.set(...FOUNDATION_LAYOUT.keyForge);
+    keyForge.group.scale.setScalar(1.5);
+    setSlidingFloorHatch(keyForge.hatch, forgeOutline, forgeOpen, legacyWorldAlpha);
+    const keyStart = new THREE.Vector3(
+      FOUNDATION_LAYOUT.keyForge[0],
+      FOUNDATION_LAYOUT.keyForge[1] - 0.18,
+      FOUNDATION_LAYOUT.keyForge[2],
+    );
+    setCapabilityKey(
+      internetKey,
       time,
-      FOUNDATION_TIMELINE.netKey.start,
-      FOUNDATION_TIMELINE.netKey.detach,
+      FOUNDATION_TIMELINE.netKey,
+      keyStart,
+      new THREE.Vector3(internetPosition.x, DECK_KEY_TARGET_Y, internetPosition.z),
+      0.74,
     );
-    const keyFlight = progress(
-      time,
-      FOUNDATION_TIMELINE.netKey.detach,
-      FOUNDATION_TIMELINE.netKey.insert,
-    );
-    const forgeGrowPulse = time >= FOUNDATION_TIMELINE.netKey.start
-      && time < FOUNDATION_TIMELINE.netKey.detach
-      ? Math.sin(keyGrow * Math.PI) * 0.48
-      : 0;
-    const forgeDetachPulse = time >= FOUNDATION_TIMELINE.netKey.detach - 0.06
-      && time < FOUNDATION_TIMELINE.netKey.detach + 0.32
-      ? Math.sin(progress(
-        time,
-        FOUNDATION_TIMELINE.netKey.detach - 0.06,
-        FOUNDATION_TIMELINE.netKey.detach + 0.32,
-      ) * Math.PI)
-      : 0;
-    const forgePulse = Math.max(forgeGrowPulse, forgeDetachPulse);
-    keyForge.core.scale.setScalar(1 + forgePulse * 0.64);
-    keyForge.burst.rotation.z = time * 0.6;
-    keyForge.burst.scale.setScalar(0.72 + forgePulse * 0.78);
-    const keyRouteIntro = progress(
-      time,
-      FOUNDATION_TIMELINE.netKey.start + 0.12,
-      FOUNDATION_TIMELINE.netKey.detach,
-    );
-    setRouteProgress(forgeToDoor, keyRouteIntro, time);
-    setFade(
-      forgeToDoor.group,
-      keyRouteIntro
-        * (1 - progress(
-          time,
-          FOUNDATION_TIMELINE.netKey.insert - 0.08,
-          FOUNDATION_TIMELINE.netKey.insert + 0.18,
-        )),
-    );
-    setFade(keyForge.group, forgeRise * (1 - progress(time, 33.15, 33.45)));
-    setFade(keyForge.burst, forgePulse);
-    const keyTravel = keyFlight;
-    const keyOutro = 1 - progress(
-      time,
-      FOUNDATION_TIMELINE.netKey.insert + 0.2,
-      FOUNDATION_TIMELINE.netKey.insert + 0.52,
-    );
-    internet.key.visible = time >= FOUNDATION_TIMELINE.netKey.start
-      && time < FOUNDATION_TIMELINE.netKey.end;
-    internet.key.position.set(
-      THREE.MathUtils.lerp(-2.93, 0.45, keyTravel),
-      THREE.MathUtils.lerp(1.86, 1.9, keyTravel),
-      THREE.MathUtils.lerp(-4.7, -0.35, keyTravel),
-    );
-    const keySnap = time >= FOUNDATION_TIMELINE.netKey.detach
-      && time < FOUNDATION_TIMELINE.netKey.detach + 0.24
-      ? Math.sin(progress(
-        time,
-        FOUNDATION_TIMELINE.netKey.detach,
-        FOUNDATION_TIMELINE.netKey.detach + 0.24,
-      ) * Math.PI)
-      : 0;
-    const keyScale = THREE.MathUtils.lerp(0.04, 1, keyGrow) * (1 + keySnap * 0.16);
-    internet.key.scale.setScalar(Math.max(0.001, keyScale));
-    internet.key.rotation.y = 0;
-    internet.key.rotation.z = THREE.MathUtils.degToRad(
-      THREE.MathUtils.lerp(-22, 0, keyGrow)
-        + keyFlight * 64
-        - Math.sin(keyFlight * Math.PI) * 18,
-    );
-    setFade(internet.key, keyGrow * keyOutro);
     setRouteProgress(
       doorToNet,
       timedProgress(time, FOUNDATION_TIMELINE.netRoute),
@@ -1427,7 +1328,7 @@ export function createFoundationWorld() {
     );
     setVectorDoorOpen(buildDoor, progress(
       time,
-      FOUNDATION_TIMELINE.buildKey.insert,
+      getCapabilityUnlockEnd(FOUNDATION_TIMELINE.buildKey),
       FOUNDATION_TIMELINE.buildKey.insert + 0.9,
     ));
 
@@ -1451,12 +1352,12 @@ export function createFoundationWorld() {
     );
     setVectorDoorOpen(sysrootDoor, progress(
       time,
-      FOUNDATION_TIMELINE.sysrootKey.insert,
+      getCapabilityUnlockEnd(FOUNDATION_TIMELINE.sysrootKey),
       FOUNDATION_TIMELINE.sysrootKey.insert + 0.9,
     ));
     setVectorDoorOpen(srcDoor, progress(
       time,
-      FOUNDATION_TIMELINE.srcKey.insert,
+      getCapabilityUnlockEnd(FOUNDATION_TIMELINE.srcKey),
       FOUNDATION_TIMELINE.srcKey.insert + 0.9,
     ));
     setVectorDoorOpen(outDoor, progress(time, 85.25, 86.15));
@@ -1484,7 +1385,6 @@ export function createFoundationWorld() {
     );
     setFade(srcToWorkpiece.group, workpieceRouteProgress * (1 - progress(time, 94.24, 94.58)));
 
-    const keyStart = new THREE.Vector3(0.52, 2.17 + DECK_HEIGHT_DELTA, -1.12);
     setCapabilityKey(
       buildKey,
       time,
@@ -1509,32 +1409,6 @@ export function createFoundationWorld() {
       new THREE.Vector3(srcDoorPosition.x, DECK_KEY_TARGET_Y, srcDoorPosition.z),
       0.72,
     );
-    const setKeyRoute = (route, timing) => {
-      const reveal = progress(time, timing.start + 0.08, timing.detach);
-      setRouteProgress(route, reveal, time);
-      setFade(route.group, reveal * (1 - progress(time, timing.insert - 0.08, timing.insert + 0.18)));
-    };
-    setKeyRoute(forgeToBuild, FOUNDATION_TIMELINE.buildKey);
-    setKeyRoute(forgeToSysroot, FOUNDATION_TIMELINE.sysrootKey);
-    setKeyRoute(forgeToSrc, FOUNDATION_TIMELINE.srcKey);
-    const keyForgePulse = [
-      FOUNDATION_TIMELINE.buildKey,
-      FOUNDATION_TIMELINE.sysrootKey,
-      FOUNDATION_TIMELINE.srcKey,
-    ].reduce((maximum, timing) => {
-      const growing = time >= timing.start && time < timing.detach
-        ? Math.sin(progress(time, timing.start, timing.detach) * Math.PI)
-        : 0;
-      const detaching = time >= timing.detach - 0.06 && time < timing.detach + 0.28
-        ? Math.sin(progress(time, timing.detach - 0.06, timing.detach + 0.28) * Math.PI)
-        : 0;
-      return Math.max(maximum, growing, detaching);
-    }, 0);
-    if (time >= FOUNDATION_TIMELINE.buildKey.start) {
-      keyForge.core.scale.setScalar(1 + keyForgePulse * 0.64);
-      keyForge.burst.scale.setScalar(0.72 + keyForgePulse * 0.78);
-      setFade(keyForge.burst, keyForgePulse);
-    }
 
     const workpieceRise = timedProgress(time, FOUNDATION_TIMELINE.workpieceRise);
     production.workpiece.visible = workpieceRise > 0.001;

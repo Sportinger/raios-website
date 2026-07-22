@@ -97,6 +97,17 @@ eigenständige Objekte wie den NET-Turm verwendet, nicht für Türen.
 Nur bewusst freistehende Objekte wie die kompakte Finaltür verwenden die
 separat benannte `createFreestandingFactoryDoor`-API.
 
+### Schlüssel- und Forge-Vertrag
+
+Die Key Forge ist kein Turm und kein Marker, sondern eine bündige, geteilte
+Bodenklappe im Genesis Deck. Für jede Freigabe läuft dieselbe deterministische
+Sequenz: Die Klappe öffnet, der Schlüssel steigt aus der Ebene, dreht sich kurz
+zur Präsentation, fliegt ohne zusätzliche Forge-Signalleitung zum Ziel, wird in
+das Schloss gesteckt und dort gedreht. Erst nach dieser Schlossdrehung öffnet
+die zugehörige Tür; anschließend blendet der Schlüssel aus. Alle Schlüssel
+verwenden dieselbe Zustandsfunktion, damit direktes Springen sowie Vorwärts-
+und Rückwärtsscrollen identische Zustände ergeben.
+
 ### Kabelvertrag
 
 Signal- und Materialleitungen verwenden `objects/shared/vector-cable.js`.
