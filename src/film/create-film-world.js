@@ -20,6 +20,8 @@ export function createFilmWorld() {
   // real depth for a future orbit camera.
   foundation.group.scale.setScalar(1.5);
   foundation.group.position.set(-1.9, 0, 4.5);
+  foundation.group.userData.presentationBaseX = foundation.group.position.x;
+  foundation.group.userData.presentationBaseZ = foundation.group.position.z;
   const factoryOffset = factory.group.userData.recommendedWorldOffset;
   factory.group.position.set(factoryOffset.x, factoryOffset.y, factoryOffset.z);
   root.add(grid, foundation.group, factory.group);

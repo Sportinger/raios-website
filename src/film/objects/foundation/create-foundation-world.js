@@ -204,6 +204,119 @@ function createGlow(color, width = 2.4, height = width) {
   return sprite;
 }
 
+function createLayerCallout({ title, copy, color, width = 7 }) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1200;
+  canvas.height = 300;
+  const context = canvas.getContext("2d");
+  const stroke = `#${color.toString(16).padStart(6, "0")}`;
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.beginPath();
+  context.roundRect(10, 10, 1180, 280, 34);
+  context.fillStyle = "rgba(12, 21, 33, 0.94)";
+  context.fill();
+  context.lineWidth = 8;
+  context.strokeStyle = stroke;
+  context.stroke();
+  context.beginPath();
+  context.moveTo(46, 48);
+  context.lineTo(46, 252);
+  context.lineWidth = 18;
+  context.lineCap = "round";
+  context.strokeStyle = stroke;
+  context.stroke();
+  context.beginPath();
+  context.moveTo(102, 150);
+  context.lineTo(1110, 150);
+  context.lineWidth = 4;
+  context.strokeStyle = `${stroke}88`;
+  context.stroke();
+  context.font = "900 58px Consolas, monospace";
+  context.textAlign = "left";
+  context.textBaseline = "middle";
+  context.fillStyle = "#eef5ff";
+  context.fillText(title, 102, 94);
+  context.font = "800 35px Consolas, monospace";
+  context.fillStyle = "#9fb2c9";
+  context.fillText(copy, 102, 212);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  const material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+  });
+  material.userData.preserveTransparency = true;
+  const card = new THREE.Sprite(material);
+  const height = width * canvas.height / canvas.width;
+  card.scale.set(width, height, 1);
+  card.renderOrder = 80;
+
+  const route = new THREE.Group();
+  const target = new THREE.Vector3();
+  const anchor = new THREE.Vector3();
+  const elbow = new THREE.Vector3();
+  const targetDot = new THREE.Mesh(
+    new THREE.SphereGeometry(0.07, 10, 6),
+    new THREE.MeshBasicMaterial({ color }),
+  );
+  route.add(targetDot);
+  const group = new THREE.Group();
+  group.add(route, card);
+  return {
+    group,
+    card,
+    route,
+    targetDot,
+    texture,
+    width,
+    height,
+    anchor,
+    elbow,
+    target,
+    routeReady: false,
+  };
+}
+
+function setCalloutRoute(callout, anchor, elbow, target, color) {
+  if (callout.routeReady) return;
+  callout.anchor.copy(anchor);
+  callout.elbow.copy(elbow);
+  callout.target.copy(target);
+  callout.route.add(
+    createBeamBetween(anchor, elbow, 0.018, color, 6),
+    createBeamBetween(elbow, target, 0.018, color, 6),
+  );
+  callout.targetDot.position.copy(target);
+  callout.routeReady = true;
+}
+
+function setLayerCallout(callout, time, {
+  start,
+  introEnd,
+  dockStart,
+  titleStart,
+  end,
+  basePosition,
+  dockPosition,
+  angle,
+}) {
+  const reveal = progress(time, start, introEnd);
+  const exit = progress(time, titleStart, end);
+  const docking = progress(time, dockStart, end);
+  const alpha = reveal * (1 - exit);
+  callout.group.visible = alpha > 0.001;
+  callout.card.material.opacity = alpha;
+  setFade(callout.route, reveal * (1 - progress(time, end - 0.18, end)));
+  callout.card.position.lerpVectors(basePosition, dockPosition, docking);
+  const scale = THREE.MathUtils.lerp(0.94 + reveal * 0.06, 0.38, docking);
+  callout.card.scale.set(callout.width * scale, callout.height * scale, 1);
+  callout.card.material.rotation = angle * docking;
+}
+
 function createOutlinedBox(size, color, edgeColor = PALETTE.blueHigh) {
   const group = new THREE.Group();
   const geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
@@ -251,7 +364,7 @@ function createSlabFacets(width, depth, height) {
   return group;
 }
 
-function createDeck({ width, depth, height, color, edgeColor, label }) {
+function createDeck({ width, depth, height, color, edgeColor, label, labelColor = edgeColor }) {
   const group = new THREE.Group();
   const body = createOutlinedBox(new THREE.Vector3(width, height, depth), color, edgeColor);
   body.position.y = height / 2;
@@ -269,7 +382,7 @@ function createDeck({ width, depth, height, color, edgeColor, label }) {
   const title = new THREE.Group();
   if (label) {
     const titleWidth = Math.min(2.25, Math.max(1.65, width * 0.34));
-    const titleDecal = createDeckLabel(label, edgeColor, titleWidth, height);
+    const titleDecal = createDeckLabel(label, labelColor, titleWidth, height);
     title.add(titleDecal);
   }
   title.position.set(0, height * 0.52, depth / 2 + 0.034);
@@ -396,7 +509,7 @@ function createKeyForge() {
   stem.position.y = 0.4;
   const core = new THREE.Mesh(
     new THREE.SphereGeometry(0.11, 12, 8),
-    new THREE.MeshBasicMaterial({ color: PALETTE.greenHigh }),
+    new THREE.MeshBasicMaterial({ color: PALETTE.amber }),
   );
   core.position.y = 0.74;
   const glow = createGlow(PALETTE.green, 1.4, 1.4);
@@ -574,6 +687,7 @@ function createDoorAndKey(labelText = "net.https") {
   label.position.set(0, 0.12, 0.86);
   label.material.depthTest = false;
   frame.add(label);
+  frame.rotation.y = Math.PI / 2;
 
   const key = new THREE.Group();
   const ring = new THREE.Mesh(
@@ -622,7 +736,7 @@ function createSourceAndWorkpiece() {
   return { group, source, workpiece, core };
 }
 
-function createSignalRoute(curve, color = PALETTE.blue, samples = 30) {
+function createSignalRoute(curve, color = PALETTE.blue, samples = 30, thickness = 1) {
   const points = curve.getPoints(samples);
   const group = new THREE.Group();
   const routeSegments = [];
@@ -631,14 +745,14 @@ function createSignalRoute(curve, color = PALETTE.blue, samples = 30) {
     const underlay = createBeamBetween(
       points[index - 1],
       points[index],
-      0.045,
+      0.03 * thickness,
       PALETTE.lineDark,
       7,
     );
     const dash = createBeamBetween(
       points[index - 1],
       points[index],
-      0.068,
+      0.045 * thickness,
       color,
       7,
     );
@@ -647,10 +761,10 @@ function createSignalRoute(curve, color = PALETTE.blue, samples = 30) {
     group.add(segment);
   }
   const pulse = new THREE.Mesh(
-    new THREE.SphereGeometry(0.09, 10, 7),
+    new THREE.SphereGeometry(0.09 * thickness, 10, 7),
     new THREE.MeshBasicMaterial({ color }),
   );
-  const glow = createGlow(color, 0.84, 0.84);
+  const glow = createGlow(color, 0.84 * thickness, 0.84 * thickness);
   group.add(pulse, glow);
   return { group, curve, routeSegments, pulse, glow };
 }
@@ -684,7 +798,7 @@ export function createFoundationWorld() {
     width: KERNEL_FOOTPRINT.compact.width,
     depth: KERNEL_FOOTPRINT.compact.depth,
     height: 0.72,
-    color: 0x05080d, edgeColor: PALETTE.blue, label: "RUST-KERNEL",
+    color: 0x05080d, edgeColor: 0x343b45, label: "RUST-KERNEL", labelColor: 0xeaf4ff,
   });
   const kernelFacets = createSlabFacets(
     KERNEL_FOOTPRINT.compact.width,
@@ -693,11 +807,59 @@ export function createFoundationWorld() {
   );
   kernel.body.add(kernelFacets);
   place(kernel.group, FOUNDATION_LAYOUT.kernel);
+  const kernelCallout = createLayerCallout({
+    title: "RUST-KERNEL",
+    copy: "OWNS CPU · RAM · USB · DISPLAY · NET",
+    color: PALETTE.blueHigh,
+    width: 5.4,
+  });
+  const kernelCalloutPosition = new THREE.Vector3(
+    FOUNDATION_LAYOUT.kernel[0] + 0.1,
+    0.8,
+    FOUNDATION_LAYOUT.kernel[2] - 0.1,
+  );
+  const kernelCalloutTarget = new THREE.Vector3(
+    FOUNDATION_LAYOUT.kernel[0] - KERNEL_FOOTPRINT.compact.width * 0.11 + 1.75,
+    0.76,
+    FOUNDATION_LAYOUT.kernel[2] + KERNEL_FOOTPRINT.compact.depth * 0.5 + 1,
+  );
+  setCalloutRoute(
+    kernelCallout,
+    new THREE.Vector3(kernelCalloutPosition.x - 0.2, 0.73, kernelCalloutPosition.z + 0.12),
+    new THREE.Vector3(kernelCalloutPosition.x - 0.58, 0.62, kernelCalloutPosition.z + 1.35),
+    kernelCalloutTarget,
+    PALETTE.blueHigh,
+  );
   const genesis = createDeck({
     width: GENESIS_FOOTPRINT.width, depth: GENESIS_FOOTPRINT.depth, height: 0.34,
-    color: PALETTE.panel, edgeColor: PALETTE.greenHigh, label: "GENESIS DECK",
+    color: PALETTE.panel, edgeColor: 0x587b9e, label: "GENESIS DECK", labelColor: PALETTE.greenHigh,
   });
   place(genesis.group, FOUNDATION_LAYOUT.genesis);
+  const genesisCallout = createLayerCallout({
+    title: "GENESIS DECK",
+    copy: "BUILDS ABOVE KERNEL · GRANTS DOORS",
+    color: PALETTE.green,
+    width: 5.55,
+  });
+  const genesisCalloutPosition = new THREE.Vector3(
+    FOUNDATION_LAYOUT.genesisCompact[0] + 0.2,
+    0.65,
+    FOUNDATION_LAYOUT.genesisCompact[2] - 0.2,
+  );
+  const genesisCalloutTarget = new THREE.Vector3(
+    FOUNDATION_LAYOUT.genesisCompact[0] - KERNEL_FOOTPRINT.compact.width * 0.08 + 3.5,
+    1.1,
+    FOUNDATION_LAYOUT.genesisCompact[2]
+      + KERNEL_FOOTPRINT.compact.depth * (510 / 630) * 0.5
+      + 2.65,
+  );
+  setCalloutRoute(
+    genesisCallout,
+    new THREE.Vector3(genesisCalloutPosition.x - 0.1, 0.75, genesisCalloutPosition.z + 0.1),
+    new THREE.Vector3(genesisCalloutPosition.x - 0.48, 0.92, genesisCalloutPosition.z + 1.25),
+    genesisCalloutTarget,
+    PALETTE.green,
+  );
 
   const agent = createAgent();
   place(agent, FOUNDATION_LAYOUT.agent);
@@ -707,28 +869,31 @@ export function createFoundationWorld() {
   agent.scale.setScalar(agentScale);
   const keyForge = createKeyForge();
   place(keyForge.group, FOUNDATION_LAYOUT.keyForge);
+  keyForge.group.scale.setScalar(1.5);
   const internet = createDoorAndKey("net.https");
   place(internet.group, FOUNDATION_LAYOUT.netDoor);
+  internet.group.scale.setScalar(0.76);
   const netTower = createNetTower();
   place(netTower.group, FOUNDATION_LAYOUT.netTower);
+  netTower.group.scale.setScalar(1.18);
   const agentToDoor = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-0.05, 1.74, 0.68),
-    new THREE.Vector3(0.62, 1.2, 1.04),
-    new THREE.Vector3(1.58, 1.13, 1.72),
-    new THREE.Vector3(2.48, 1.2, 2.4),
+    new THREE.Vector3(-0.55, 1.74, 1.18),
+    new THREE.Vector3(0.38, 1.2, 1.42),
+    new THREE.Vector3(2.05, 1.13, 1.58),
+    new THREE.Vector3(2.58, 1.0, 2.4),
   ], false, "centripetal"));
   const doorToNet = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(2.9, 1.16, 2.52),
-    new THREE.Vector3(4.6, 0.88, 2.25),
+    new THREE.Vector3(2.95, 0.94, 2.52),
+    new THREE.Vector3(5.1, 0.88, 2.25),
     new THREE.Vector3(6.6, 0.78, 1.85),
-    new THREE.Vector3(8.5, 0.76, 1.5),
+    new THREE.Vector3(8.65, 0.58, 2.3),
   ], false, "centripetal"));
   const forgeToDoor = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.85, 1.8, 0.2),
-    new THREE.Vector3(1.22, 1.44, 0.72),
-    new THREE.Vector3(1.86, 1.22, 1.5),
-    new THREE.Vector3(2.7, 1.78, 2.45),
-  ], false, "centripetal"), PALETTE.green);
+    new THREE.Vector3(0.52, 2.17, -1.12),
+    new THREE.Vector3(1.12, 1.86, 0.02),
+    new THREE.Vector3(2.18, 1.34, 1.4),
+    new THREE.Vector3(2.75, 1.9, 2.45),
+  ], false, "centripetal"), PALETTE.green, 30, 0.45);
 
   const builder = createDeck({
     width: 5.1, depth: 4.25, height: 0.34,
@@ -757,7 +922,9 @@ export function createFoundationWorld() {
   group.add(
     prompt.group,
     kernel.group,
+    kernelCallout.group,
     genesis.group,
+    genesisCallout.group,
     agent,
     keyForge.group,
     internet.group,
@@ -780,7 +947,26 @@ export function createFoundationWorld() {
 
     const kernelRise = timedProgress(time, FOUNDATION_TIMELINE.kernelRise);
     setDeckRise(kernel, kernelRise);
+    setOpacity(kernel.title, progress(time, 7.38, 8.28));
+    setLayerCallout(kernelCallout, time, {
+      start: 3.99,
+      introEnd: 4.79,
+      dockStart: 6.63,
+      titleStart: 7.38,
+      end: 8.28,
+      basePosition: kernelCalloutPosition,
+      dockPosition: kernelCalloutTarget.clone().add(new THREE.Vector3(0.85, -0.26, -0.25)),
+      angle: -THREE.MathUtils.degToRad(26.565),
+    });
     const foundationExpansion = timedProgress(time, FOUNDATION_TIMELINE.agentRise);
+    if (group.userData.presentationBaseX === undefined) {
+      group.userData.presentationBaseX = group.position.x;
+    }
+    if (group.userData.presentationBaseZ === undefined) {
+      group.userData.presentationBaseZ = group.position.z;
+    }
+    group.position.x = group.userData.presentationBaseX - 1.9 * foundationExpansion;
+    group.position.z = group.userData.presentationBaseZ + foundationExpansion;
     const kernelScaleX = THREE.MathUtils.lerp(
       1,
       KERNEL_FOOTPRINT.expanded.width / KERNEL_FOOTPRINT.compact.width,
@@ -797,10 +983,11 @@ export function createFoundationWorld() {
         FOUNDATION_LAYOUT.kernelExpanded[0],
         foundationExpansion,
       ),
-      FOUNDATION_LAYOUT.kernel[1],
+      FOUNDATION_LAYOUT.kernel[1] - (1 - kernelRise) * 2.15,
       FOUNDATION_LAYOUT.kernel[2],
     );
     setDeckFootprint(kernel, kernelScaleX, kernelScaleZ);
+    kernel.title.position.x = 2.3 * foundationExpansion;
     const compactGenesisWidth = KERNEL_FOOTPRINT.compact.width * (510 / 630);
     const compactGenesisDepth = KERNEL_FOOTPRINT.compact.depth * (510 / 630);
     setDeckFootprint(
@@ -808,17 +995,29 @@ export function createFoundationWorld() {
       THREE.MathUtils.lerp(compactGenesisWidth / GENESIS_FOOTPRINT.width, 1, foundationExpansion),
       THREE.MathUtils.lerp(compactGenesisDepth / GENESIS_FOOTPRINT.depth, 1, foundationExpansion),
     );
+    const genesisRise = timedProgress(time, FOUNDATION_TIMELINE.genesisRise);
+    const genesisScreenDrop = (1 - genesisRise) * 3.3;
     genesis.group.position.set(
       THREE.MathUtils.lerp(
         FOUNDATION_LAYOUT.genesisCompact[0],
         FOUNDATION_LAYOUT.genesis[0],
         foundationExpansion,
-      ),
+      ) + genesisScreenDrop,
       FOUNDATION_LAYOUT.genesis[1],
-      FOUNDATION_LAYOUT.genesis[2],
+      FOUNDATION_LAYOUT.genesis[2] + genesisScreenDrop,
     );
-    const genesisRise = timedProgress(time, FOUNDATION_TIMELINE.genesisRise);
     setDeckRise(genesis, genesisRise);
+    setOpacity(genesis.title, progress(time, 11.59, 12.59));
+    setLayerCallout(genesisCallout, time, {
+      start: 8.38,
+      introEnd: 9.18,
+      dockStart: 10.58,
+      titleStart: 11.59,
+      end: 12.59,
+      basePosition: genesisCalloutPosition,
+      dockPosition: genesisCalloutTarget.clone().add(new THREE.Vector3(0.72, -0.55, -0.18)),
+      angle: -THREE.MathUtils.degToRad(26.565),
+    });
 
     const agentRise = timedProgress(time, FOUNDATION_TIMELINE.agentRise);
     agent.visible = agentRise > 0.001;
@@ -835,8 +1034,8 @@ export function createFoundationWorld() {
 
     const netRise = timedProgress(time, FOUNDATION_TIMELINE.netRise);
     netTower.group.visible = netRise > 0.001;
-    netTower.group.position.y = FOUNDATION_LAYOUT.netTower[1] - (1 - netRise) * 0.92;
-    netTower.group.scale.y = Math.max(0.001, netRise);
+    netTower.group.position.y = FOUNDATION_LAYOUT.netTower[1] + 0.3 - (1 - netRise) * 0.92;
+    netTower.group.scale.y = 1.18 * Math.max(0.001, netRise);
     netTower.rings.forEach((ring, index) => {
       const cycle = ((time - 13.2 - index * 1.2) % 3.6 + 3.6) % 3.6 / 3.6;
       ring.scale.setScalar(0.4 + cycle * 2.5);
@@ -854,40 +1053,87 @@ export function createFoundationWorld() {
     internet.frame.position.y = -(1 - doorRise) * 0.9;
     internet.frame.scale.y = Math.max(0.001, doorRise);
     setFade(internet.frame, doorRise * networkWindowAlpha);
-    internet.leafPivot.rotation.y = -Math.PI * 0.62 * progress(
+    internet.leafPivot.rotation.y = Math.PI * 0.62 * progress(
+      time,
+      FOUNDATION_TIMELINE.netKey.insert,
+      FOUNDATION_TIMELINE.netKey.insert + 0.9,
+    );
+    const forgeRise = timedProgress(time, FOUNDATION_TIMELINE.keyForgeRise);
+    keyForge.group.position.y = FOUNDATION_LAYOUT.keyForge[1] - (1 - forgeRise) * 0.42;
+    keyForge.group.scale.y = 1.5 * Math.max(0.001, forgeRise);
+    const keyGrow = progress(
+      time,
+      FOUNDATION_TIMELINE.netKey.start,
+      FOUNDATION_TIMELINE.netKey.detach,
+    );
+    const keyFlight = progress(
       time,
       FOUNDATION_TIMELINE.netKey.detach,
       FOUNDATION_TIMELINE.netKey.insert,
     );
-    const forgeRise = timedProgress(time, FOUNDATION_TIMELINE.keyForgeRise);
-    keyForge.group.position.y = 1.06 - (1 - forgeRise) * 0.42;
-    keyForge.group.scale.y = Math.max(0.001, forgeRise);
-    keyForge.core.scale.setScalar(0.8 + Math.sin(time * 6) * 0.2);
+    const forgeGrowPulse = time >= FOUNDATION_TIMELINE.netKey.start
+      && time < FOUNDATION_TIMELINE.netKey.detach
+      ? Math.sin(keyGrow * Math.PI) * 0.48
+      : 0;
+    const forgeDetachPulse = time >= FOUNDATION_TIMELINE.netKey.detach - 0.06
+      && time < FOUNDATION_TIMELINE.netKey.detach + 0.32
+      ? Math.sin(progress(
+        time,
+        FOUNDATION_TIMELINE.netKey.detach - 0.06,
+        FOUNDATION_TIMELINE.netKey.detach + 0.32,
+      ) * Math.PI)
+      : 0;
+    const forgePulse = Math.max(forgeGrowPulse, forgeDetachPulse);
+    keyForge.core.scale.setScalar(1 + forgePulse * 0.64);
     keyForge.burst.rotation.z = time * 0.6;
-    keyForge.burst.scale.setScalar(0.72 + Math.sin(time * 4.8) * 0.18);
-    setRouteProgress(forgeToDoor, progress(
+    keyForge.burst.scale.setScalar(0.72 + forgePulse * 0.78);
+    const keyRouteIntro = progress(
       time,
-      FOUNDATION_TIMELINE.netKey.start,
-      FOUNDATION_TIMELINE.netKey.insert,
-    ), time);
+      FOUNDATION_TIMELINE.netKey.start + 0.12,
+      FOUNDATION_TIMELINE.netKey.detach,
+    );
+    setRouteProgress(forgeToDoor, keyRouteIntro, time);
     setFade(
       forgeToDoor.group,
-      progress(time, FOUNDATION_TIMELINE.netKey.start, FOUNDATION_TIMELINE.netKey.insert)
-        * (1 - progress(time, FOUNDATION_TIMELINE.netKey.insert, FOUNDATION_TIMELINE.netKey.end)),
+      keyRouteIntro
+        * (1 - progress(
+          time,
+          FOUNDATION_TIMELINE.netKey.insert - 0.08,
+          FOUNDATION_TIMELINE.netKey.insert + 0.18,
+        )),
     );
     setFade(keyForge.group, forgeRise * (1 - progress(time, 33.15, 33.45)));
-    const keyTravel = progress(
+    setFade(keyForge.burst, forgePulse);
+    const keyTravel = keyFlight;
+    const keyOutro = 1 - progress(
       time,
-      FOUNDATION_TIMELINE.netKey.start,
-      FOUNDATION_TIMELINE.netKey.insert,
+      FOUNDATION_TIMELINE.netKey.insert + 0.2,
+      FOUNDATION_TIMELINE.netKey.insert + 0.52,
     );
-    internet.key.visible = time >= FOUNDATION_TIMELINE.keyForgeRise.start && time < 22.2;
+    internet.key.visible = time >= FOUNDATION_TIMELINE.netKey.start
+      && time < FOUNDATION_TIMELINE.netKey.end;
     internet.key.position.set(
-      THREE.MathUtils.lerp(-1.85, -0.08, keyTravel),
-      THREE.MathUtils.lerp(0.74, 0.78, keyTravel),
-      THREE.MathUtils.lerp(-2.25, 0.08, keyTravel),
+      THREE.MathUtils.lerp(-2.93, 0.45, keyTravel),
+      THREE.MathUtils.lerp(1.86, 1.9, keyTravel),
+      THREE.MathUtils.lerp(-4.7, -0.35, keyTravel),
     );
-    internet.key.rotation.y = keyTravel * Math.PI * 2;
+    const keySnap = time >= FOUNDATION_TIMELINE.netKey.detach
+      && time < FOUNDATION_TIMELINE.netKey.detach + 0.24
+      ? Math.sin(progress(
+        time,
+        FOUNDATION_TIMELINE.netKey.detach,
+        FOUNDATION_TIMELINE.netKey.detach + 0.24,
+      ) * Math.PI)
+      : 0;
+    const keyScale = THREE.MathUtils.lerp(0.04, 1, keyGrow) * (1 + keySnap * 0.16);
+    internet.key.scale.setScalar(Math.max(0.001, keyScale));
+    internet.key.rotation.y = 0;
+    internet.key.rotation.z = THREE.MathUtils.degToRad(
+      THREE.MathUtils.lerp(-22, 0, keyGrow)
+        + keyFlight * 64
+        - Math.sin(keyFlight * Math.PI) * 18,
+    );
+    setFade(internet.key, keyGrow * keyOutro);
     setRouteProgress(
       doorToNet,
       timedProgress(time, FOUNDATION_TIMELINE.netRoute),
@@ -909,10 +1155,10 @@ export function createFoundationWorld() {
     buildDoor.frame.position.y = -(1 - buildDoorRise) * 0.7;
     buildDoor.frame.scale.y = Math.max(0.001, buildDoorRise);
     setFade(buildDoor.frame, buildDoorRise * buildRequestWindowAlpha);
-    buildDoor.leafPivot.rotation.y = -Math.PI * 0.62 * progress(
+    buildDoor.leafPivot.rotation.y = Math.PI * 0.62 * progress(
       time,
-      FOUNDATION_TIMELINE.buildKey.detach,
       FOUNDATION_TIMELINE.buildKey.insert,
+      FOUNDATION_TIMELINE.buildKey.insert + 0.9,
     );
     setRouteProgress(
       requestToBuilder,
