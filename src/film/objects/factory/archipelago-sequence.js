@@ -6,10 +6,6 @@ import {
   FACTORY_PALETTE,
   FACTORY_PLAYER_DOMAIN_LAYOUT,
 } from "./config.js";
-import {
-  createFreestandingFactoryDoor,
-  setFactoryDoorOpen,
-} from "./door-primitives.js";
 import { createTextLabel, createVectorBox } from "./primitives.js";
 import { interval, smoothstep, smootherstep } from "./timeline.js";
 import {
@@ -387,23 +383,6 @@ export function createArchipelagoSequence(tracker) {
   const group = new THREE.Group();
   group.name = "compact-domain-and-app-archipelago";
 
-  const compactDoor = createFreestandingFactoryDoor(tracker, FACTORY_PALETTE.green, {
-    position: [
-      PLAYER_ANCHOR.x + 1.35,
-      PLAYER_ANCHOR.y + 0.06,
-      PLAYER_ANCHOR.z + 1.35,
-    ],
-    scale: 0.18,
-    rotationY: Math.PI / 4,
-    label: "one door",
-    labelColor: 0xbdeacd,
-  });
-  const compactLabel = createTextLabel(tracker, {
-    text: "MUSIC PLAYER", width: 3.2, height: 0.48,
-    color: 0xc5ccd5, background: 0x020608,
-    position: [PLAYER_ANCHOR.x + 0.95, PLAYER_ANCHOR.y + 0.01, PLAYER_ANCHOR.z + 0.95],
-    fontSize: 48, billboard: true,
-  });
   const compactCaption = createCompactCaption(tracker);
   compactCaption.sprite.position.set(
     PLAYER_ANCHOR.x + 5.4,
@@ -426,8 +405,6 @@ export function createArchipelagoSequence(tracker) {
   );
 
   group.add(
-    compactDoor.group,
-    compactLabel,
     compactCaption.sprite,
     ...islands.map(({ group: island }) => island),
     counter.sprite,
@@ -438,13 +415,6 @@ export function createArchipelagoSequence(tracker) {
     const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 148);
     group.position.set(0, 0, 0);
 
-    const doorRise = smootherstep(interval(time, 135, 136.2));
-    compactDoor.group.visible = doorRise > 0.001;
-    compactDoor.group.scale.setScalar(0.18 * Math.max(0.001, doorRise));
-    compactDoor.group.position.y = PLAYER_ANCHOR.y + 0.01 - (1 - doorRise) * 0.9;
-    setFactoryDoorOpen(compactDoor, 0);
-    const compactLabelAlpha = smoothstep(interval(time, 136.45, 136.75));
-    setOpacity(compactLabel, compactLabelAlpha);
     const captionAlpha = windowAlpha(time, 134, 140.7, 0.7);
     compactCaption.sprite.visible = captionAlpha > 0.001;
     compactCaption.material.opacity = captionAlpha;

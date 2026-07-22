@@ -4,6 +4,7 @@ import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import {
   createVectorCable,
+  setVectorCablePoints,
   setVectorCableState,
   setVectorCableTime,
   VECTOR_CABLE_DIRECTIONS,
@@ -107,6 +108,9 @@ export function createRoute(tracker, points, color, width = 0.08, {
   group.name = "factory-signal-route";
   group.userData.setRouteTime = (time) => {
     setVectorCableTime(cable, time);
+  };
+  group.userData.setRoutePoints = (nextPoints) => {
+    setVectorCablePoints(cable, nextPoints);
   };
   setVectorCableState(cable, {
     progress: 1,

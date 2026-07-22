@@ -72,9 +72,13 @@ ohne Genesis oder die Player-Insel zu überdecken. Ihre Breiten und Tiefen
 variieren, aber alle besitzen exakt dieselbe Sockelhöhe und Oberkante wie die
 Player-Insel. Sie bauen sich nacheinander über denselben `vector-layer`-
 Lifecycle aus Grundriss und aufwachsendem Körper auf.
-Das Archipelago besitzt keine verbindenden Kabel oder Signallinien. Bereits
-entstandene Inseln driften oder pulsieren anschließend nicht weiter; fertige
-Layerzustände werden zudem nicht in jedem Frame erneut aufgebaut.
+Die vorhandenen drei Türen und Capability-Kabel der Player-Domain bleiben beim
+Schrumpfen erhalten, skalieren mit der Insel und führen ihre Endpunkte während
+des Andockens dynamisch nach. Agent und Genesis Deck bleiben dabei unverändert
+bestehen. Das Finale spawnt keine zusätzliche Tür. Zwischen den danach
+entstehenden App-Inseln gibt es keine verbindenden Kabel oder Signallinien.
+Bereits entstandene Inseln driften oder pulsieren anschließend nicht weiter;
+fertige Layerzustände werden zudem nicht in jedem Frame erneut aufgebaut.
 
 Die zugehörigen Erklärtafeln verwenden `objects/shared/vector-callout.js`.
 Dieses Modul öffnet das Panel vor der Kamera, schreibt Titel und Text, bewegt
@@ -143,8 +147,8 @@ fährt der Türrahmen aus der Ebene hoch. Die geteilte Bodenklappe wird nur für
 eigenständige Objekte wie den NET-Turm verwendet, nicht für Türen.
 Beim Outro schließt zuerst das Blatt, danach sinkt der Rahmen, der Text wird
 rückwärts gelöscht und zuletzt zieht sich der Vorbau in die Deckkante zurück.
-Nur bewusst freistehende Objekte wie die kompakte Finaltür verwenden die
-separat benannte `createFreestandingFactoryDoor`-API.
+Nur tatsächlich freistehende Sonderobjekte dürfen die separat benannte
+`createFreestandingFactoryDoor`-API verwenden.
 
 ### Schlüssel- und Forge-Vertrag
 
@@ -170,6 +174,10 @@ laufen mit `cableDoorLandingDrop` zunächst über den vollständigen Vorbau und
 erst an dessen Außenkante nach unten. Technische Fillets runden alle möglichen
 Waypoints mit engem Radius ab. Signalpulse starten erst, wenn die Leitung
 vollständig aufgebaut und verbunden ist.
+Bewegt oder skaliert sich ein angeschlossenes Objekt, kann derselbe
+Kabelvertrag seine Wegpunkte aktualisieren und die vorhandenen Segmente neu
+ausrichten; dabei werden weder Kabelobjekt noch Geometrien pro Frame neu
+erzeugt.
 Beim Outro wird die Leitung entlang derselben Route bis zu ihrem Ursprung
 zurückgezogen; währenddessen kann kein Signal weiterlaufen.
 Der Eintritt in die Shadow VM ist ausdrücklich kein Signalweg: Eine sichtbare

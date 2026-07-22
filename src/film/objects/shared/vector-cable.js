@@ -197,7 +197,15 @@ function createBeamRecord(tracker, {
   rangeEnd,
 }) {
   const mesh = createBeam(tracker, start, end, radius, material, radialSegments);
-  return { mesh, start, end, rangeStart, rangeEnd };
+  return {
+    mesh,
+    start,
+    end,
+    rangeStart,
+    rangeEnd,
+    baseLength: Math.max(0.000001, start.distanceTo(end)),
+    pathLengthScale: 1,
+  };
 }
 
 function setBeamReveal(record, progress) {
@@ -207,7 +215,19 @@ function setBeamReveal(record, progress) {
   if (!record.mesh.visible) return;
   const visibleEnd = new THREE.Vector3().lerpVectors(record.start, record.end, amount);
   record.mesh.position.copy(record.start).add(visibleEnd).multiplyScalar(0.5);
-  record.mesh.scale.y = Math.max(0.001, amount);
+  record.mesh.scale.y = Math.max(0.001, record.pathLengthScale * amount);
+}
+
+function setBeamPath(record, start, end) {
+  const direction = new THREE.Vector3().subVectors(end, start);
+  const length = direction.length();
+  record.start.copy(start);
+  record.end.copy(end);
+  record.pathLengthScale = length / record.baseLength;
+  record.mesh.position.copy(start).add(end).multiplyScalar(0.5);
+  if (length > 0.000001) {
+    record.mesh.quaternion.setFromUnitVectors(UNIT_Y, direction.normalize());
+  }
 }
 
 function setMaterialOpacity(material, opacity) {
@@ -321,6 +341,7 @@ export function createVectorCable({
     glow: pulseEntries[0]?.glow,
     direction,
     speed,
+    cornerRadius,
     materials: [underlayMaterial, cableMaterial, ...pulseEntries.flatMap((entry) => entry.materials)],
   };
   group.userData.vectorCable = cable;
@@ -351,6 +372,28 @@ export function setVectorCableState(cable, {
     progress: reveal,
     persistent,
     active: active && alpha > 0.001,
+  });
+}
+
+export function setVectorCablePoints(cable, points) {
+  const resolvedPoints = (points ?? []).map(resolveCablePoint);
+  if (resolvedPoints.length < 2) {
+    throw new TypeError("A vector cable requires at least two waypoints.");
+  }
+  const curve = createRoundedPolylineCurve(resolvedPoints, cable.cornerRadius);
+  if (curve.getLength() <= 0.000001) {
+    throw new TypeError("A vector cable requires waypoints with measurable distance.");
+  }
+  cable.points = resolvedPoints;
+  cable.curve = curve;
+  cable.group.userData.curve = curve;
+  [...cable.underlayRecords, ...cable.cableRecords].forEach((record) => {
+    setBeamPath(
+      record,
+      curve.getPointAt(record.rangeStart),
+      curve.getPointAt(record.rangeEnd),
+    );
+    setBeamReveal(record, cable.currentState?.progress ?? 1);
   });
 }
 

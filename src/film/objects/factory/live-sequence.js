@@ -96,14 +96,6 @@ function createDomain(tracker) {
 
   const labels = ["fb region", "input", "file door"];
   const domainSurface = layer.surface;
-  const routeSurface = Object.freeze({
-    id: "player-domain-world",
-    centerX: DOMAIN_CENTER.x,
-    centerZ: DOMAIN_CENTER.z,
-    width,
-    depth,
-    top: DOMAIN_CENTER.y,
-  });
   const doors = DOMAIN_DOOR_X.map((x, index) => {
     const door = createFactoryDoorOnSurface(tracker, FACTORY_PALETTE.edge, {
       surface: domainSurface,
@@ -113,6 +105,8 @@ function createDomain(tracker) {
       label: labels[index],
       labelColor: 0xa9bdad,
     });
+    door.domainAnchor = door.group.position.clone();
+    door.domainScale = door.baseScale;
     group.add(door.group);
     return door;
   });
@@ -124,29 +118,38 @@ function createDomain(tracker) {
     title,
     doors,
     supportSurface: domainSurface,
-    routeSurface,
   };
+}
+
+function createDomainRoutePoints(door, index, center = DOMAIN_CENTER) {
+  const end = center.clone();
+  end.x += door.group.position.x * 0.2;
+  end.y += 0.1;
+  end.z += 0.12;
+  return [
+    AGENT_PORT.toArray(),
+    cableSurfacePoint(LIVE_KERNEL_SURFACE, AGENT_PORT.x, AGENT_PORT.z),
+    cableSurfacePoint(LIVE_KERNEL_SURFACE, -11.0 + index * 0.34, 9.4 - index * 0.42),
+    ...cableDoorLandingDrop(
+      door,
+      LIVE_KERNEL_SURFACE,
+      { parentOffset: center },
+    ).reverse(),
+    new THREE.Vector3(end.x, center.y + 0.04, end.z),
+  ];
 }
 
 function createDomainRoutes(tracker, domain) {
   return domain.doors.map((door, index) => {
-    const end = DOMAIN_CENTER.clone();
-    end.x += door.group.position.x * 0.2;
-    end.y += 0.1;
-    end.z += 0.12;
-    const route = createRoute(tracker, [
-      AGENT_PORT.toArray(),
-      cableSurfacePoint(LIVE_KERNEL_SURFACE, AGENT_PORT.x, AGENT_PORT.z),
-      cableSurfacePoint(LIVE_KERNEL_SURFACE, -11.0 + index * 0.34, 9.4 - index * 0.42),
-      ...cableDoorLandingDrop(
-        door,
-        LIVE_KERNEL_SURFACE,
-        { parentOffset: DOMAIN_CENTER },
-      ).reverse(),
-      cableSurfacePoint(domain.routeSurface, end.x, end.z),
-    ], FACTORY_PALETTE.green, 0.035, {
-      direction: VECTOR_CABLE_DIRECTIONS.bidirectional,
-    });
+    const route = createRoute(
+      tracker,
+      createDomainRoutePoints(door, index),
+      FACTORY_PALETTE.green,
+      0.035,
+      {
+        direction: VECTOR_CABLE_DIRECTIONS.bidirectional,
+      },
+    );
     route.name = `player-capability-route-${index + 1}`;
     return route;
   });
@@ -386,7 +389,13 @@ export function createLiveSequence(tracker) {
       const outline = smootherstep(interval(time, 120.35 + delay, 120.72 + delay));
       const labelWrite = smootherstep(interval(time, 120.64 + delay, 121.04 + delay));
       const rise = smootherstep(interval(time, 120.92 + delay, 121.55 + delay));
-      door.group.visible = outline > 0.001 && time < 134;
+      door.group.position.set(
+        door.domainAnchor.x * compactFootprint,
+        door.domainAnchor.y,
+        door.domainAnchor.z * compactFootprint,
+      );
+      door.baseScale = door.domainScale * compactFootprint;
+      door.group.visible = outline > 0.001;
       setFactoryDoorEmergence(door, {
         porchAmount: outline,
         labelAmount: labelWrite,
@@ -397,8 +406,21 @@ export function createLiveSequence(tracker) {
     });
     const routeProgress = smootherstep(interval(time, 120.35, 123.35));
     routes.forEach((route, index) => {
-      route.visible = routeProgress > index * 0.08 && time < 134;
-      setOpacity(route, route.visible ? Math.min(1, (routeProgress - index * 0.08) / 0.32) : 0);
+      if (route.userData.domainFootprint !== compactFootprint) {
+        route.userData.setRoutePoints?.(createDomainRoutePoints(
+          domain.doors[index],
+          index,
+          domain.group.position,
+        ));
+        route.userData.domainFootprint = compactFootprint;
+      }
+      route.visible = routeProgress > index * 0.08;
+      setOpacity(
+        route,
+        route.visible
+          ? domainAlpha * Math.min(1, (routeProgress - index * 0.08) / 0.32)
+          : 0,
+      );
     });
 
     egress.dots.forEach((dot, index) => {
