@@ -52,6 +52,17 @@ die Sekunden `41–148`. Wiederholte Produktionspfade und das Insel-Finale nutze
 gemeinsame Konfiguration und wiederverwendbare Objektverträge statt duplizierter
 Szenenlogik.
 
+### Sprecher und Audio
+
+Die sechs vorhandenen Sprecherpassagen aus dem Referenzfilm liegen unter
+`src/assets/audio/` und werden über das eigenständige Modul
+`presentation/create-film-narration.js` an dieselbe deterministische Filmzeit
+wie ihre Captions gebunden. Nach der ersten Nutzerinteraktion folgen sie sowohl
+PLAY als auch der Scrollrichtung; bei rückwärts laufender Timeline werden die
+vorhandenen Reverse-Fassungen verwendet. Reduced Motion deaktiviert die
+Wiedergabe. Der vollständige Bestand sowie die noch aufzunehmenden Texte stehen
+in `NARRATION.md`.
+
 ### Layer- und Callout-Vertrag
 
 Rust-Kernel, Genesis Layer, Builder Layer, Shadow VM und Player Domain verwenden

@@ -8,7 +8,7 @@ import {
 } from "./film-data.js";
 import { createFilmCamera } from "./create-film-camera.js";
 import { createFilmWorld } from "./create-film-world.js";
-import { createFilmOverlays } from "./presentation/index.js";
+import { createFilmNarration, createFilmOverlays } from "./presentation/index.js";
 
 const AUTOPLAY_SECONDS_PER_SECOND = 1;
 
@@ -60,6 +60,7 @@ export function createFilmApp({
   const world = createFilmWorld();
   const viewport = canvas.closest(".film-viewport");
   const overlays = createFilmOverlays({ host: viewport });
+  const narration = createFilmNarration({ host: viewport });
   let currentTime = 0;
   let playing = false;
   let orbitEnabled = false;
@@ -90,18 +91,20 @@ export function createFilmApp({
     });
   };
 
-  const setTime = (time, syncScroll = false) => {
+  const setTime = (time, syncScroll = false, source = "seek") => {
     currentTime = clampTime(time);
     if (syncScroll) {
       const travel = Math.max(1, stage.offsetHeight - window.innerHeight);
       window.scrollTo({ top: stage.offsetTop + travel * currentTime / FILM_DURATION });
     }
+    narration.setTime(currentTime, { source });
     updateUi();
     render();
   };
 
   const setPlaying = (nextPlaying) => {
     playing = nextPlaying;
+    narration.setPlaying(playing);
     playToggle.setAttribute("aria-pressed", String(playing));
     playToggle.textContent = playing ? "PAUSE" : "PLAY";
   };
@@ -153,7 +156,7 @@ export function createFilmApp({
     scrollFrame = 0;
     if (playing || orbitEnabled || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const travel = Math.max(1, stage.offsetHeight - window.innerHeight);
-    setTime((window.scrollY - stage.offsetTop) / travel * FILM_DURATION);
+    setTime((window.scrollY - stage.offsetTop) / travel * FILM_DURATION, false, "scroll");
   };
   const onScroll = () => {
     if (scrollFrame) return;
@@ -181,7 +184,7 @@ export function createFilmApp({
     const delta = Math.min(0.05, (timestamp - previousTimestamp) / 1000);
     previousTimestamp = timestamp;
     if (playing) {
-      setTime(currentTime + delta * AUTOPLAY_SECONDS_PER_SECOND, true);
+      setTime(currentTime + delta * AUTOPLAY_SECONDS_PER_SECOND, true, "play");
       if (currentTime >= FILM_DURATION) {
         setPlaying(false);
       }
@@ -210,6 +213,7 @@ export function createFilmApp({
       chapterNavigation.replaceChildren();
       viewport.classList.remove("is-orbiting");
       orbitControls.dispose();
+      narration.dispose();
       overlays.dispose();
       world.dispose();
       renderer.dispose();
