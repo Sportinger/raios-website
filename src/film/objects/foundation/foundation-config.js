@@ -11,17 +11,18 @@ export const FOUNDATION_LAYOUT = Object.freeze({
   keyForge: point(0.52, FOUNDATION_LAYER_HEIGHT * 2, -1.12),
   netDoor: point(2.75, 0.76, 2.45),
   netTower: point(8.65, FOUNDATION_LAYER_HEIGHT, 2.3),
-  builder: point(7.025, 0.72, -7.389),
-  buildDoor: point(2.833, 1.06, -1.08),
-  sysrootDoor: point(4.258, 1.06, -3.915),
-  srcDoor: point(6.008, 1.06, -3.929),
-  outDoor: point(3.308, 1.06, -8.284),
-  production: point(7.025, 1.06, -7.389),
+  builder: point(6.72, FOUNDATION_LAYER_HEIGHT, -9.17),
+  buildDoor: point(2.833, FOUNDATION_LAYER_HEIGHT * 2, -1.08),
+  sysrootDoor: point(4.258, FOUNDATION_LAYER_HEIGHT * 2, -3.915),
+  srcDoor: point(6.008, FOUNDATION_LAYER_HEIGHT * 2, -3.929),
+  outDoor: point(3.308, FOUNDATION_LAYER_HEIGHT * 2, -8.284),
+  production: point(6.72, FOUNDATION_LAYER_HEIGHT * 2, -9.17),
 });
 
 export const KERNEL_FOOTPRINT = Object.freeze({
   compact: Object.freeze({ width: 8.5, depth: 8.5 }),
   expanded: Object.freeze({ width: 17, depth: 8.5 }),
+  square: Object.freeze({ width: 17, depth: 17 }),
 });
 
 export const GENESIS_FOOTPRINT = Object.freeze({
@@ -29,10 +30,7 @@ export const GENESIS_FOOTPRINT = Object.freeze({
   depth: 6.9,
 });
 
-export const BUILDER_FOOTPRINT = Object.freeze({
-  width: 6.92,
-  depth: 6.92,
-});
+export const BUILDER_FOOTPRINT = GENESIS_FOOTPRINT;
 
 export const FOUNDATION_TIMELINE = Object.freeze({
   kernelOutline: window(3.89, 4.69),
@@ -51,6 +49,7 @@ export const FOUNDATION_TIMELINE = Object.freeze({
   netKey: Object.freeze({ start: 19.67, detach: 20.18, insert: 20.87, end: 21.57 }),
   netRoute: window(20.92, 22.37),
   networkConnectedAt: 22.37,
+  kernelSquareExpansion: window(24.72, 26.2),
   buildRequestRoute: window(26.5, 27.4),
   builderRise: window(27.45, 28.45),
   buildDoorRise: window(27.45, 28.1),

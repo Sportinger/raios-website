@@ -75,6 +75,7 @@ export const FILM_ACTION_TIMINGS = deepFreeze({
     netOutline: { start: 14.82, end: 15.32 },
     netHatch: { start: 15.32, end: 15.77 },
     netRise: { start: 15.67, end: 16.62 },
+    kernelSquareExpansion: { start: 24.72, end: 26.2 },
     builderFloorOnline: { start: 30.15, end: 31.15 },
   },
   network: {
