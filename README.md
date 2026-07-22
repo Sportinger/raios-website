@@ -266,13 +266,15 @@ Der vorhandene Launcher verwendet ebenfalls den Vite-Devserver, sucht einen frei
 pwsh ./scripts/start-threejs-codex.ps1
 ```
 
-Der Launcher öffnet das Experiment mit `?camera-editor=1`. In diesem lokalen
-Entwicklungsmodus erscheint rechts oben der Camera Director. `DIRECTOR` öffnet
+Auf `localhost` beziehungsweise `127.0.0.1` erscheint rechts oben automatisch
+der Camera Director. Außerhalb der lokalen Entwicklung lässt er sich gezielt mit
+`?camera-editor=1` aktivieren. `DIRECTOR` öffnet
 die Scroll-Timeline in einem separaten Browserfenster; `FPS` aktiviert die freie
 Kamera. Nach einem Klick auf die Szene steuern Maus, `WASD`, `Q`/`E`, `Shift`
 und das Mausrad die Kamera. Keyframes speichern Position, Blickziel, Up-Vektor,
 Sichtfeld und Easing im lokalen Browser und lassen sich als JSON importieren
-oder exportieren. Ohne den Query-Parameter wird kein Editor erzeugt.
+oder exportieren. Auf der produktiven Website wird ohne den Query-Parameter kein
+Editor erzeugt.
 
 ## Produktions-Build
 

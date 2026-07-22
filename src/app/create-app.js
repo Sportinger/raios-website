@@ -184,7 +184,10 @@ export function createApp({
     onToggle: setAutoplayPlaying,
   });
   playbackControls.setDisabled(motionPreference.matches);
-  if (new URLSearchParams(window.location.search).get("camera-editor") === "1") {
+  const cameraDirectorEnabled = ["127.0.0.1", "::1", "localhost"].includes(
+    window.location.hostname,
+  ) || new URLSearchParams(window.location.search).get("camera-editor") === "1";
+  if (cameraDirectorEnabled) {
     cameraDirector = createCameraDirector({
       camera,
       canvas,
