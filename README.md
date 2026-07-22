@@ -62,8 +62,8 @@ Radiant, ohne die eigene Aufbau- und Footprint-Skalierung des Kernel-Meshes auf
 seine Geschwister zu übertragen. Zwischen Playback `00:28.29` und `00:40.72`
 dreht `create-film-app.js` den Verbund weich um `90°` im Uhrzeigersinn; davor
 steht er bei `0°`, danach bleibt er bei `90°`. Zwischen `00:58.00` und
-`01:06.00` folgen weitere `45°` im Uhrzeigersinn, sodass der Verbund
-anschließend bei insgesamt `135°` stehen bleibt.
+`01:06.00` folgen weitere `90°` im Uhrzeigersinn, sodass der Verbund
+anschließend bei insgesamt `180°` stehen bleibt.
 
 ### Einbettung in die Vollwebsite
 

@@ -18,7 +18,7 @@ import {
 const AUTOPLAY_SECONDS_PER_SECOND = 1;
 const KERNEL_ROTATION_SEGMENTS = Object.freeze([
   { start: 28.29, end: 40.72, angle: -Math.PI / 2 },
-  { start: 58, end: 66, angle: -Math.PI / 4 },
+  { start: 58, end: 66, angle: -Math.PI / 2 },
 ]);
 
 const clampPlaybackTime = (time) => THREE.MathUtils.clamp(time, 0, FILM_PLAYBACK_DURATION);
