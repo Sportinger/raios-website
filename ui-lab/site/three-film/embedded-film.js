@@ -14,6 +14,7 @@ const markup = `
         <button id="play-toggle" type="button" aria-pressed="false">PLAY</button>
         <output id="timecode">00:00.00</output>
       </div>
+      <button id="audio-toggle" class="audio-toggle" type="button" aria-pressed="false"></button>
       <button
         id="orbit-toggle"
         class="orbit-toggle"
@@ -51,6 +52,7 @@ export function mountEmbeddedFilm(host, {
   shadow.append(baseStyles, embeddedStyles, shell);
 
   const app = createFilmApp({
+    audioToggle: shadow.getElementById("audio-toggle"),
     canvas: shadow.getElementById("film-canvas"),
     chapterNavigation: shadow.getElementById("chapter-navigation"),
     orbitToggle: shadow.getElementById("orbit-toggle"),

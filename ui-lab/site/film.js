@@ -422,6 +422,9 @@
       window.__RAIOS_FILM__ = unavailableApi();
       return;
     }
+    const scrollCue = filmSection.querySelector("#film-scroll-cue");
+    const scrollCueAnchor = document.getElementById("surface-composite");
+    if (scrollCue && scrollCueAnchor) scrollCueAnchor.appendChild(scrollCue);
 
     const params = new URLSearchParams(location.search);
     const reducedMotionQuery = typeof window.matchMedia === "function"
@@ -465,6 +468,12 @@
 
     const syncFromPageScroll = () => {
       scrollFrame = 0;
+      if (scrollCue) {
+        const cueVisible = document.body.dataset.shellMode === "website"
+          && !document.body.classList.contains("film-isolate");
+        scrollCue.style.setProperty("--film-scroll-cue-opacity", "1");
+        scrollCue.classList.toggle("is-visible", cueVisible);
+      }
       if (!app) return;
       const websiteEnabled = document.body.dataset.shellMode === "website";
       if (deterministic || (reducedMotionQuery && reducedMotionQuery.matches)

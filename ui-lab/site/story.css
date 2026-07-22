@@ -23,35 +23,26 @@ body[data-shell-mode="website"] .website-story {
   width: 100%;
 }
 
-/* Both contrast fades live in the photo coordinate system. The first darkens
-   only the opening copy area; the second sinks the lower photo into black.
-   Neither layer is fixed to the viewport or animated by the film timeline. */
+/* One continuous contrast fade lives in the photo coordinate system. Keeping
+   this as a single gradient prevents a visible second band at the handoff into
+   the story flow. It is not fixed or animated by the film timeline. */
 body[data-shell-mode="website"] .surface-gradient-overlay {
   position: absolute;
   inset: 0;
   z-index: 4;
   display: block;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.9) 0%,
-      rgba(0, 0, 0, 0.72) 10%,
-      rgba(0, 0, 0, 0.42) 20%,
-      rgba(0, 0, 0, 0.14) 28%,
-      transparent 34%
-    ),
-    linear-gradient(
-      180deg,
-      transparent 0%,
-      transparent 18%,
-      rgba(0, 0, 0, 0.18) 22%,
-      rgba(0, 0, 0, 0.48) 29%,
-      rgba(0, 0, 0, 0.72) 37%,
-      rgba(0, 0, 0, 0.88) 46%,
-      rgba(0, 0, 0, 0.96) 55%,
-      #000 68%,
-      #000 100%
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.86) 0%,
+    rgba(0, 0, 0, 0.62) 12%,
+    rgba(0, 0, 0, 0.32) 24%,
+    rgba(0, 0, 0, 0.22) 32%,
+    rgba(0, 0, 0, 0.5) 43%,
+    rgba(0, 0, 0, 0.78) 54%,
+    rgba(0, 0, 0, 0.94) 64%,
+    #000 76%,
+    #000 100%
+  );
   transform: none;
   animation: none;
   pointer-events: none;
@@ -105,6 +96,10 @@ body[data-shell-mode="website"] .story-text {
 /* First section sits closest to the photo — no extra top padding, the
    measured gap below the display already provides the spacing. */
 body[data-shell-mode="website"] .story-opener .story-inner { padding-top: 0; }
+
+body[data-shell-mode="website"] .story-opener-legacy .aib-svg[hidden] {
+  display: none !important;
+}
 
 body[data-shell-mode="website"] .story-what .story-split { align-items: center; }
 
@@ -1874,6 +1869,11 @@ body[data-shell-mode="website"] .film-frame {
 }
 
 .film-section[data-film-engine="three"] [data-film-legacy] {
+  display: none;
+}
+
+.film-section[data-film-engine="three"] .film-caption,
+.film-section[data-film-engine="three"] .film-voice-caption {
   display: none;
 }
 

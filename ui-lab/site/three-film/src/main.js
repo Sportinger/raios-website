@@ -3,6 +3,7 @@ import { createFilmApp } from "./film/create-film-app.js";
 const requestedTime = Number.parseFloat(new URL(window.location.href).searchParams.get("time"));
 
 let app = createFilmApp({
+  audioToggle: document.getElementById("audio-toggle"),
   canvas: document.getElementById("film-canvas"),
   chapterNavigation: document.getElementById("chapter-navigation"),
   orbitToggle: document.getElementById("orbit-toggle"),

@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="raios-build-version" content="development">
   <title>raiOS · Genesis</title>
-  <meta name="description" content="raiOS ist ein KI-natives Betriebssystem mit einem kleinen, überprüfbaren Vertrauenskern.">
+  <meta name="description" content="raiOS is an AI-native operating system with a small, verifiable trust kernel.">
   <link rel="stylesheet" href="ui-lab/lab.css">
   <link rel="stylesheet" href="ui-lab/site/boot-sequence.css">
   <link rel="stylesheet" href="ui-lab/site/story.css">
@@ -54,11 +54,11 @@
           <div id="boot-sequence" data-state="idle" hidden>
             <div class="boot-sequence__log" role="log" aria-live="polite"></div>
           </div>
-          <button id="boot-replay" type="button" hidden>Boot wiederholen</button>
+          <button id="boot-replay" type="button" hidden>Replay boot</button>
         </div>
         <img id="surface-reflection" class="surface-reflection" alt="" hidden>
         <div class="surface-gradient-overlay" aria-hidden="true"></div>
-        <p class="surface-pending">Foto und Reflexions-Overlay werden hier eingesetzt.</p>
+        <p class="surface-pending">The Surface photo and reflection overlay appear here.</p>
       </div>
     </section>
     <div class="website-infinite-grid" aria-hidden="true"></div>
@@ -898,23 +898,22 @@
     <section class="website-story story-opener-legacy" data-story-reveal aria-labelledby="story-opener-legacy-title">
       <div class="story-inner">
         <div class="story-head story-reveal">
-          <p class="website-kicker">In 32 Sekunden</p>
-          <h2 id="story-opener-legacy-title">Vom Satz zum laufenden Programm.</h2>
+          <p class="website-kicker">In 32 seconds</p>
+          <h2 id="story-opener-legacy-title">From one sentence to a running program.</h2>
         </div>
         <div class="story-cards">
           <figure class="story-card story-reveal" style="--reveal-delay:.05s">
             <div>
-              <h3>Die Alles-bauen-Schicht in Aktion</h3>
+              <h3>The build-everything layer in action</h3>
               <p>
-                Die Szene beginnt, wo alles beginnt: bei deinem Satz. Dann zoomt
-                das Bild heraus, und die Maschine baut sich auf, sobald sie
-                gebraucht wird — der Boden, der Agent, das Netz fürs Wissen, der
-                Bauplatz mit seinen Schlüsseln (Quellen lesen, eigener Speicher,
-                kein Netz — bauen ist absichtlich offline). Geprüft wird im
-                Boden, iteriert bis grün. Und nur mit Stempel geht es durchs Tor.
+                The sequence begins where everything begins: with your sentence.
+                The system then assembles only what it needs — the foundation,
+                the agent, network access for knowledge, and an offline builder
+                layer with explicit capabilities. It iterates until every check
+                is green. Only a signed result may pass through the gate.
               </p>
             </div>
-            <svg class="aib-svg" viewBox="0 0 1000 640" role="img" aria-label="Kino-Loop: Ein Prompt wird getippt, die Kamera zoomt heraus auf Genesis-Schicht und Kernel, der Agent erscheint, Netz und Internet poppen auf, der Bauplatz wird erschaffen und per Schlüssel freigeschaltet, gebaut und im Boden geprüft wird iterativ, das fertige Programm fährt durch die Trust-Pipeline — und zum Schluss zoomt die Kamera in den laufenden Musik-Player mit seinen Schlüsseln">
+            <svg class="aib-svg" viewBox="0 0 1000 640" hidden aria-hidden="true">
               <defs>
                 <clipPath id="aib-wish-clip">
                   <rect x="315" y="22" width="0" height="34">
@@ -1632,20 +1631,19 @@
     <section class="website-story story-what" data-story-reveal aria-labelledby="story-what-title">
       <div class="story-inner story-split">
         <div class="story-copy story-reveal">
-          <p class="website-kicker">Was ist raiOS?</p>
-          <h2 id="story-what-title">Ein Betriebssystem, das in eine KI bootet.</h2>
+          <p class="website-kicker">What is raiOS?</p>
+          <h2 id="story-what-title">An operating system that boots into AI.</h2>
           <p class="story-text">
-            raiOS ist von der ersten Zeile an neu geschrieben — in Rust, ohne Linux
-            oder Windows darunter. Ganz unten besitzt der Kernel die Hardware und
-            ihre nativen Treiber. Darauf liegt die Genesis-Schicht: der schmale
-            Boden, der Wasm-Dienste erschafft und ihnen nur ausdrücklich gewährte
-            Imports gibt. Agent, Netz-API, Bauplatz und Programme leben so in
-            getrennten Käfigen. Trapt einer davon, verliert er nur seinen Käfig —
-            nie das Haus.
+            raiOS is written from the first line in Rust, with no Linux or Windows
+            underneath. At the bottom, the kernel owns the hardware and its native
+            drivers. Above it sits the Genesis layer: a narrow foundation that
+            creates Wasm services and grants only explicitly named imports. Agent,
+            network API, builder, and programs live in separate cages. If one traps,
+            only its cage is lost — never the whole house.
           </p>
         </div>
         <figure class="story-figure story-reveal" style="--reveal-delay:.15s">
-          <svg class="stack-svg" viewBox="0 0 560 516" role="img" aria-label="Schichtdiagramm: Programme und Wasm-Dienste mit expliziten Imports über der Genesis-Schicht; native Treiber liegen mit den Hardwarepfaden im Rust-Kernel — ein Wasm-Dienst trappt und startet allein neu">
+          <svg class="stack-svg" viewBox="0 0 560 516" role="img" aria-label="Layer diagram: programs and Wasm services with explicit imports above the Genesis layer; native drivers and hardware paths live in the Rust kernel, while a trapped Wasm service restarts on its own.">
             <line class="stack-line" x1="280" y1="14" x2="280" y2="506"></line>
             <circle class="stack-pulse" r="4">
               <animateMotion path="M 280 506 L 280 14" dur="4s" repeatCount="indefinite"></animateMotion>
@@ -1659,7 +1657,7 @@
             <g class="stack-slab stack-slab--kernel">
               <rect x="110" y="334" width="340" height="64"></rect>
               <text class="stack-title" x="130" y="361">RUST-KERNEL</text>
-              <text class="stack-sub" x="130" y="379">MMU · Scheduler · Treiber · Hardwarepfade</text>
+              <text class="stack-sub" x="130" y="379">MMU · scheduler · drivers · hardware paths</text>
               <circle class="stack-heart" cx="428" cy="366" r="3.5">
                 <animate attributeName="r" values="3;5;3" keyTimes="0;0.5;1" dur="1.4s" repeatCount="indefinite"></animate>
                 <animate attributeName="opacity" values="0.5;1;0.5" keyTimes="0;0.5;1" dur="1.4s" repeatCount="indefinite"></animate>
@@ -1667,8 +1665,8 @@
             </g>
             <g class="stack-slab stack-slab--genesis">
               <rect x="110" y="246" width="340" height="64"></rect>
-              <text class="stack-title stack-title--accent" x="130" y="273">GENESIS-SCHICHT</text>
-              <text class="stack-sub" x="130" y="291">vergibt Rechte: Domäne, Schlüssel, Kill</text>
+              <text class="stack-title stack-title--accent" x="130" y="273">GENESIS LAYER</text>
+              <text class="stack-sub" x="130" y="291">grants: domain · capabilities · kill</text>
             </g>
             <g class="stack-slab stack-slab--domains">
               <g class="stack-domain">
@@ -1677,7 +1675,7 @@
               </g>
               <g class="stack-domain">
                 <rect x="198" y="118" width="76" height="90"></rect>
-                <text class="stack-domain-label" x="236" y="167">NETZ-API</text>
+                <text class="stack-domain-label" x="236" y="167">NET API</text>
               </g>
               <g class="stack-domain">
                 <rect x="286" y="118" width="76" height="90"></rect>
@@ -1685,10 +1683,10 @@
               </g>
               <g class="stack-domain">
                 <rect x="374" y="118" width="76" height="90"></rect>
-                <text class="stack-domain-label" x="412" y="160">BAUPLATZ</text>
-                <text class="stack-domain-sub" x="412" y="178">rustc an Bord</text>
+                <text class="stack-domain-label" x="412" y="160">BUILDER</text>
+                <text class="stack-domain-sub" x="412" y="178">rustc onboard</text>
               </g>
-              <text class="stack-caption" x="280" y="230">WASM-DIENSTE — JEDER MIT EIGENEN IMPORTS</text>
+              <text class="stack-caption" x="280" y="230">WASM SERVICES — EACH WITH ITS OWN IMPORTS</text>
               <rect class="stack-crash-flash" x="198" y="118" width="76" height="90" opacity="0">
                 <animate attributeName="opacity" values="0;0.9;0.15;0.85;0.2;0.9;0;0" keyTimes="0;0.03;0.05;0.07;0.09;0.11;0.14;1" dur="9s" begin="2s" repeatCount="indefinite"></animate>
               </rect>
@@ -1699,7 +1697,7 @@
                 <animate attributeName="r" values="6;26;26" keyTimes="0;0.1;1" dur="9s" begin="4.7s" repeatCount="indefinite"></animate>
                 <animate attributeName="opacity" values="0.85;0;0" keyTimes="0;0.1;1" dur="9s" begin="4.7s" repeatCount="indefinite"></animate>
               </circle>
-              <text class="stack-restart-note" x="280" y="20" opacity="0">Netz-API neu gestartet · der Rest lief weiter<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.53;0.57;0.75;0.82;1" dur="9s" repeatCount="indefinite"></animate></text>
+              <text class="stack-restart-note" x="280" y="20" opacity="0">Net API restarted · everything else kept running<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.53;0.57;0.75;0.82;1" dur="9s" repeatCount="indefinite"></animate></text>
             </g>
             <g class="stack-slab stack-slab--apps">
               <g class="stack-domain stack-domain--app">
@@ -1720,28 +1718,28 @@
               </g>
             </g>
           </svg>
-          <figcaption>Ein kleiner Kern, viele Zimmer — ein gescheiterter Versuch reißt nie das System mit, nur seine eigene Domäne.</figcaption>
+          <figcaption>One small kernel, many rooms — a failed attempt takes down only its own domain, never the system.</figcaption>
         </figure>
       </div>
     </section>
     <section class="website-story story-how" data-story-reveal aria-labelledby="story-how-title">
       <div class="story-inner">
         <div class="story-head story-reveal">
-          <p class="website-kicker">Vom Wunsch zum Programm</p>
-          <h2 id="story-how-title">Du sagst es. Das System baut, prüft, signiert.</h2>
+          <p class="website-kicker">From request to program</p>
+          <h2 id="story-how-title">You say it. The system builds, tests, and signs it.</h2>
         </div>
         <div class="story-cards">
           <figure class="story-card story-reveal" style="--reveal-delay:.1s">
             <div>
-              <h3>Die Kette, die jedes Programm durchläuft</h3>
+              <h3>The path every program must take</h3>
               <p>
-                Ein Agent schreibt das Programm direkt an Bord. Das System prüft und
-                signiert es — und erst nach deiner Freigabe am Gerät darf es laufen.
-                Jeder Schritt wird dauerhaft festgehalten. Und wenn etwas nicht
-                passt: Rollback — zurück auf den letzten guten Stand.
+                An agent writes the program onboard. The system tests and signs it,
+                and it may run only after your approval on the device. Every step is
+                recorded. If anything is wrong, rollback restores the last known-good
+                state.
               </p>
             </div>
-            <svg class="pipe-svg" viewBox="0 0 1000 240" role="img" aria-label="Ablauf: Wunsch, Agent baut, Signatur und Freigabe, läuft isoliert — bei Problemen Rollback zurück zum Anfang">
+            <svg class="pipe-svg" viewBox="0 0 1000 240" role="img" aria-label="Flow: request, agent build, signature and approval, isolated execution, and rollback when something fails.">
               <line class="pipe-line" x1="136" y1="120" x2="864" y2="120"></line>
               <circle class="pipe-halo" cx="110" cy="120" r="26" opacity="0">
                 <animate attributeName="r" values="26;42;42" keyTimes="0;0.12;1" dur="10s" begin="0.3s" repeatCount="indefinite"></animate>
@@ -1803,14 +1801,14 @@
                   <path class="pipe-icon" d="M-7 -6 h14 v12 h-14 z M-7 -2 h14"></path>
                 </g>
               </g>
-              <text class="pipe-label" x="110" y="180">DEIN WUNSCH</text>
-              <text class="pipe-sub" x="110" y="204">ein Satz in Genesis</text>
-              <text class="pipe-label" x="370" y="180">AGENT BAUT</text>
-              <text class="pipe-sub" x="370" y="204">Code entsteht an Bord</text>
-              <text class="pipe-label" x="630" y="180">SIGNATUR + FREIGABE</text>
-              <text class="pipe-sub" x="630" y="204">von dir, am Gerät</text>
-              <text class="pipe-label" x="890" y="180">LÄUFT ISOLIERT</text>
-              <text class="pipe-sub" x="890" y="204">jederzeit widerrufbar</text>
+              <text class="pipe-label" x="110" y="180">YOUR REQUEST</text>
+              <text class="pipe-sub" x="110" y="204">one sentence in Genesis</text>
+              <text class="pipe-label" x="370" y="180">AGENT BUILDS</text>
+              <text class="pipe-sub" x="370" y="204">code is created onboard</text>
+              <text class="pipe-label" x="630" y="180">SIGNATURE + APPROVAL</text>
+              <text class="pipe-sub" x="630" y="204">by you, on the device</text>
+              <text class="pipe-label" x="890" y="180">RUNS ISOLATED</text>
+              <text class="pipe-sub" x="890" y="204">revocable at any time</text>
             </svg>
           </figure>
         </div>
@@ -1819,40 +1817,39 @@
     <section class="website-story story-keys" data-story-reveal aria-labelledby="story-keys-title">
       <div class="story-inner">
         <div class="story-head story-reveal">
-          <p class="website-kicker">Rechte sind Schlüssel</p>
-          <h2 id="story-keys-title">Ein Wasm-Dienst bekommt genau die Türen, die du ihm gibst.</h2>
+          <p class="website-kicker">Rights are capabilities</p>
+          <h2 id="story-keys-title">A Wasm service gets exactly the doors you give it.</h2>
           <p class="story-text">
-            Rechte sind hier keine Häkchen in einem Menü, sondern Gegenstände.
-            Die Genesis-Schicht reicht einem Wasm-Dienst nur benannte Imports:
-            etwa einen Framebuffer-Ausschnitt, Eingabeereignisse oder genau eine
-            Datei. Ohne Import existiert keine Tür. PCIe-, DMA- und IOMMU-Grenzen
-            sind dagegen noch Zielbild: VT-d wird strukturell geprüft, aktive
-            Translation und DMA-Abwehr sind offen.
+            Rights are not checkboxes in a menu; they are explicit objects. The
+            Genesis layer gives a Wasm service only named imports: a framebuffer
+            region, input events, or exactly one file. Without an import, no door
+            exists. PCIe, DMA, and IOMMU boundaries remain a target: VT-d structure
+            is checked, while active translation and DMA isolation are still open.
           </p>
         </div>
         <div class="story-cards">
           <figure class="story-card story-reveal" style="--reveal-delay:.1s">
             <div>
-              <h3>Der Schlüsselbund</h3>
+              <h3>The capability bundle</h3>
               <p>
-                Der Wasm-Dienst bekommt nur <code>fb</code> und <code>input</code>.
-                Beide Imports öffnen genau ihre Tür. Fragt er nach dem nicht
-                gewährten Netz-Import, gibt es dort keine Tür und keinen Host-Effekt.
-                Das ist heute real; die IOMMU-DMA-Grenze bleibt eine Zukunftsprobe.
+                The Wasm service receives only <code>fb</code> and <code>input</code>.
+                Each import opens exactly one door. If it requests the ungranted
+                network import, there is no door and no host effect. That works
+                today; the IOMMU DMA boundary remains future work.
               </p>
             </div>
-            <svg class="keys-svg" viewBox="0 0 1000 370" role="img" aria-label="Genesis gewährt einem Wasm-Dienst die Imports für Framebuffer und Eingabe; beide Türen öffnen sich. Ein nicht gewährter Netz-Import hat keine Tür und wird ohne Host-Effekt verweigert. IOMMU-DMA-Abwehr bleibt Zukunftsarbeit">
+            <svg class="keys-svg" viewBox="0 0 1000 370" role="img" aria-label="Genesis grants framebuffer and input imports to a Wasm service. Both doors open; an ungranted network import has no door and produces no host effect. IOMMU DMA isolation remains future work.">
               <g class="keys-box">
                 <rect x="40" y="130" width="210" height="110" rx="2"></rect>
-                <text class="keys-title" x="60" y="165">GENESIS-SCHICHT</text>
-                <text class="keys-sub" x="60" y="187">verwaltet alle Schlüssel</text>
+                <text class="keys-title" x="60" y="165">GENESIS LAYER</text>
+                <text class="keys-sub" x="60" y="187">manages all capabilities</text>
                 <g class="keys-glyph keys-glyph--dim" transform="translate(80 212)"><circle cx="-8" cy="0" r="5"></circle><path d="M-3 0 H14 M8 0 V6 M13 0 V4"></path></g>
                 <g class="keys-glyph keys-glyph--dim" transform="translate(125 212)"><circle cx="-8" cy="0" r="5"></circle><path d="M-3 0 H14 M8 0 V6 M13 0 V4"></path></g>
                 <g class="keys-glyph keys-glyph--dim" transform="translate(170 212)"><circle cx="-8" cy="0" r="5"></circle><path d="M-3 0 H14 M8 0 V6 M13 0 V4"></path></g>
               </g>
               <g class="keys-domain">
                 <rect x="400" y="120" width="210" height="130" rx="2"></rect>
-                <text class="keys-title" x="505" y="155" text-anchor="middle">WASM-DIENST</text>
+                <text class="keys-title" x="505" y="155" text-anchor="middle">WASM SERVICE</text>
                 <text class="keys-sub" x="505" y="185" text-anchor="middle" opacity="0">Imports: fb · input<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.155;0.175;1" dur="12s" repeatCount="indefinite"></animate></text>
                 <g opacity="0">
                   <g class="keys-glyph" transform="translate(465 215)"><circle cx="-8" cy="0" r="5"></circle><path d="M-3 0 H14 M8 0 V6 M13 0 V4"></path></g>
@@ -1879,7 +1876,7 @@
                   <animate attributeName="opacity" values="0.8;0;0" keyTimes="0;0.05;1" dur="12s" begin="3.6s" repeatCount="indefinite"></animate>
                 </circle>
                 <text class="keys-door-label" x="830" y="75">FB-IMPORT</text>
-                <text class="keys-door-sub" x="830" y="95">explizit gewährt</text>
+                <text class="keys-door-sub" x="830" y="95">explicitly granted</text>
               </g>
               <g class="keys-door-group">
                 <rect class="keys-door-glow" x="744" y="147" width="56" height="76" opacity="0">
@@ -1894,12 +1891,12 @@
                   <animate attributeName="opacity" values="0.8;0;0" keyTimes="0;0.05;1" dur="12s" begin="5.2s" repeatCount="indefinite"></animate>
                 </circle>
                 <text class="keys-door-label" x="830" y="178">INPUT-IMPORT</text>
-                <text class="keys-door-sub" x="830" y="198">explizit gewährt</text>
+                <text class="keys-door-sub" x="830" y="198">explicitly granted</text>
               </g>
               <g class="keys-door-group">
                 <line class="proof-barrier" x1="740" y1="246" x2="740" y2="330"></line>
-                <text class="keys-door-label" x="830" y="281">NET-IMPORT FEHLT</text>
-                <text class="keys-door-sub" x="830" y="301">keine Tür im ABI</text>
+                <text class="keys-door-label" x="830" y="281">NET IMPORT MISSING</text>
+                <text class="keys-door-sub" x="830" y="301">no door in the ABI</text>
               </g>
               <g class="keys-shield">
                 <g transform="translate(700 288) scale(1.8)">
@@ -1929,25 +1926,25 @@
                 <animateMotion path="M 610 210 C 650 240 665 288 688 288" keyPoints="0;0;1;1" keyTimes="0;0.517;0.567;1" calcMode="linear" dur="12s" repeatCount="indefinite"></animateMotion>
                 <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.517;0.527;0.562;0.577;1" dur="12s" repeatCount="indefinite"></animate>
               </circle>
-              <text class="keys-log" x="40" y="356" opacity="0">&gt; log: fb erlaubt · input erlaubt · net import<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.617;0.64;0.93;0.96;1" dur="12s" repeatCount="indefinite"></animate></text>
-              <text class="keys-log keys-log--bad" x="368" y="356" opacity="0">FEHLT — VERWEIGERT · HOST-EFFEKT 0<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.617;0.64;0.93;0.96;1" dur="12s" repeatCount="indefinite"></animate></text>
+              <text class="keys-log" x="40" y="356" opacity="0">&gt; log: fb allowed · input allowed · net import<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.617;0.64;0.93;0.96;1" dur="12s" repeatCount="indefinite"></animate></text>
+              <text class="keys-log keys-log--bad" x="368" y="356" opacity="0">MISSING — DENIED · HOST EFFECT 0<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.617;0.64;0.93;0.96;1" dur="12s" repeatCount="indefinite"></animate></text>
             </svg>
           </figure>
           <figure class="story-card story-reveal" style="--reveal-delay:.2s">
             <div>
-              <h3>Sofort stoppen, sauber neu starten</h3>
+              <h3>Stop immediately, restart cleanly</h3>
               <p>
-                Verrennt sich ein Wasm-Dienst, entzieht Genesis seine Imports,
-                stoppt ihn und startet eine frische Instanz — ohne System-Neustart.
-                Eine konkrete Unter-einer-Sekunde-SLA ist noch nicht bewiesen.
+                If a Wasm service gets stuck, Genesis revokes its imports, stops it,
+                and starts a fresh instance without rebooting the system. A concrete
+                sub-second SLA has not yet been proven.
               </p>
             </div>
-            <svg class="kill-svg" viewBox="0 0 1000 250" role="img" aria-label="Ein hängender Wasm-Dienst wird gestoppt und als frische Instanz neu gestartet, ohne System-Neustart; eine konkrete Zeit-SLA wird nicht behauptet">
+            <svg class="kill-svg" viewBox="0 0 1000 250" role="img" aria-label="A stuck Wasm service is stopped and restarted as a fresh instance without a system reboot; no concrete timing SLA is claimed.">
               <text class="kill-cmd" x="40" y="125" opacity="0">&gt; genesis: kill_domain(testlauf)<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.275;0.3;0.81;0.86;1" dur="8s" repeatCount="indefinite"></animate></text>
-              <text class="kill-hang" x="500" y="44" text-anchor="middle" opacity="0">domäne hängt …<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.125;0.15;0.3;0.33;1" dur="8s" repeatCount="indefinite"></animate></text>
+              <text class="kill-hang" x="500" y="44" text-anchor="middle" opacity="0">domain stalled …<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.125;0.15;0.3;0.33;1" dur="8s" repeatCount="indefinite"></animate></text>
               <g class="kill-box">
                 <rect x="380" y="60" width="240" height="130" rx="2"></rect>
-                <text class="keys-title" x="500" y="115" text-anchor="middle">DOMÄNE: TESTLAUF v3</text>
+                <text class="keys-title" x="500" y="115" text-anchor="middle">DOMAIN: TEST RUN v3</text>
                 <path class="kill-glitch" d="M410 140 l30 0 l8 -10 l12 18 l10 -8 l24 0" opacity="0">
                   <animate attributeName="opacity" values="0;0;0.9;0.2;0.9;0.15;0.9;0;0" keyTimes="0;0.125;0.15;0.18;0.21;0.24;0.27;0.3;1" dur="8s" repeatCount="indefinite"></animate>
                 </path>
@@ -1958,8 +1955,8 @@
               </g>
               <g class="kill-box kill-box--fresh" opacity="0">
                 <rect x="380" y="60" width="240" height="130" rx="2"></rect>
-                <text class="keys-title" x="500" y="115" text-anchor="middle">DOMÄNE: TESTLAUF v4</text>
-                <text class="keys-sub" x="500" y="145" text-anchor="middle">frisch gestartet</text>
+                <text class="keys-title" x="500" y="115" text-anchor="middle">DOMAIN: TEST RUN v4</text>
+                <text class="keys-sub" x="500" y="145" text-anchor="middle">freshly started</text>
                 <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.425;0.46;0.9;0.95;1" dur="8s" repeatCount="indefinite"></animate>
               </g>
               <circle class="keys-ping" cx="500" cy="125" r="10" opacity="0">
@@ -1970,13 +1967,13 @@
               <circle class="kill-sweep" cx="790" cy="125" r="48" transform="rotate(-90 790 125)">
                 <animate attributeName="stroke-dashoffset" values="301.6;301.6;60;60;301.6;301.6" keyTimes="0;0.325;0.425;0.85;0.9;1" dur="8s" repeatCount="indefinite"></animate>
               </circle>
-              <text class="kill-time" x="790" y="132" opacity="0">SOFORT<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.425;0.46;0.85;0.9;1" dur="8s" repeatCount="indefinite"></animate></text>
-              <text class="kill-note" x="790" y="205" opacity="0">ohne System-Neustart<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.44;0.48;0.85;0.9;1" dur="8s" repeatCount="indefinite"></animate></text>
+              <text class="kill-time" x="790" y="132" opacity="0">NOW<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.425;0.46;0.85;0.9;1" dur="8s" repeatCount="indefinite"></animate></text>
+              <text class="kill-note" x="790" y="205" opacity="0">without a system reboot<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.44;0.48;0.85;0.9;1" dur="8s" repeatCount="indefinite"></animate></text>
               <circle class="stack-heart" cx="60" cy="220" r="3.5">
                 <animate attributeName="r" values="3;5;3" keyTimes="0;0.5;1" dur="1.4s" repeatCount="indefinite"></animate>
                 <animate attributeName="opacity" values="0.5;1;0.5" keyTimes="0;0.5;1" dur="1.4s" repeatCount="indefinite"></animate>
               </circle>
-              <text class="kill-heart-label" x="80" y="224">System-Herzschlag: ruhig</text>
+              <text class="kill-heart-label" x="80" y="224">System heartbeat: calm</text>
             </svg>
           </figure>
         </div>
@@ -1985,61 +1982,61 @@
     <section class="website-story story-drivers" data-story-reveal aria-labelledby="story-drivers-title">
       <div class="story-inner">
         <div class="story-head story-reveal">
-          <p class="website-kicker">Der Käfig ist Wasm</p>
-          <h2 id="story-drivers-title">Treiber bleiben bewusst im Kernel.</h2>
+          <p class="website-kicker">Wasm is the cage</p>
+          <h2 id="story-drivers-title">Drivers deliberately stay in the kernel.</h2>
           <p class="story-text">
-            raiOS verschiebt seine Treiber heute nicht in eigene Domänen. USB,
-            Grafik, Netzwerk und andere Hardwarepfade bleiben nativ und
-            kernel-resident — bewusst, bis die Wasm-Servicewelt belastbar steht.
-            Die harte Grenze liegt darüber: austauschbare Dienste laufen als Wasm
-            mit expliziten Imports. Trapt ein Dienst, bleibt der Kernel am Leben.
+            raiOS does not move its drivers into separate domains today. USB,
+            graphics, networking, and other hardware paths remain native and
+            kernel-resident until the Wasm service world is robust. The hard
+            boundary sits above them: replaceable services run as Wasm with
+            explicit imports. If one traps, the kernel remains alive.
           </p>
         </div>
         <div class="story-cards">
           <figure class="story-card story-reveal" style="--reveal-delay:.1s">
             <div>
-              <h3>Der Schutz liegt über den Treibern</h3>
+              <h3>Protection sits above the drivers</h3>
               <p>
-                Links die bekannte Gefahr: nativer Treibercode teilt den
-                Fehlerbereich des Kernels. raiOS behauptet dafür noch keinen
-                isolierten Treiber-Neustart. Rechts liegt der heute echte Käfig:
-                Ein ersetzbarer Wasm-Dienst trappt, nur seine Instanz startet neu.
+                On the left is the familiar risk: native driver code shares the
+                kernel's fault domain. raiOS does not yet claim isolated driver
+                restarts. On the right is today's real cage: a replaceable Wasm
+                service traps, and only its instance restarts.
               </p>
             </div>
-            <svg class="drv-svg" viewBox="0 0 1000 340" role="img" aria-label="Links die bekannte Gefahr nativer Treiber im Kernel. Rechts die aktuelle raiOS-Grenze: Treiber und Hardwarepfade bleiben im Rust-Kernel, während ein trapender Wasm-Dienst allein neu startet">
+            <svg class="drv-svg" viewBox="0 0 1000 340" role="img" aria-label="On the left, the familiar risk of native drivers in the kernel. On the right, today's raiOS boundary: drivers and hardware paths stay in the Rust kernel while a trapped Wasm service restarts alone.">
               <text class="drv-panel-title" x="260" y="44">KLASSISCH</text>
               <text class="drv-panel-title" x="740" y="44">RAIOS</text>
               <line class="drv-divider" x1="500" y1="36" x2="500" y2="304"></line>
               <g class="drv-kernel-big">
                 <rect x="60" y="64" width="400" height="216" rx="2"></rect>
                 <text class="keys-title" x="80" y="94">KERNEL</text>
-                <text class="keys-sub" x="150" y="94">— alles wohnt hier drin</text>
+                <text class="keys-sub" x="150" y="94">— everything lives here</text>
               </g>
               <g class="drv-chip"><rect x="80" y="120" width="85" height="58"></rect><text class="drv-chip-label" x="122" y="153">WLAN</text></g>
               <g class="drv-chip"><rect x="175" y="120" width="85" height="58"></rect><text class="drv-chip-label" x="217" y="153">USB</text></g>
-              <g class="drv-chip"><rect x="270" y="120" width="85" height="58"></rect><text class="drv-chip-label" x="312" y="153">GRAFIK</text></g>
-              <g class="drv-chip"><rect x="365" y="120" width="85" height="58"></rect><text class="drv-chip-label" x="407" y="153">NETZ</text></g>
-              <g class="drv-chip"><rect x="80" y="198" width="370" height="58"></rect><text class="drv-chip-label" x="265" y="231">… UND ALLE DEINE PROGRAMME</text></g>
+              <g class="drv-chip"><rect x="270" y="120" width="85" height="58"></rect><text class="drv-chip-label" x="312" y="153">GRAPHICS</text></g>
+              <g class="drv-chip"><rect x="365" y="120" width="85" height="58"></rect><text class="drv-chip-label" x="407" y="153">NET</text></g>
+              <g class="drv-chip"><rect x="80" y="198" width="370" height="58"></rect><text class="drv-chip-label" x="265" y="231">… AND ALL YOUR PROGRAMS</text></g>
               <rect class="stack-crash-flash" x="80" y="120" width="85" height="58" opacity="0">
                 <animate attributeName="opacity" values="0;0.9;0.2;0.9;0;0" keyTimes="0;0.02;0.04;0.06;0.09;1" dur="10s" begin="2s" repeatCount="indefinite"></animate>
               </rect>
               <g class="drv-bluescreen" opacity="0">
                 <rect x="60" y="64" width="400" height="216" rx="2"></rect>
-                <text class="drv-bluescreen-text" x="260" y="168">:(  SYSTEM STEHT</text>
-                <text class="drv-bluescreen-sub" x="260" y="196">kompletter Neustart nötig</text>
+                <text class="drv-bluescreen-text" x="260" y="168">:(  SYSTEM DOWN</text>
+                <text class="drv-bluescreen-sub" x="260" y="196">full reboot required</text>
                 <animate attributeName="opacity" values="0;0;0.96;0.96;0;0" keyTimes="0;0.3;0.34;0.78;0.84;1" dur="10s" repeatCount="indefinite"></animate>
               </g>
-              <text class="drv-caption drv-caption--bad" x="260" y="322">EIN TREIBERFEHLER = ALLES STEHT</text>
+              <text class="drv-caption drv-caption--bad" x="260" y="322">ONE DRIVER FAULT = EVERYTHING STOPS</text>
               <g class="drv-kernel-small">
                 <rect x="540" y="236" width="400" height="44" rx="2"></rect>
-                <text class="drv-kernel-small-label" x="726" y="262">RUST-KERNEL — TREIBER + WASM-INTERPRETER</text>
+                <text class="drv-kernel-small-label" x="726" y="262">RUST KERNEL — DRIVERS + WASM INTERPRETER</text>
                 <circle class="stack-heart" cx="920" cy="258" r="3.5">
                   <animate attributeName="r" values="3;5;3" keyTimes="0;0.5;1" dur="1.4s" repeatCount="indefinite"></animate>
                   <animate attributeName="opacity" values="0.5;1;0.5" keyTimes="0;0.5;1" dur="1.4s" repeatCount="indefinite"></animate>
                 </circle>
               </g>
               <g class="stack-domain"><rect x="540" y="64" width="92" height="136"></rect><text class="stack-domain-label" x="586" y="138">AGENT</text></g>
-              <g class="stack-domain"><rect x="640" y="64" width="92" height="136"></rect><text class="stack-domain-label" x="686" y="138">NETZ-API</text></g>
+              <g class="stack-domain"><rect x="640" y="64" width="92" height="136"></rect><text class="stack-domain-label" x="686" y="138">NET API</text></g>
               <g class="stack-domain"><rect x="740" y="64" width="92" height="136"></rect><text class="stack-domain-label" x="786" y="138">DIAG</text></g>
               <g class="stack-domain"><rect x="840" y="64" width="92" height="136"></rect><text class="stack-domain-label" x="886" y="138">APP</text></g>
               <rect class="stack-crash-flash" x="540" y="64" width="92" height="136" opacity="0">
@@ -2052,41 +2049,40 @@
                 <animate attributeName="r" values="8;34;34" keyTimes="0;0.06;1" dur="10s" begin="4.6s" repeatCount="indefinite"></animate>
                 <animate attributeName="opacity" values="0.85;0;0" keyTimes="0;0.06;1" dur="10s" begin="4.6s" repeatCount="indefinite"></animate>
               </circle>
-              <text class="stack-restart-note" x="740" y="222" opacity="0">nur der Wasm-Dienst startete neu<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.48;0.52;0.78;0.84;1" dur="10s" repeatCount="indefinite"></animate></text>
-              <text class="drv-caption drv-caption--ok" x="740" y="322">EIN WASM-TRAP = EIN DIENST-NEUSTART</text>
+              <text class="stack-restart-note" x="740" y="222" opacity="0">only the Wasm service restarted<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.48;0.52;0.78;0.84;1" dur="10s" repeatCount="indefinite"></animate></text>
+              <text class="drv-caption drv-caption--ok" x="740" y="322">ONE WASM TRAP = ONE SERVICE RESTART</text>
             </svg>
           </figure>
           <figure class="story-card story-reveal" style="--reveal-delay:.2s">
             <div>
-              <h3>Vom Interrupt zum gewährten Import</h3>
+              <h3>From interrupt to granted import</h3>
               <p>
-                Die Netzwerkkarte meldet sich; der native Treiber im Kernel
-                behandelt IRQ und DMA. Ein Wasm-Dienst sieht davon nur den
-                schmalen, gewährten Import. Er kann weder das Gerät noch eine
-                DMA-Region direkt benennen.
+                The network card signals; the native kernel driver handles IRQ and
+                DMA. A Wasm service sees only the narrow, granted import. It cannot
+                address either the device or a DMA region directly.
               </p>
             </div>
-            <svg class="irq-svg" viewBox="0 0 1000 260" role="img" aria-label="Ein Hardware-Interrupt wird vom nativen Treiber im Rust-Kernel behandelt; ein Wasm-Dienst erhält nur Daten über einen ausdrücklich gewährten Import und keinen direkten DMA-Zugriff">
+            <svg class="irq-svg" viewBox="0 0 1000 260" role="img" aria-label="A hardware interrupt is handled by the native Rust-kernel driver; a Wasm service receives data only through an explicitly granted import and has no direct DMA access.">
               <g class="keys-box">
                 <rect x="60" y="95" width="170" height="80" rx="2"></rect>
                 <text class="keys-title" x="145" y="128" text-anchor="middle">HARDWARE</text>
-                <text class="keys-sub" x="145" y="150" text-anchor="middle">Netzwerkkarte</text>
+                <text class="keys-sub" x="145" y="150" text-anchor="middle">network card</text>
               </g>
-              <text class="irq-kernel-label" x="487" y="28">TREIBER IM RUST-KERNEL</text>
+              <text class="irq-kernel-label" x="487" y="28">DRIVER IN THE RUST KERNEL</text>
               <rect class="irq-kernel" x="465" y="40" width="44" height="180" rx="2"></rect>
               <rect class="irq-kernel-flash" x="465" y="40" width="44" height="180" rx="2" opacity="0">
                 <animate attributeName="opacity" values="0;0;0.9;0;0" keyTimes="0;0.2;0.24;0.3;1" dur="6s" repeatCount="indefinite"></animate>
               </rect>
-              <text class="irq-kernel-sub" x="487" y="244">behandelt IRQ + DMA</text>
+              <text class="irq-kernel-sub" x="487" y="244">handles IRQ + DMA</text>
               <g class="keys-domain">
                 <rect x="740" y="85" width="210" height="100" rx="2"></rect>
-                <text class="keys-title" x="845" y="125" text-anchor="middle">WASM-NETZDIENST</text>
-                <text class="keys-sub" x="845" y="150" text-anchor="middle">gewährter Import · keine DMA</text>
+                <text class="keys-title" x="845" y="125" text-anchor="middle">WASM NET SERVICE</text>
+                <text class="keys-sub" x="845" y="150" text-anchor="middle">granted import · no DMA</text>
               </g>
               <line class="pipe-line" x1="234" y1="115" x2="736" y2="115"></line>
               <line class="pipe-line" x1="234" y1="150" x2="736" y2="150"></line>
               <text class="irq-flow-label" x="340" y="100">IRQ → TREIBER</text>
-              <text class="irq-flow-label irq-flow-label--ok" x="560" y="182">← Antwort über das Import-Gate</text>
+              <text class="irq-flow-label irq-flow-label--ok" x="560" y="182">← response through the import gate</text>
               <circle class="keys-pulse" r="6" opacity="0">
                 <animateMotion path="M 234 115 L 736 115" keyPoints="0;0;0.46;0.547;1;1" keyTimes="0;0.05;0.2;0.28;0.4;1" calcMode="linear" dur="6s" repeatCount="indefinite"></animateMotion>
                 <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.05;0.07;0.39;0.42;1" dur="6s" repeatCount="indefinite"></animate>
@@ -2111,49 +2107,48 @@
     <section class="website-story story-proof" data-story-reveal aria-labelledby="story-proof-title">
       <div class="story-inner">
         <div class="story-head story-reveal">
-          <p class="website-kicker">Beweise statt Versprechen</p>
-          <h2 id="story-proof-title">Was heute geprüft wird, muss hart scheitern.</h2>
+          <p class="website-kicker">Evidence, not promises</p>
+          <h2 id="story-proof-title">What is tested today must fail hard.</h2>
           <p class="story-text">
-            Zwei Grenzen sind heute echte Negativtests: Ein Wasm-Dienst greift
-            außerhalb seines Speichers und trappt; ein nicht gewährter Import
-            fehlt vollständig und erzeugt keinen Host-Effekt. Fremde DMA per
-            IOMMU abzuwehren bleibt Zukunftsarbeit: VT-d hat eine Strukturprobe,
-            aber noch keine aktive Translation.
+            Two boundaries are real negative tests today: a Wasm service accesses
+            memory outside its region and traps; an ungranted import is completely
+            absent and produces no host effect. Blocking foreign DMA through the
+            IOMMU remains future work: VT-d has a structural check, but no active
+            translation yet.
           </p>
         </div>
         <div class="story-cards">
           <figure class="story-card story-reveal" style="--reveal-delay:.1s">
             <div>
-              <h3>Zwei echte Angriffe, eine Zukunftsprobe</h3>
+              <h3>Two real attacks, one future test</h3>
               <p>
-                OOB-Zugriff und Import-Deny laufen als feste Tests und müssen
-                scheitern, sonst bleibt der Build rot. Die dritte Spur zeigt
-                ehrlich den offenen Schritt: IOMMU-Translation und echte
-                DMA-Abwehr sind noch nicht aktiviert.
+                OOB access and import denial run as fixed tests and must fail, or
+                the build remains red. The third lane shows the open step honestly:
+                IOMMU translation and real DMA isolation are not active yet.
               </p>
             </div>
-            <svg class="proof-svg" viewBox="0 0 1000 370" role="img" aria-label="Eine Wasm-Testdomäne provoziert einen Speicherzugriff außerhalb ihrer Grenze und einen nicht gewährten Import; beide werden real abgewehrt und protokolliert. Fremde DMA ist als noch offene IOMMU-Strukturprobe markiert">
+            <svg class="proof-svg" viewBox="0 0 1000 370" role="img" aria-label="A Wasm test domain provokes an out-of-bounds memory access and an ungranted import; both are blocked and logged. Foreign DMA is marked as an open IOMMU structural test.">
               <g class="keys-domain">
                 <rect x="60" y="100" width="200" height="140" rx="2"></rect>
-                <text class="keys-title" x="160" y="150" text-anchor="middle">TEST-DOMÄNE</text>
-                <text class="keys-sub" x="160" y="176" text-anchor="middle">versucht das Verbotene</text>
+                <text class="keys-title" x="160" y="150" text-anchor="middle">TEST DOMAIN</text>
+                <text class="keys-sub" x="160" y="176" text-anchor="middle">attempts the forbidden</text>
               </g>
               <line class="proof-barrier" x1="400" y1="30" x2="400" y2="330"></line>
-              <text class="proof-barrier-label" x="400" y="356">HEUTE: WASM-GRENZE · IMPORT-GATE</text>
+              <text class="proof-barrier-label" x="400" y="356">TODAY: WASM BOUNDARY · IMPORT GATE</text>
               <g class="keys-box">
                 <rect x="420" y="40" width="200" height="80" rx="2"></rect>
                 <text class="keys-title" x="520" y="74" text-anchor="middle">WASM-OOB</text>
-                <text class="keys-sub" x="520" y="98" text-anchor="middle">Speichergrenze → Trap</text>
+                <text class="keys-sub" x="520" y="98" text-anchor="middle">memory boundary → trap</text>
               </g>
               <g class="keys-box">
                 <rect x="420" y="140" width="200" height="80" rx="2"></rect>
-                <text class="keys-title" x="520" y="174" text-anchor="middle">IMPORT FEHLT</text>
-                <text class="keys-sub" x="520" y="198" text-anchor="middle">keine Tür im ABI</text>
+                <text class="keys-title" x="520" y="174" text-anchor="middle">IMPORT MISSING</text>
+                <text class="keys-sub" x="520" y="198" text-anchor="middle">no door in the ABI</text>
               </g>
               <g class="keys-box">
                 <rect x="420" y="240" width="200" height="80" rx="2"></rect>
-                <text class="keys-title" x="520" y="274" text-anchor="middle">FREMDE DMA — ZIEL</text>
-                <text class="keys-sub" x="520" y="298" text-anchor="middle">VT-d nur Strukturprobe</text>
+                <text class="keys-title" x="520" y="274" text-anchor="middle">FOREIGN DMA — TARGET</text>
+                <text class="keys-sub" x="520" y="298" text-anchor="middle">VT-d structural check only</text>
               </g>
               <circle class="proof-attack" r="6" opacity="0">
                 <animateMotion path="M 260 130 C 320 95 360 80 394 80" keyPoints="0;0;1;1" keyTimes="0;0.125;0.175;1" calcMode="linear" dur="12s" repeatCount="indefinite"></animateMotion>
@@ -2181,26 +2176,26 @@
               </g>
               <g class="proof-log-panel">
                 <rect x="680" y="40" width="280" height="280" rx="2"></rect>
-                <text class="proof-log-header" x="700" y="72">PRÜFPROTOKOLL</text>
+                <text class="proof-log-header" x="700" y="72">TEST LOG</text>
                 <line class="proof-log-rule" x1="700" y1="86" x2="940" y2="86"></line>
                 <text class="proof-log-line" x="700" y="120" opacity="0">✓ wasm-oob: TRAP<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.2;0.22;0.94;0.97;1" dur="12s" repeatCount="indefinite"></animate></text>
-                <text class="proof-log-line" x="700" y="152" opacity="0">✓ import-deny: KEINE TÜR<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.45;0.47;0.94;0.97;1" dur="12s" repeatCount="indefinite"></animate></text>
-                <text class="proof-log-line" x="700" y="184" opacity="0">△ fremde dma: STRUKTURPROBE<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.7;0.72;0.94;0.97;1" dur="12s" repeatCount="indefinite"></animate></text>
-                <text class="proof-log-line proof-log-line--ok" x="700" y="240" opacity="0">2 ECHTE GRENZEN HALTEN.<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.8;0.83;0.94;0.97;1" dur="12s" repeatCount="indefinite"></animate></text>
-                <text class="proof-log-line proof-log-line--dim" x="700" y="266" opacity="0">IOMMU-Translation noch offen<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.8;0.83;0.94;0.97;1" dur="12s" repeatCount="indefinite"></animate></text>
+                <text class="proof-log-line" x="700" y="152" opacity="0">✓ import-deny: NO DOOR<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.45;0.47;0.94;0.97;1" dur="12s" repeatCount="indefinite"></animate></text>
+                <text class="proof-log-line" x="700" y="184" opacity="0">△ foreign dma: STRUCTURAL CHECK<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.7;0.72;0.94;0.97;1" dur="12s" repeatCount="indefinite"></animate></text>
+                <text class="proof-log-line proof-log-line--ok" x="700" y="240" opacity="0">2 REAL BOUNDARIES HOLD.<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.8;0.83;0.94;0.97;1" dur="12s" repeatCount="indefinite"></animate></text>
+                <text class="proof-log-line proof-log-line--dim" x="700" y="266" opacity="0">IOMMU translation still open<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.8;0.83;0.94;0.97;1" dur="12s" repeatCount="indefinite"></animate></text>
               </g>
             </svg>
           </figure>
           <figure class="story-card story-reveal" style="--reveal-delay:.2s">
             <div>
-              <h3>Jede Version kann zurück</h3>
+              <h3>Every version can roll back</h3>
               <p>
-                Fällt eine neue Version durch, springt die Domäne auf den letzten
-                guten Stand zurück. Und jeder Build, jeder Test hinterlässt einen
-                Bericht im Archiv — nichts passiert unbeobachtet.
+                If a new version fails, the domain returns to the last known-good
+                state. Every build and every test leaves a report in the archive;
+                nothing happens unobserved.
               </p>
             </div>
-            <svg class="ver-svg" viewBox="0 0 1000 270" role="img" aria-label="Versions-Zeitleiste: v7 fällt durch und wird per Rollback auf v6 zurückgesetzt; jeder Schritt erzeugt einen Bericht im Archiv">
+            <svg class="ver-svg" viewBox="0 0 1000 270" role="img" aria-label="Version timeline: v7 fails and rolls back to v6; every step creates an archived report.">
               <line class="pipe-line" x1="80" y1="150" x2="700" y2="150"></line>
               <circle class="ver-node" cx="140" cy="150" r="7"></circle>
               <circle class="ver-node" cx="300" cy="150" r="7"></circle>
@@ -2216,7 +2211,7 @@
                 <animateMotion path="M 460 150 L 620 150" keyPoints="0;0;1;1" keyTimes="0;0.1;0.2;1" calcMode="linear" dur="10s" repeatCount="indefinite"></animateMotion>
                 <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.1;0.12;0.19;0.22;1" dur="10s" repeatCount="indefinite"></animate>
               </circle>
-              <text class="ver-fail" x="620" y="106" opacity="0">v7 fällt durch den Test<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.23;0.26;0.42;0.46;1" dur="10s" repeatCount="indefinite"></animate></text>
+              <text class="ver-fail" x="620" y="106" opacity="0">v7 fails the test<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.23;0.26;0.42;0.46;1" dur="10s" repeatCount="indefinite"></animate></text>
               <path class="pipe-rollback-arc" d="M 620 150 Q 540 60 460 150" opacity="0">
                 <animate attributeName="opacity" values="0;0;0.5;0.5;0;0" keyTimes="0;0.33;0.36;0.48;0.53;1" dur="10s" repeatCount="indefinite"></animate>
               </path>
@@ -2229,54 +2224,53 @@
                 <animate attributeName="r" values="8;30;30" keyTimes="0;0.06;1" dur="10s" begin="4.5s" repeatCount="indefinite"></animate>
                 <animate attributeName="opacity" values="0.85;0;0" keyTimes="0;0.06;1" dur="10s" begin="4.5s" repeatCount="indefinite"></animate>
               </circle>
-              <text class="ver-ok" x="460" y="106" opacity="0">v6 läuft weiter — nichts verloren<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.48;0.52;0.85;0.9;1" dur="10s" repeatCount="indefinite"></animate></text>
+              <text class="ver-ok" x="460" y="106" opacity="0">v6 keeps running — nothing lost<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.48;0.52;0.85;0.9;1" dur="10s" repeatCount="indefinite"></animate></text>
               <g class="proof-log-panel">
                 <rect x="760" y="40" width="200" height="190" rx="2"></rect>
                 <text class="proof-log-header" x="780" y="72">ARTSTOR</text>
                 <line class="proof-log-rule" x1="780" y1="86" x2="940" y2="86"></line>
                 <text class="proof-log-line" x="780" y="118" opacity="0">build v7 ✓<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.14;0.17;0.94;0.97;1" dur="10s" repeatCount="indefinite"></animate></text>
-                <text class="proof-log-line proof-log-line--bad" x="780" y="150" opacity="0">negativtest: ROT<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.28;0.31;0.94;0.97;1" dur="10s" repeatCount="indefinite"></animate></text>
+                <text class="proof-log-line proof-log-line--bad" x="780" y="150" opacity="0">negative test: RED<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.28;0.31;0.94;0.97;1" dur="10s" repeatCount="indefinite"></animate></text>
                 <text class="proof-log-line" x="780" y="182" opacity="0">rollback → v6 ✓<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.5;0.53;0.94;0.97;1" dur="10s" repeatCount="indefinite"></animate></text>
-                <text class="proof-log-line proof-log-line--dim" x="780" y="214" opacity="0">alles archiviert<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.55;0.58;0.94;0.97;1" dur="10s" repeatCount="indefinite"></animate></text>
+                <text class="proof-log-line proof-log-line--dim" x="780" y="214" opacity="0">everything archived<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.55;0.58;0.94;0.97;1" dur="10s" repeatCount="indefinite"></animate></text>
               </g>
             </svg>
           </figure>
         </div>
         <p class="story-note story-note--wide story-reveal" style="--reveal-delay:.15s">
-          Ehrlich gesagt: Einen mathematischen Beweis hat raiOS nicht. Stattdessen —
-          Prädikate, Negativtests und Rollback ab Tag 1. Ein dokumentierter Tausch,
-          kein Versehen. Sobald Fremde das System nutzen, kommen signierte,
-          reproduzierbare Builds und ein Audit-Log jeder Rechtevergabe dazu.
+          Honestly: raiOS does not have a mathematical proof. Instead, it uses
+          predicates, negative tests, and rollback from day one — a documented
+          tradeoff, not an accident. Before other people use the system, signed,
+          reproducible builds and an audit log for every grant will be added.
         </p>
       </div>
     </section>
     <section class="website-story story-know" data-story-reveal aria-labelledby="story-know-title">
       <div class="story-inner">
         <div class="story-head story-reveal">
-          <p class="website-kicker">Das System kennt sich selbst</p>
-          <h2 id="story-know-title">Kein Raten in Logdateien. Der Agent fragt — das System antwortet.</h2>
+          <p class="website-kicker">The system knows itself</p>
+          <h2 id="story-know-title">No guessing through logs. The agent asks — the system answers.</h2>
           <p class="story-text">
-            Das allererste Recht, das raiOS überhaupt vergibt, ist Lesen:
-            sich selbst beschreiben. Jeder Zustand, jedes Gerät, jedes Problem
-            ist eine strukturierte Antwort — keine Prosa, kein PDF. Erst dieses
-            Wissen macht die Agenten schnell und ihre Fehler selten.
+            The first right raiOS grants is read access: permission to describe
+            itself. Every state, device, and problem is a structured answer — not
+            prose, not a PDF. That knowledge makes agents fast and their mistakes rare.
           </p>
         </div>
         <div class="story-cards">
           <figure class="story-card story-reveal" style="--reveal-delay:.1s">
             <div>
-              <h3>Frage und Antwort — beides in Daten</h3>
+              <h3>Question and answer — both as data</h3>
               <p>
-                system.snapshot, device.graph, problem.list: Der Agent bekommt
-                Fakten statt Vermutungen. Und wenn er schreiben will, antwortet
-                das System auch strukturiert — mit einem Nein.
+                system.snapshot, device.graph, problem.list: the agent receives
+                facts instead of guesses. When it tries to write, the system also
+                answers structurally — with a no.
               </p>
             </div>
-            <svg class="know-svg" viewBox="0 0 1000 410" role="img" aria-label="Der Agent stellt strukturierte Fragen wie system.snapshot und problem.list; das System antwortet mit Daten, und module.persist wird mit capability_denied abgelehnt">
+            <svg class="know-svg" viewBox="0 0 1000 410" role="img" aria-label="The agent asks structured questions such as system.snapshot and problem.list; the system answers with data, and module.persist is rejected with capability_denied.">
               <g class="keys-domain">
                 <rect x="60" y="80" width="280" height="220" rx="2"></rect>
                 <text class="keys-title" x="80" y="112">AGENT</text>
-                <text class="keys-sub" x="80" y="134">fragt im Protokoll, nicht in Prosa</text>
+                <text class="keys-sub" x="80" y="134">asks in protocol, not prose</text>
                 <text class="know-q" x="80" y="170" opacity="0">&gt; system.snapshot<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.03;0.05;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
                 <text class="know-q" x="80" y="198" opacity="0">&gt; device.graph<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.22;0.24;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
                 <text class="know-q" x="80" y="226" opacity="0">&gt; problem.list<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.44;0.46;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
@@ -2300,20 +2294,20 @@
               </circle>
               <g class="proof-log-panel">
                 <rect x="480" y="50" width="460" height="310" rx="2"></rect>
-                <text class="proof-log-header" x="500" y="82">SYSTEM — STRUKTURIERTE FAKTEN</text>
+                <text class="proof-log-header" x="500" y="82">SYSTEM — STRUCTURED FACTS</text>
                 <line class="proof-log-rule" x1="500" y1="96" x2="920" y2="96"></line>
-                <text class="proof-log-line" x="500" y="130" opacity="0">uptime 42 s · domänen: 7 · build läuft: 1<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.12;0.14;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
-                <text class="proof-log-line" x="500" y="166" opacity="0">usb: xhci → hub → tastatur ✓<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.31;0.33;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
-                <text class="proof-log-line" x="500" y="188" opacity="0">wlan: 88w8897 — chip erkannt ✓<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.34;0.36;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
-                <text class="proof-log-line know-a--warn" x="500" y="224" opacity="0">problem №1: netz-domäne wartet auf schlüssel<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.53;0.55;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
-                <text class="proof-log-line proof-log-line--bad" x="500" y="262" opacity="0">capability_denied — fehlende beweise<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.75;0.77;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
-                <text class="proof-log-line proof-log-line--dim" x="500" y="284" opacity="0">schreiben braucht: manifest + test + freigabe<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.78;0.8;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
+                <text class="proof-log-line" x="500" y="130" opacity="0">uptime 42 s · domains: 7 · builds running: 1<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.12;0.14;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
+                <text class="proof-log-line" x="500" y="166" opacity="0">usb: xhci → hub → keyboard ✓<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.31;0.33;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
+                <text class="proof-log-line" x="500" y="188" opacity="0">wlan: 88w8897 — chip detected ✓<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.34;0.36;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
+                <text class="proof-log-line know-a--warn" x="500" y="224" opacity="0">problem №1: net domain waits for capability<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.53;0.55;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
+                <text class="proof-log-line proof-log-line--bad" x="500" y="262" opacity="0">capability_denied — evidence missing<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.75;0.77;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
+                <text class="proof-log-line proof-log-line--dim" x="500" y="284" opacity="0">write requires: manifest + test + approval<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.78;0.8;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
               </g>
               <circle class="pipe-halo pipe-halo--bad" cx="480" cy="262" r="10" opacity="0">
                 <animate attributeName="r" values="10;28;28" keyTimes="0;0.05;1" dur="16s" begin="12s" repeatCount="indefinite"></animate>
                 <animate attributeName="opacity" values="0.8;0;0" keyTimes="0;0.05;1" dur="16s" begin="12s" repeatCount="indefinite"></animate>
               </circle>
-              <text class="aib-closing" x="500" y="396" opacity="0">antworten sind daten — der agent muss nie raten<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.85;0.88;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
+              <text class="aib-closing" x="500" y="396" opacity="0">answers are data — the agent never has to guess<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.85;0.88;0.94;0.97;1" dur="16s" repeatCount="indefinite"></animate></text>
             </svg>
           </figure>
         </div>
@@ -2322,28 +2316,27 @@
     <section class="website-story story-trust" data-story-reveal aria-labelledby="story-trust-title">
       <div class="story-inner">
         <div class="story-head story-reveal">
-          <p class="website-kicker">Das Vertrauens-System</p>
-          <h2 id="story-trust-title">Nichts läuft, weil jemand es behauptet. Nur, weil es bewiesen ist.</h2>
+          <p class="website-kicker">The trust system</p>
+          <h2 id="story-trust-title">Nothing runs because someone claims it should. Only because it is proven.</h2>
           <p class="story-text">
-            Ein Agent darf bauen und vorschlagen — akzeptiert wird ein Programm
-            erst, wenn die Beweiskette geschlossen ist: Was behauptet es? Welche
-            Rechte will es? Welcher exakte Stand wurde getestet? Waren die Tests
-            grün? Hast du zugestimmt? Erst dann rechnet die lokale Politik ein
-            Recht aus. Behauptungen allein öffnen hier keine einzige Tür.
+            An agent may build and propose, but a program is accepted only when
+            the evidence chain is complete: what does it claim, which rights does
+            it request, which exact artifact was tested, were all tests green, and
+            did you approve it? Only then can local policy compute a grant. Claims
+            alone open no door here.
           </p>
         </div>
         <div class="story-cards">
           <figure class="story-card story-reveal" style="--reveal-delay:.1s">
             <div>
-              <h3>Die Beweiskette schließt sich</h3>
+              <h3>The evidence chain closes</h3>
               <p>
-                Vier Beweisstücke docken an: das Manifest, der exakte
-                Artefakt-Hash, der grüne Testbericht, deine Freigabe. Erst wenn
-                der Ring geschlossen ist, gibt es den Grant — und fehlt auch nur
-                ein Stück, ist sofort wieder alles gesperrt.
+                Four pieces dock: the manifest, the exact artifact hash, the green
+                test report, and your approval. Only when the ring closes is a
+                grant issued; if one piece disappears, everything locks again.
               </p>
             </div>
-            <svg class="tru-svg" viewBox="0 0 1000 400" role="img" aria-label="Vier Beweisstücke — Manifest, Artefakt-Hash, VM-Bericht, Freigabe — schließen einen Ring um das Artefakt; der Grant erscheint, und wenn ein Beweis verschwindet, wird sofort DENIED">
+            <svg class="tru-svg" viewBox="0 0 1000 400" role="img" aria-label="Four pieces of evidence — manifest, artifact hash, VM report, and approval — close a ring around the artifact. The grant appears, and missing evidence immediately returns DENIED.">
               <ellipse class="tru-ring" cx="500" cy="200" rx="285" ry="160" pathLength="100">
                 <animate attributeName="stroke-dashoffset" values="100;100;0;0" keyTimes="0;0.39;0.47;1" dur="18s" repeatCount="indefinite"></animate>
                 <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.39;0.4;0.93;0.96;1" dur="18s" repeatCount="indefinite"></animate>
@@ -2357,37 +2350,37 @@
               <line class="tru-spoke" x1="500" y1="272" x2="500" y2="240" opacity="0"><animate attributeName="opacity" values="0;0;0.6;0.6;0;0" keyTimes="0;0.47;0.49;0.93;0.96;1" dur="18s" repeatCount="indefinite"></animate></line>
               <g class="tru-artifact">
                 <rect x="420" y="160" width="160" height="80" rx="2"></rect>
-                <text class="keys-title" x="500" y="190" text-anchor="middle">ARTEFAKT</text>
+                <text class="keys-title" x="500" y="190" text-anchor="middle">ARTIFACT</text>
                 <text class="keys-sub" x="500" y="210" text-anchor="middle">musik-player.wasm</text>
-                <text class="tru-status" x="500" y="230" opacity="0">wartet auf beweise …<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.48;0.5;1" dur="18s" repeatCount="indefinite"></animate></text>
-                <text class="tru-status tru-status--ok" x="500" y="230" opacity="0">GRANT ✓ — lokal berechnet<animate attributeName="opacity" values="0;0;1;1;0;0;1;1;0;0" keyTimes="0;0.5;0.52;0.62;0.64;0.85;0.87;0.93;0.96;1" dur="18s" repeatCount="indefinite"></animate></text>
-                <text class="tru-status tru-status--bad" x="500" y="230" opacity="0">DENIED — ein beweis fehlt<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.66;0.68;0.82;0.84;1" dur="18s" repeatCount="indefinite"></animate></text>
+                <text class="tru-status" x="500" y="230" opacity="0">waiting for evidence …<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.48;0.5;1" dur="18s" repeatCount="indefinite"></animate></text>
+                <text class="tru-status tru-status--ok" x="500" y="230" opacity="0">GRANT ✓ — computed locally<animate attributeName="opacity" values="0;0;1;1;0;0;1;1;0;0" keyTimes="0;0.5;0.52;0.62;0.64;0.85;0.87;0.93;0.96;1" dur="18s" repeatCount="indefinite"></animate></text>
+                <text class="tru-status tru-status--bad" x="500" y="230" opacity="0">DENIED — evidence missing<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.66;0.68;0.82;0.84;1" dur="18s" repeatCount="indefinite"></animate></text>
               </g>
               <g class="tru-evidence" opacity="0">
                 <rect x="-85" y="-32" width="170" height="64" rx="2"></rect>
                 <text class="tru-ev-title" y="-6">MANIFEST</text>
-                <text class="tru-ev-sub" y="16">kann + will — als datei</text>
+                <text class="tru-ev-sub" y="16">can + wants — as data</text>
                 <animateMotion path="M 60 200 L 325 200" keyPoints="0;0;1;1" keyTimes="0;0.083;0.139;1" calcMode="linear" dur="18s" repeatCount="indefinite"></animateMotion>
                 <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.083;0.1;0.93;0.96;1" dur="18s" repeatCount="indefinite"></animate>
               </g>
               <g class="tru-evidence" opacity="0">
                 <rect x="-85" y="-32" width="170" height="64" rx="2"></rect>
-                <text class="tru-ev-title" y="-6">ARTEFAKT-HASH</text>
+                <text class="tru-ev-title" y="-6">ARTIFACT HASH</text>
                 <text class="tru-ev-sub" y="16">sha256:9f3a…c41</text>
                 <animateMotion path="M 500 18 L 500 96" keyPoints="0;0;1;1" keyTimes="0;0.167;0.222;1" calcMode="linear" dur="18s" repeatCount="indefinite"></animateMotion>
                 <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.167;0.184;0.93;0.96;1" dur="18s" repeatCount="indefinite"></animate>
               </g>
               <g class="tru-evidence" opacity="0">
                 <rect x="-85" y="-32" width="170" height="64" rx="2"></rect>
-                <text class="tru-ev-title" y="-6">VM-BERICHT</text>
-                <text class="tru-ev-sub" y="16">alle tests grün ✓</text>
+                <text class="tru-ev-title" y="-6">VM REPORT</text>
+                <text class="tru-ev-sub" y="16">all tests green ✓</text>
                 <animateMotion path="M 950 200 L 675 200" keyPoints="0;0;1;1" keyTimes="0;0.25;0.306;1" calcMode="linear" dur="18s" repeatCount="indefinite"></animateMotion>
                 <animate attributeName="opacity" values="0;0;1;1;0;0;1;1;0;0" keyTimes="0;0.25;0.267;0.63;0.65;0.8;0.82;0.93;0.96;1" dur="18s" repeatCount="indefinite"></animate>
               </g>
               <g class="tru-evidence" opacity="0">
                 <rect x="-85" y="-32" width="170" height="64" rx="2"></rect>
-                <text class="tru-ev-title" y="-6">DEINE FREIGABE</text>
-                <text class="tru-ev-sub" y="16">am gerät bestätigt</text>
+                <text class="tru-ev-title" y="-6">YOUR APPROVAL</text>
+                <text class="tru-ev-sub" y="16">confirmed on device</text>
                 <animateMotion path="M 500 386 L 500 304" keyPoints="0;0;1;1" keyTimes="0;0.333;0.389;1" calcMode="linear" dur="18s" repeatCount="indefinite"></animateMotion>
                 <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.333;0.35;0.93;0.96;1" dur="18s" repeatCount="indefinite"></animate>
               </g>
@@ -2407,47 +2400,46 @@
                 <animate attributeName="r" values="8;28;28" keyTimes="0;0.04;1" dur="18s" begin="7s" repeatCount="indefinite"></animate>
                 <animate attributeName="opacity" values="0.8;0;0" keyTimes="0;0.04;1" dur="18s" begin="7s" repeatCount="indefinite"></animate>
               </circle>
-              <text class="tru-break-note" x="500" y="382" opacity="0">ein beweis verschwindet → sofort gesperrt<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.66;0.68;0.79;0.82;1" dur="18s" repeatCount="indefinite"></animate></text>
+              <text class="tru-break-note" x="500" y="382" opacity="0">one proof disappears → locked immediately<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.66;0.68;0.79;0.82;1" dur="18s" repeatCount="indefinite"></animate></text>
             </svg>
           </figure>
           <figure class="story-card story-reveal" style="--reveal-delay:.2s">
             <div>
-              <h3>Die Freigabe-Leiter</h3>
+              <h3>The approval ladder</h3>
               <p>
-                Sieben Risikoklassen, eine Regel: Nur Lesen ist von Anfang an
-                erlaubt. Alles andere bleibt gesperrt, bis die volle Beweiskette
-                existiert — und selbst dann nur einzeln, begrenzt und
-                widerrufbar.
+                Seven risk classes, one rule: only reading is allowed from the
+                start. Everything else remains locked until the full evidence chain
+                exists — and even then only individually, narrowly, and revocably.
               </p>
             </div>
-            <svg class="lad-svg" viewBox="0 0 1000 360" role="img" aria-label="Sieben Risikoklassen von Lesen bis Hardware: nur Lesen ist erlaubt, alles andere gesperrt; mit voller Beweiskette wird Speichern kurz möglich">
+            <svg class="lad-svg" viewBox="0 0 1000 360" role="img" aria-label="Seven risk classes from reading to hardware: only reading is initially allowed. With a full evidence chain, persistence becomes temporarily possible.">
               <rect class="lad-scan" x="50" y="44" width="900" height="30" opacity="0">
                 <animate attributeName="y" values="46;46;266;266" keyTimes="0;0.07;0.32;1" dur="14s" repeatCount="indefinite"></animate>
                 <animate attributeName="opacity" values="0;0.35;0.35;0;0" keyTimes="0;0.08;0.3;0.34;1" dur="14s" repeatCount="indefinite"></animate>
               </rect>
-              <text class="lad-name" x="70" y="64">LESEN</text><text class="lad-sub" x="260" y="64">fakten, logs, probleme</text>
+              <text class="lad-name" x="70" y="64">READ</text><text class="lad-sub" x="260" y="64">facts, logs, problems</text>
               <circle class="lad-lamp lad-lamp--ok" cx="700" cy="60" r="7" opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.08;0.1;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></circle>
-              <text class="lad-status lad-status--ok" x="722" y="64" opacity="0">erlaubt — nur lesen<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.08;0.1;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></text>
-              <text class="lad-name" x="70" y="100">PRÜFEN</text><text class="lad-sub" x="260" y="100">begrenzte checks an geräten</text>
+              <text class="lad-status lad-status--ok" x="722" y="64" opacity="0">allowed — read only<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.08;0.1;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="lad-name" x="70" y="100">CHECK</text><text class="lad-sub" x="260" y="100">limited device checks</text>
               <circle class="lad-lamp lad-lamp--bad" cx="700" cy="96" r="7" opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.11;0.13;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></circle>
-              <text class="lad-status lad-status--bad" x="722" y="100" opacity="0">gesperrt<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.11;0.13;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></text>
-              <text class="lad-name" x="70" y="136">SIMULIEREN</text><text class="lad-sub" x="260" y="136">im test-vm bauen und messen</text>
+              <text class="lad-status lad-status--bad" x="722" y="100" opacity="0">locked<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.11;0.13;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="lad-name" x="70" y="136">SIMULATE</text><text class="lad-sub" x="260" y="136">build and measure in test VM</text>
               <circle class="lad-lamp lad-lamp--bad" cx="700" cy="132" r="7" opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.14;0.16;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></circle>
-              <text class="lad-status lad-status--bad" x="722" y="136" opacity="0">kein live-recht<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.14;0.16;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></text>
-              <text class="lad-name" x="70" y="172">EXPORTIEREN</text><text class="lad-sub" x="260" y="172">daten nach draußen schicken</text>
+              <text class="lad-status lad-status--bad" x="722" y="136" opacity="0">no live right<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.14;0.16;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="lad-name" x="70" y="172">EXPORT</text><text class="lad-sub" x="260" y="172">send data outside</text>
               <circle class="lad-lamp lad-lamp--bad" cx="700" cy="168" r="7" opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.17;0.19;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></circle>
-              <text class="lad-status lad-status--bad" x="722" y="172" opacity="0">gesperrt<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.17;0.19;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></text>
-              <text class="lad-name" x="70" y="208">RAM ÄNDERN</text><text class="lad-sub" x="260" y="208">live-code laden</text>
+              <text class="lad-status lad-status--bad" x="722" y="172" opacity="0">locked<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.17;0.19;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="lad-name" x="70" y="208">CHANGE RAM</text><text class="lad-sub" x="260" y="208">load live code</text>
               <circle class="lad-lamp lad-lamp--bad" cx="700" cy="204" r="7" opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.2;0.22;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></circle>
-              <text class="lad-status lad-status--bad" x="722" y="208" opacity="0">gesperrt<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.2;0.22;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></text>
-              <text class="lad-name" x="70" y="244">SPEICHERN</text><text class="lad-sub" x="260" y="244">boot-image, module, policy</text>
+              <text class="lad-status lad-status--bad" x="722" y="208" opacity="0">locked<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.2;0.22;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="lad-name" x="70" y="244">PERSIST</text><text class="lad-sub" x="260" y="244">boot image, module, policy</text>
               <circle class="lad-lamp lad-lamp--bad" cx="700" cy="240" r="7" opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0;1;1" keyTimes="0;0.23;0.25;0.79;0.8;0.93;0.94;1" dur="14s" repeatCount="indefinite"></animate></circle>
               <circle class="lad-lamp lad-lamp--warn" cx="700" cy="240" r="7" opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.79;0.8;0.93;0.94;1" dur="14s" repeatCount="indefinite"></animate></circle>
-              <text class="lad-status lad-status--bad" x="722" y="244" opacity="0">gesperrt<animate attributeName="opacity" values="0;0;1;1;0;0;1;1" keyTimes="0;0.23;0.25;0.79;0.8;0.93;0.94;1" dur="14s" repeatCount="indefinite"></animate></text>
-              <text class="lad-status lad-status--warn" x="722" y="244" opacity="0">möglich — mit voller beweiskette<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.79;0.8;0.93;0.94;1" dur="14s" repeatCount="indefinite"></animate></text>
-              <text class="lad-name" x="70" y="280">HARDWARE</text><text class="lad-sub" x="260" y="280">physisch anfassen</text>
+              <text class="lad-status lad-status--bad" x="722" y="244" opacity="0">locked<animate attributeName="opacity" values="0;0;1;1;0;0;1;1" keyTimes="0;0.23;0.25;0.79;0.8;0.93;0.94;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="lad-status lad-status--warn" x="722" y="244" opacity="0">possible — with full evidence chain<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.79;0.8;0.93;0.94;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="lad-name" x="70" y="280">HARDWARE</text><text class="lad-sub" x="260" y="280">touch physically</text>
               <circle class="lad-lamp lad-lamp--bad" cx="700" cy="276" r="7" opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.26;0.28;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></circle>
-              <text class="lad-status lad-status--bad" x="722" y="280" opacity="0">gesperrt<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.26;0.28;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="lad-status lad-status--bad" x="722" y="280" opacity="0">locked<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.26;0.28;0.94;0.97;1" dur="14s" repeatCount="indefinite"></animate></text>
               <g class="tru-bundle" opacity="0">
                 <rect x="-14" y="-10" width="12" height="8"></rect>
                 <rect x="-2" y="-10" width="12" height="8"></rect>
@@ -2455,7 +2447,7 @@
                 <animateMotion path="M 60 330 C 300 340 560 300 692 240" keyPoints="0;0;1;1" keyTimes="0;0.71;0.79;1" calcMode="linear" dur="14s" repeatCount="indefinite"></animateMotion>
                 <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.71;0.72;0.79;0.81;1" dur="14s" repeatCount="indefinite"></animate>
               </g>
-              <text class="lad-note" x="500" y="330" opacity="0">gesperrt bleibt gesperrt — bis manifest, test, freigabe und rollback existieren<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.36;0.4;0.66;0.7;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="lad-note" x="500" y="330" opacity="0">locked stays locked — until manifest, test, approval, and rollback exist<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.36;0.4;0.66;0.7;1" dur="14s" repeatCount="indefinite"></animate></text>
             </svg>
           </figure>
         </div>
@@ -2464,34 +2456,33 @@
     <section class="website-story story-factory" data-story-reveal aria-labelledby="story-factory-title">
       <div class="story-inner">
         <div class="story-head story-reveal">
-          <p class="website-kicker">Die Agenten-Fabrik</p>
-          <h2 id="story-factory-title">Gebaut wird raiOS von Agenten — rund um die Uhr.</h2>
+          <p class="website-kicker">The agent factory</p>
+          <h2 id="story-factory-title">Agents build raiOS around the clock.</h2>
           <p class="story-text">
-            Die Fabrik liefert nicht mit dem System aus — sie ist die Baustelle:
-            zehn parallele Agenten-Bahnen und ein Orchestrator bauen raiOS.
-            Hardware-Wissen bekommen die Agenten als Daten statt PDFs,
-            Compiler-Fehler als strukturierte Antworten. Der Mensch setzt Ziele
-            und vergibt Rechte.
+            The factory is not shipped with the system; it is the construction
+            site. Ten parallel agent lanes and one orchestrator build raiOS.
+            Agents receive hardware knowledge as data instead of PDFs and compiler
+            failures as structured responses. A human sets goals and grants rights.
           </p>
         </div>
         <div class="story-cards">
           <figure class="story-card story-reveal" style="--reveal-delay:.1s">
             <div>
-              <h3>Zehn Bahnen, ein Takt</h3>
+              <h3>Ten lanes, one rhythm</h3>
               <p>
-                Treiber, Prädikate, Pipeline — vieles entsteht gleichzeitig. Nur
-                am empfindlichen Kern dürfen maximal zwei Bahnen zugleich arbeiten.
-                Rechts der Motor: Der Compiler antwortet mit Daten, nicht mit
-                Prosa — schreiben, kompilieren, Fehler lesen, fixen.
+                Drivers, predicates, and pipelines are built in parallel. Only the
+                sensitive kernel is limited to two simultaneous lanes. On the right
+                is the engine: the compiler answers with data, not prose — write,
+                compile, read the failure, fix it.
               </p>
             </div>
-            <svg class="fab-svg" viewBox="0 0 1000 340" role="img" aria-label="Zehn parallele Agenten-Bahnen unter einem Orchestrator; daneben die Feedback-Schleife: schreiben, kompilieren, Fehler als Daten lesen, fixen">
+            <svg class="fab-svg" viewBox="0 0 1000 340" role="img" aria-label="Ten parallel agent lanes under one orchestrator, next to the feedback loop: write, compile, read the failure as data, and fix.">
               <g class="keys-box">
                 <rect x="180" y="30" width="300" height="52" rx="2"></rect>
                 <text class="keys-title" x="330" y="62" text-anchor="middle">ORCHESTRATOR</text>
               </g>
               <g class="fab-lane-labels">
-                <text class="fab-serial-note" x="60" y="118">kern: max 2 bahnen</text>
+                <text class="fab-serial-note" x="60" y="118">kernel: max 2 lanes</text>
               </g>
               <rect class="fab-lane fab-lane--serial" x="60" y="130" width="40" height="170" rx="2"></rect>
               <rect class="fab-lane fab-lane--serial" x="116" y="130" width="40" height="170" rx="2"></rect>
@@ -2513,35 +2504,34 @@
               <rect class="fab-fill" x="456" y="296" width="32" height="0"><animate attributeName="height" values="140;50;110;70;140" dur="5.8s" repeatCount="indefinite"></animate><animate attributeName="y" values="156;246;186;226;156" dur="5.8s" repeatCount="indefinite"></animate></rect>
               <rect class="fab-fill" x="512" y="296" width="32" height="0"><animate attributeName="height" values="70;110;20;140;70" dur="4.4s" repeatCount="indefinite"></animate><animate attributeName="y" values="226;186;276;156;226" dur="4.4s" repeatCount="indefinite"></animate></rect>
               <rect class="fab-fill" x="568" y="296" width="32" height="0"><animate attributeName="height" values="100;30;150;90;100" dur="5.2s" repeatCount="indefinite"></animate><animate attributeName="y" values="196;266;146;206;196" dur="5.2s" repeatCount="indefinite"></animate></rect>
-              <text class="fab-lane-caption" x="330" y="326">10 bahnen · disjunkte dateien · treiber, prädikate, pipeline parallel</text>
+              <text class="fab-lane-caption" x="330" y="326">10 lanes · disjoint files · drivers, predicates, pipeline in parallel</text>
               <circle class="fab-loop-ring" cx="820" cy="205" r="75"></circle>
               <circle class="keys-pulse" r="5">
                 <animateMotion path="M 820 130 A 75 75 0 1 1 820 280 A 75 75 0 1 1 820 130" dur="3s" repeatCount="indefinite"></animateMotion>
               </circle>
-              <text class="fab-loop-label" x="820" y="112" text-anchor="middle">SCHREIBEN</text>
-              <text class="fab-loop-label" x="903" y="209" text-anchor="start">KOMPILIEREN</text>
-              <text class="fab-loop-label" x="820" y="302" text-anchor="middle">FEHLER LESEN</text>
-              <text class="fab-loop-label" x="737" y="209" text-anchor="end">FIXEN</text>
+              <text class="fab-loop-label" x="820" y="112" text-anchor="middle">WRITE</text>
+              <text class="fab-loop-label" x="903" y="209" text-anchor="start">COMPILE</text>
+              <text class="fab-loop-label" x="820" y="302" text-anchor="middle">READ FAILURE</text>
+              <text class="fab-loop-label" x="737" y="209" text-anchor="end">FIX</text>
               <text class="fab-loop-center" x="820" y="200">FEEDBACK</text>
-              <text class="fab-loop-center-sub" x="820" y="220">als JSON, nicht als Prosa</text>
+              <text class="fab-loop-center-sub" x="820" y="220">as JSON, not prose</text>
             </svg>
           </figure>
           <figure class="story-card story-reveal" style="--reveal-delay:.2s">
             <div>
-              <h3>Die Nachtschleife — Zielbild</h3>
+              <h3>The overnight loop — target design</h3>
               <p>
-                Der geplante Ablauf soll ein hängendes Testgerät erkennen, den
-                Strom automatisch schalten und den Crash-Kontext erhalten. Heute
-                sind genau diese drei Boxen offen: Watchdog, Funksteckdose und
-                <code>ramoops</code>. Das Diagramm zeigt das Ziel, keinen Beweis.
+                The planned flow should detect a stalled test device, cycle power,
+                and preserve crash context. Three boxes remain open today: watchdog,
+                smart plug, and <code>ramoops</code>. This diagram is a target, not proof.
               </p>
             </div>
-            <svg class="night-svg" viewBox="0 0 1000 310" role="img" aria-label="Zielbild einer noch nicht geschlossenen Nachtschleife: Watchdog, Funksteckdose und ramoops sind offene Boxen; der dargestellte automatische Neustart ist noch nicht als realer Ablauf bewiesen">
+            <svg class="night-svg" viewBox="0 0 1000 310" role="img" aria-label="Target design for an incomplete overnight loop: watchdog, smart plug, and ramoops remain open boxes; the automated restart shown here has not yet been proven as a real flow.">
               <line class="pipe-line" x1="90" y1="150" x2="790" y2="150"></line>
               <path class="pipe-rollback-arc" d="M 790 150 Q 440 30 90 150" opacity="0">
                 <animate attributeName="opacity" values="0;0;0.45;0.45;0;0" keyTimes="0;0.58;0.62;0.78;0.83;1" dur="14s" repeatCount="indefinite"></animate>
               </path>
-              <text class="night-return" x="440" y="56" opacity="0">ziel: nächster versuch — ohne menschen<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.58;0.62;0.8;0.85;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="night-return" x="440" y="56" opacity="0">target: next attempt — without humans<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.58;0.62;0.8;0.85;1" dur="14s" repeatCount="indefinite"></animate></text>
               <g class="night-node" transform="translate(90 150)"><circle r="20"></circle><g transform="scale(1.4)"><path class="pipe-icon" d="M0 -7 V5 M-5 0 L0 6 L5 0"></path></g></g>
               <g class="night-node" transform="translate(230 150)"><circle r="20"></circle><g transform="scale(1.4)"><path class="pipe-icon" d="M0 -8 V-1 M-5.5 -5.5 a7.5 7.5 0 1 0 11 0"></path></g></g>
               <g class="night-node" transform="translate(370 150)"><circle r="20"></circle><g transform="scale(1.4)"><path class="pipe-icon" d="M-6 -3 q3 -4 6 0 q3 4 6 0 M-6 3 q3 -4 6 0 q3 4 6 0"></path></g></g>
@@ -2549,17 +2539,17 @@
               <g class="night-node night-node--warn" transform="translate(650 150)"><circle r="20"></circle><g transform="scale(1.4)"><path class="night-icon-warn" d="M-4 -8 V-4 M4 -8 V-4 M-6 -4 h12 v4 a6 6 0 0 1 -12 0 z M0 6 V9"></path></g></g>
               <g class="night-node night-node--ok" transform="translate(790 150)"><circle r="20"></circle><g transform="scale(1.4)"><path class="night-icon-ok" d="M-5 -8 h10 v16 h-10 z M-2 -4 h4 M-2 0 h4 M-2 4 h4"></path></g></g>
               <text class="night-label" x="90" y="196">DEPLOY</text>
-              <text class="night-sub" x="90" y="216">neuer build</text>
+              <text class="night-sub" x="90" y="216">new build</text>
               <text class="night-label" x="230" y="196">BOOT</text>
-              <text class="night-sub" x="230" y="216">Ziel: echtes Gerät</text>
+              <text class="night-sub" x="230" y="216">target: real device</text>
               <text class="night-label" x="370" y="196">STREAM</text>
-              <text class="night-sub" x="370" y="216">Ziel: logs live</text>
-              <text class="night-label night-label--bad" x="510" y="196">HÄNGT!</text>
-              <text class="night-sub" x="510" y="216">watchdog: OFFEN</text>
-              <text class="night-label night-label--warn" x="650" y="196">STECKDOSE</text>
-              <text class="night-sub" x="650" y="216">power cycle: OFFEN</text>
+              <text class="night-sub" x="370" y="216">target: live logs</text>
+              <text class="night-label night-label--bad" x="510" y="196">STALLED!</text>
+              <text class="night-sub" x="510" y="216">watchdog: OPEN</text>
+              <text class="night-label night-label--warn" x="650" y="196">SMART PLUG</text>
+              <text class="night-sub" x="650" y="216">power cycle: OPEN</text>
               <text class="night-label night-label--ok" x="790" y="196">RAMOOPS</text>
-              <text class="night-sub" x="790" y="216">Crash-Kontext: OFFEN</text>
+              <text class="night-sub" x="790" y="216">crash context: OPEN</text>
               <circle class="pipe-dot" r="6" opacity="0">
                 <animateMotion path="M 90 150 L 510 150" keyPoints="0;0;1;1" keyTimes="0;0.035;0.335;1" calcMode="linear" dur="14s" repeatCount="indefinite"></animateMotion>
                 <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.035;0.05;0.33;0.35;1" dur="14s" repeatCount="indefinite"></animate>
@@ -2580,7 +2570,7 @@
                 <animate attributeName="r" values="20;34;34" keyTimes="0;0.07;1" dur="14s" begin="6.1s" repeatCount="indefinite"></animate>
                 <animate attributeName="opacity" values="0.8;0;0" keyTimes="0;0.07;1" dur="14s" begin="6.1s" repeatCount="indefinite"></animate>
               </circle>
-              <text class="night-click" x="650" y="110" opacity="0">klick.<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.435;0.45;0.52;0.55;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="night-click" x="650" y="110" opacity="0">click.<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.435;0.45;0.52;0.55;1" dur="14s" repeatCount="indefinite"></animate></text>
               <circle class="keys-ping" cx="790" cy="150" r="8" opacity="0">
                 <animate attributeName="r" values="8;32;32" keyTimes="0;0.06;1" dur="14s" begin="7.4s" repeatCount="indefinite"></animate>
                 <animate attributeName="opacity" values="0.85;0;0" keyTimes="0;0.06;1" dur="14s" begin="7.4s" repeatCount="indefinite"></animate>
@@ -2589,7 +2579,7 @@
                 <animate attributeName="r" values="8;32;32" keyTimes="0;0.06;1" dur="14s" begin="10.6s" repeatCount="indefinite"></animate>
                 <animate attributeName="opacity" values="0.85;0;0" keyTimes="0;0.06;1" dur="14s" begin="10.6s" repeatCount="indefinite"></animate>
               </circle>
-              <text class="night-note" x="440" y="286" opacity="0">ZIELBILD — WATCHDOG · FUNKSTECKDOSE · RAMOOPS SIND OFFENE BOXEN<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.76;0.8;0.94;0.98;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="night-note" x="440" y="286" opacity="0">TARGET — WATCHDOG · SMART PLUG · RAMOOPS REMAIN OPEN<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.76;0.8;0.94;0.98;1" dur="14s" repeatCount="indefinite"></animate></text>
             </svg>
           </figure>
         </div>
@@ -2598,37 +2588,35 @@
     <section class="website-story story-playground" data-story-reveal aria-labelledby="story-playground-title">
       <div class="story-inner">
         <div class="story-head story-reveal">
-          <p class="website-kicker">Dein Bauplatz</p>
-          <h2 id="story-playground-title">Bauen darf hier jeder. Kaputt geht dabei nichts.</h2>
+          <p class="website-kicker">Your builder</p>
+          <h2 id="story-playground-title">Anyone may build here. Nothing else can break.</h2>
           <p class="story-text">
-            Der Agent und der Bauplatz werden mitgeliefert — das erste
-            Programmpaar des Systems. Alles Weitere entsteht daraus: Der Agent
-            holt sich Wissen aus dem Internet (durch den Netz-Schlüssel, nie
-            daran vorbei), schreibt Code in den Bauplatz, und der Rust-Compiler
-            übersetzt ihn direkt an Bord. Bauplatz-Domänen können
-            sicherheitskritische Rechte gar nicht erst bekommen — das verbietet
-            der Boden per Politik.
+            Agent and builder ship as the system's first pair of programs.
+            Everything else grows from them: the agent retrieves knowledge from
+            the internet through an explicit network capability, writes code into
+            the builder, and the Rust compiler translates it onboard. Builder
+            domains cannot receive security-critical rights; policy forbids it.
           </p>
         </div>
         <div class="story-cards">
           <figure class="story-card story-reveal" style="--reveal-delay:.1s">
             <div>
-              <h3>Vom Experiment zum echten Programm</h3>
+              <h3>From experiment to real program</h3>
               <p>
-                Bauen, crashen, nochmal — im Bauplatz ist ein Absturz nur eine
-                Logzeile und ein Neustart-Angebot. Fertig wird ein Programm erst
-                durch das Tor der Trust-Pipeline: mit grünen Beweisen. Ohne sie
-                bleibt das Tor zu — auch für Agenten.
+                Build, crash, try again: inside the builder, a crash is only one
+                log line and an offer to restart. A program becomes real only by
+                passing the trust pipeline with green evidence. Without it, the
+                gate stays closed — even for agents.
               </p>
             </div>
-            <svg class="play-svg" viewBox="0 0 1000 340" role="img" aria-label="Ein Bauplatz-Programm wird gebaut, crasht harmlos, läuft grün und wird nur mit Beweisen durch das Trust-Pipeline-Tor zu den echten Domänen befördert">
-              <text class="kill-cmd" x="60" y="46" opacity="0">&gt; gib mir einen bauplatz<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.036;0.06;0.88;0.93;1" dur="14s" repeatCount="indefinite"></animate></text>
+            <svg class="play-svg" viewBox="0 0 1000 340" role="img" aria-label="A builder program is compiled, crashes harmlessly, turns green, and is promoted through the trust pipeline to real domains only with evidence.">
+              <text class="kill-cmd" x="60" y="46" opacity="0">&gt; give me a builder<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.036;0.06;0.88;0.93;1" dur="14s" repeatCount="indefinite"></animate></text>
               <g class="keys-domain">
                 <rect x="60" y="80" width="260" height="160" rx="2"></rect>
-                <text class="keys-title" x="190" y="112" text-anchor="middle">BAUPLATZ-DOMÄNE</text>
-                <text class="keys-sub" x="190" y="134" text-anchor="middle">frisch · 0 Rechte extra</text>
+                <text class="keys-title" x="190" y="112" text-anchor="middle">BUILDER DOMAIN</text>
+                <text class="keys-sub" x="190" y="134" text-anchor="middle">fresh · 0 extra rights</text>
                 <text class="play-code" x="190" y="170" text-anchor="middle" opacity="0">hello-hardware.rs<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.179;0.2;0.88;0.93;1" dur="14s" repeatCount="indefinite"></animate></text>
-                <text class="keys-sub" x="190" y="192" text-anchor="middle" opacity="0">serial-out + genau 1 schlüssel<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.179;0.2;0.88;0.93;1" dur="14s" repeatCount="indefinite"></animate></text>
+                <text class="keys-sub" x="190" y="192" text-anchor="middle" opacity="0">serial-out + exactly 1 capability<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.179;0.2;0.88;0.93;1" dur="14s" repeatCount="indefinite"></animate></text>
                 <rect class="play-build-track" x="100" y="208" width="180" height="8" rx="2" opacity="0">
                   <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.25;0.27;0.5;0.53;1" dur="14s" repeatCount="indefinite"></animate>
                 </rect>
@@ -2636,12 +2624,12 @@
                   <animate attributeName="width" values="0;0;180;180;0;0" keyTimes="0;0.25;0.357;0.5;0.53;1" dur="14s" repeatCount="indefinite"></animate>
                 </rect>
               </g>
-              <text class="keys-sub" x="190" y="262" text-anchor="middle" opacity="0">rustc kompiliert — an Bord<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.25;0.27;0.36;0.39;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="keys-sub" x="190" y="262" text-anchor="middle" opacity="0">rustc compiles — onboard<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.25;0.27;0.36;0.39;1" dur="14s" repeatCount="indefinite"></animate></text>
               <rect class="stack-crash-flash" x="60" y="80" width="260" height="160" opacity="0">
                 <animate attributeName="opacity" values="0;0;0.9;0.2;0.9;0;0" keyTimes="0;0.393;0.4;0.42;0.44;0.464;1" dur="14s" repeatCount="indefinite"></animate>
               </rect>
-              <text class="play-crash-note" x="190" y="262" opacity="0">crash: 1 logzeile + neustart-angebot. sonst nichts.<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.4;0.43;0.51;0.54;1" dur="14s" repeatCount="indefinite"></animate></text>
-              <text class="play-ok-note" x="190" y="262" opacity="0">läuft ✓ — beweise gesammelt<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.536;0.56;0.63;0.66;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="play-crash-note" x="190" y="262" opacity="0">crash: 1 log line + restart offer. nothing else.<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.4;0.43;0.51;0.54;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="play-ok-note" x="190" y="262" opacity="0">running ✓ — evidence collected<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.536;0.56;0.63;0.66;1" dur="14s" repeatCount="indefinite"></animate></text>
               <g class="play-gate">
                 <rect x="500" y="70" width="14" height="180"></rect>
                 <rect x="586" y="70" width="14" height="180"></rect>
@@ -2652,27 +2640,27 @@
                   <path class="pipe-icon" d="M0 -9 L8 -5.5 V1 C8 5.5 4.5 8.5 0 10 C-4.5 8.5 -8 5.5 -8 1 V-5.5 Z"></path>
                 </g>
                 <text class="play-gate-label" x="550" y="286">TRUST-PIPELINE</text>
-                <text class="keys-sub" x="550" y="306" text-anchor="middle">öffnet nur für grüne Beweise</text>
+                <text class="keys-sub" x="550" y="306" text-anchor="middle">opens only for green evidence</text>
               </g>
-              <text class="play-stamp" x="550" y="126" opacity="0">GEPRÜFT ✓<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.69;0.71;0.8;0.83;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="play-stamp" x="550" y="126" opacity="0">TESTED ✓<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.69;0.71;0.8;0.83;1" dur="14s" repeatCount="indefinite"></animate></text>
               <g class="play-traveler" opacity="0">
                 <rect x="-34" y="-20" width="68" height="40" rx="2"></rect>
-                <text class="play-traveler-label" y="5">NEU</text>
+                <text class="play-traveler-label" y="5">NEW</text>
                 <animateMotion path="M 360 160 L 550 160 L 760 160" keyPoints="0;0;0.5;1;1" keyTimes="0;0.643;0.714;0.786;1" calcMode="linear" dur="14s" repeatCount="indefinite"></animateMotion>
                 <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.643;0.66;0.78;0.8;1" dur="14s" repeatCount="indefinite"></animate>
               </g>
               <g class="keys-box">
                 <rect x="680" y="80" width="260" height="160" rx="2"></rect>
-                <text class="keys-title" x="810" y="112" text-anchor="middle">ECHTE DOMÄNEN</text>
+                <text class="keys-title" x="810" y="112" text-anchor="middle">REAL DOMAINS</text>
                 <g class="stack-domain"><rect x="700" y="140" width="100" height="70"></rect><text class="stack-domain-label" x="750" y="180">EDITOR</text></g>
-                <g class="stack-domain"><rect x="820" y="140" width="100" height="70"></rect><text class="stack-domain-label" x="870" y="180" opacity="0">NEU ✓<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.786;0.81;0.88;0.93;1" dur="14s" repeatCount="indefinite"></animate></text></g>
+                <g class="stack-domain"><rect x="820" y="140" width="100" height="70"></rect><text class="stack-domain-label" x="870" y="180" opacity="0">NEW ✓<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.786;0.81;0.88;0.93;1" dur="14s" repeatCount="indefinite"></animate></text></g>
               </g>
               <circle class="keys-ping" cx="870" cy="175" r="8" opacity="0">
                 <animate attributeName="r" values="8;30;30" keyTimes="0;0.05;1" dur="14s" begin="11s" repeatCount="indefinite"></animate>
                 <animate attributeName="opacity" values="0.85;0;0" keyTimes="0;0.05;1" dur="14s" begin="11s" repeatCount="indefinite"></animate>
               </circle>
-              <text class="keys-log" x="60" y="330" opacity="0">&gt; promotion ohne grüne beweise?<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.843;0.87;0.95;0.98;1" dur="14s" repeatCount="indefinite"></animate></text>
-              <text class="keys-log keys-log--bad" x="290" y="330" opacity="0">VERWEIGERT — GELOGGT<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.843;0.87;0.95;0.98;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="keys-log" x="60" y="330" opacity="0">&gt; promote without green evidence?<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.843;0.87;0.95;0.98;1" dur="14s" repeatCount="indefinite"></animate></text>
+              <text class="keys-log keys-log--bad" x="290" y="330" opacity="0">DENIED — LOGGED<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.843;0.87;0.95;0.98;1" dur="14s" repeatCount="indefinite"></animate></text>
             </svg>
           </figure>
         </div>
@@ -2681,25 +2669,23 @@
     <section class="website-story story-loop" data-story-reveal aria-labelledby="story-loop-title">
       <div class="story-inner story-split story-split--flip">
         <div class="story-copy story-reveal">
-          <p class="website-kicker">Der Durchbruch</p>
-          <h2 id="story-loop-title">Und am Ende zieht die Fabrik ein.</h2>
+          <p class="website-kicker">The breakthrough</p>
+          <h2 id="story-loop-title">In the end, the factory moves in.</h2>
           <p class="story-text">
-            Jedes andere Betriebssystem bekommt seine Software von außen: aus
-            App-Stores, von Entwickler-Rechnern, aus der Cloud. raiOS holt die
-            Fabrik Stück für Stück ins System — Compiler an Bord, Prüfungen an
-            Bord, Beförderung an Bord. Das Ziel: Wunsch, Bau, Beweis,
-            Installation — alles auf deinem Gerät. Und jedes fertige Werkzeug
-            macht das nächste leichter.
+            Every other operating system receives software from outside: app
+            stores, developer workstations, or the cloud. raiOS moves the factory
+            into the system one piece at a time — compiler, tests, and promotion
+            onboard. The goal is request, build, proof, and installation on your
+            device. Every finished tool makes the next one easier.
           </p>
           <p class="story-note">
-            Heute: Der QEMU-Pfad wird täglich bewiesen. Das Surface Pro 4 bootet
-            experimentell; Grafik und USB laufen auf echter Hardware. Der
-            WLAN-Chip ist <code>DETECTED</code>, doch Association und DHCP sind
-            auf dem Surface noch offen.
+            Today, the QEMU path is proven daily. Surface Pro 4 boots
+            experimentally; graphics and USB run on real hardware. The WLAN chip
+            is <code>DETECTED</code>, while association and DHCP on Surface remain open.
           </p>
         </div>
         <figure class="story-figure story-figure--bare story-reveal" style="--reveal-delay:.15s">
-          <svg class="loop-svg" viewBox="0 0 520 480" role="img" aria-label="Kreislauf: Wunsch, Bauen, Prüfen, Signieren, Installieren — alles an Bord">
+          <svg class="loop-svg" viewBox="0 0 520 480" role="img" aria-label="Cycle: request, build, test, sign, install — all onboard.">
             <circle class="loop-ring" cx="260" cy="240" r="170">
               <animate attributeName="stroke-dashoffset" values="0;-12" dur="1.6s" repeatCount="indefinite"></animate>
             </circle>
@@ -2734,13 +2720,13 @@
             <circle class="loop-node" cx="359.9" cy="377.5" r="5"></circle>
             <circle class="loop-node" cx="160.1" cy="377.5" r="5"></circle>
             <circle class="loop-node" cx="98.3" cy="187.5" r="5"></circle>
-            <text class="loop-label" x="260" y="46" text-anchor="middle">WUNSCH</text>
-            <text class="loop-label" x="436" y="191" text-anchor="start">BAUEN</text>
-            <text class="loop-label" x="368" y="398" text-anchor="start">PRÜFEN</text>
-            <text class="loop-label" x="152" y="398" text-anchor="end">SIGNIEREN</text>
-            <text class="loop-label" x="84" y="191" text-anchor="end">INSTALLIEREN</text>
-            <text class="loop-center" x="260" y="232">ALLES AN BORD</text>
-            <text class="loop-center-sub" x="260" y="254">kein Werkstatt-PC · keine Cloud-Fabrik</text>
+            <text class="loop-label" x="260" y="46" text-anchor="middle">REQUEST</text>
+            <text class="loop-label" x="436" y="191" text-anchor="start">BUILD</text>
+            <text class="loop-label" x="368" y="398" text-anchor="start">TEST</text>
+            <text class="loop-label" x="152" y="398" text-anchor="end">SIGN</text>
+            <text class="loop-label" x="84" y="191" text-anchor="end">INSTALL</text>
+            <text class="loop-center" x="260" y="232">ALL ONBOARD</text>
+            <text class="loop-center-sub" x="260" y="254">no workshop PC · no cloud factory</text>
           </svg>
         </figure>
       </div>
@@ -2748,70 +2734,70 @@
     <section class="website-story story-ledger" data-story-reveal aria-labelledby="story-ledger-title">
       <div class="story-inner">
         <div class="story-head story-reveal">
-          <p class="website-kicker">Ehrliche Bilanz</p>
-          <h2 id="story-ledger-title">Wirklich neu. Bewährt, neu gebaut. Bewusst weggelassen.</h2>
-          <p class="story-text">Nicht alles an raiOS ist eine Erfindung — und nichts fehlt aus Versehen. Das ist die ehrliche Trennung:</p>
+          <p class="website-kicker">An honest ledger</p>
+          <h2 id="story-ledger-title">Truly new. Proven ideas, rebuilt. Deliberately omitted.</h2>
+          <p class="story-text">Not everything in raiOS is an invention, and nothing is missing by accident. This is the honest division:</p>
         </div>
         <div class="story-ledger-grid">
           <div class="ledger-col ledger-col--new story-reveal" style="--reveal-delay:.1s">
-            <p class="ledger-col-title">Gibt es so noch nicht</p>
+            <p class="ledger-col-title">Does not exist like this yet</p>
             <article class="ledger-card">
-              <h3>Die KI ist die Oberfläche</h3>
-              <p>Kein Desktop, kein App-Gitter. Das System bootet in ein Gespräch — und Programme entstehen aus deinen Sätzen.</p>
+              <h3>AI is the interface</h3>
+              <p>No desktop, no app grid. The system boots into a conversation, and programs emerge from your sentences.</p>
             </article>
             <article class="ledger-card">
-              <h3>Agenten + Beweise als Bauplan</h3>
-              <p>Zehn Agenten-Bahnen bauen das System — aber Prädikate entscheiden, was zählt. Ein Haken gilt erst, wenn ein Test ihn beweist.</p>
+              <h3>Agents + evidence as the blueprint</h3>
+              <p>Ten agent lanes build the system, but predicates decide what counts. A checkmark matters only when a test proves it.</p>
             </article>
             <article class="ledger-card">
-              <h3>Du bist die Wurzel des Vertrauens</h3>
-              <p>Der Mensch setzt Ziele und vergibt Rechte. Jede Rechtevergabe ist ein aufgezeichneter, jederzeit widerrufbarer Gegenstand.</p>
+              <h3>You are the root of trust</h3>
+              <p>A human sets goals and grants rights. Every grant is a recorded object that can be revoked at any time.</p>
             </article>
             <article class="ledger-card">
-              <h3>Der Bauplatz für alle</h3>
-              <p>Compiler an Bord, gefahrloses Experimentieren, Beförderung nur durch die Trust-Pipeline: ein OS, das seine eigene Software baut.</p>
+              <h3>A builder for everyone</h3>
+              <p>Compiler onboard, safe experimentation, promotion only through the trust pipeline: an OS that builds its own software.</p>
             </article>
           </div>
           <div class="ledger-col ledger-col--rebuilt story-reveal" style="--reveal-delay:.22s">
-            <p class="ledger-col-title">Bekannte Ideen, neu in Rust</p>
+            <p class="ledger-col-title">Known ideas, rebuilt in Rust</p>
             <article class="ledger-card">
-              <h3>Capability-Sicherheit</h3>
-              <p>Aus Forschungssystemen wie seL4 und Fuchsia bekannt: Rechte sind Gegenstände, die man einzeln vergibt — nicht Häkchen, die man vergisst.</p>
+              <h3>Capability security</h3>
+              <p>Known from research systems such as seL4 and Fuchsia: rights are objects granted individually, not forgotten checkboxes.</p>
             </article>
             <article class="ledger-card">
-              <h3>Treiber im Kernel-Fels</h3>
-              <p>Die Hardwarepfade bleiben bewusst nativ und kernel-resident. Isoliert werden heute die ersetzbaren Wasm-Dienste mit expliziten Import-Grants — nicht die Treiber.</p>
+              <h3>Drivers in the kernel bedrock</h3>
+              <p>Hardware paths deliberately remain native and kernel-resident. Today's isolation protects replaceable Wasm services with explicit import grants, not the drivers.</p>
             </article>
             <article class="ledger-card">
-              <h3>WebAssembly als Käfig</h3>
-              <p>Die Browser-Idee, umgedreht: Der Rust-Compiler selbst läuft als Wasm in einem gezähmten Interpreter an Bord.</p>
+              <h3>WebAssembly as a cage</h3>
+              <p>The browser idea inverted: the Rust compiler itself runs as Wasm inside a constrained onboard interpreter.</p>
             </article>
             <article class="ledger-card">
-              <h3>RECLOG + Beweisberichte</h3>
-              <p>Hash-verkettete RECLOG-Strukturen und Host-Reports liefern heute prüfbare Belege. Ein dauerhaftes, niemals überschriebenes Gerätejournal ist das Ziel — nicht pauschal für jede Aufzeichnung bewiesen.</p>
+              <h3>RECLOG + evidence reports</h3>
+              <p>Hash-linked RECLOG structures and host reports provide verifiable evidence today. A permanent, append-only device journal is the goal, not yet proven for every record.</p>
             </article>
             <article class="ledger-card">
-              <h3>Austauschbarer Unterbau</h3>
-              <p>Der Boden ist so schmal dokumentiert, dass darunter eines Tages seL4 liegen könnte — ohne dass oben etwas bricht.</p>
+              <h3>Replaceable foundation</h3>
+              <p>The foundation is documented narrowly enough that seL4 could one day sit underneath without breaking anything above.</p>
             </article>
           </div>
           <div class="ledger-col ledger-col--not story-reveal" style="--reveal-delay:.34s">
-            <p class="ledger-col-title">Bewusst nicht</p>
+            <p class="ledger-col-title">Deliberately not</p>
             <article class="ledger-card">
-              <h3>Kein POSIX, kein Linux</h3>
-              <p>raiOS ist kein Unix. Alte Software läuft hier nicht — das ist der Preis für den Neuanfang.</p>
+              <h3>No POSIX, no Linux</h3>
+              <p>raiOS is not Unix. Legacy software does not run here; that is the cost of starting over.</p>
             </article>
             <article class="ledger-card">
-              <h3>Kein Multi-User-Desktop</h3>
-              <p>Eine Maschine, ein Besitzer, viele Domänen.</p>
+              <h3>No multi-user desktop</h3>
+              <p>One machine, one owner, many domains.</p>
             </article>
             <article class="ledger-card">
-              <h3>Keine Alt-Hardware</h3>
-              <p>Referenzgerät plus QEMU. Nicht jede Grafikkarte der Welt — eine, dafür richtig.</p>
+              <h3>No legacy hardware matrix</h3>
+              <p>One reference device plus QEMU. Not every graphics card in the world — one, done properly.</p>
             </article>
             <article class="ledger-card">
-              <h3>Kein mathematischer Beweis</h3>
-              <p>Stattdessen Prädikate, Negativtests und Rollback ab Tag 1 — der dokumentierte Tausch.</p>
+              <h3>No mathematical proof</h3>
+              <p>Instead: predicates, negative tests, and rollback from day one — the documented tradeoff.</p>
             </article>
           </div>
         </div>
@@ -2820,20 +2806,20 @@
     <footer class="website-story story-outro" data-story-reveal>
       <div class="story-inner">
         <figure class="story-figure story-figure--bare story-reveal outro-figure">
-          <svg class="outro-svg" viewBox="0 0 560 120" role="img" aria-label="Eine Checkbox lässt sich nicht per Klick abhaken — erst der Prädikat-Stempel setzt den grünen Haken">
+          <svg class="outro-svg" viewBox="0 0 560 120" role="img" aria-label="A checkbox cannot be checked by clicking it; only a predicate backed by evidence sets the green mark.">
             <rect class="outro-box" x="40" y="40" width="28" height="28" rx="3">
               <animateTransform attributeName="transform" type="translate" values="0 0;0 0;-2 0;2 0;-1 0;0 0;0 0" keyTimes="0;0.2;0.22;0.25;0.27;0.3;1" dur="7s" repeatCount="indefinite"></animateTransform>
             </rect>
-            <text class="outro-label" x="86" y="60">basis fertig</text>
+            <text class="outro-label" x="86" y="60">foundation ready</text>
             <g class="outro-cursor" opacity="0">
               <path d="M0 0 L0 14 L4 10 L7 16 L10 14 L7 9 L12 8 Z"></path>
               <animateMotion path="M 220 96 L 62 58 L 62 58 L 200 96" keyPoints="0;0.5;0.6;1" keyTimes="0;0.14;0.24;0.34" dur="7s" repeatCount="indefinite"></animateMotion>
               <animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.06;0.3;0.36;1" dur="7s" repeatCount="indefinite"></animate>
             </g>
-            <text class="outro-deny" x="86" y="92" opacity="0">nein — erst beweisen.<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.22;0.25;0.4;0.44;1" dur="7s" repeatCount="indefinite"></animate></text>
+            <text class="outro-deny" x="86" y="92" opacity="0">no — prove it first.<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.22;0.25;0.4;0.44;1" dur="7s" repeatCount="indefinite"></animate></text>
             <g class="outro-stamp" opacity="0">
               <rect x="330" y="36" width="150" height="36" rx="3"></rect>
-              <text x="405" y="59">PRÄDIKAT ✓ GRÜN</text>
+              <text x="405" y="59">PREDICATE ✓ GREEN</text>
               <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.5;0.55;0.9;0.96;1" dur="7s" repeatCount="indefinite"></animate>
             </g>
             <path class="outro-check" d="M46 54 l7 7 l13 -14" pathLength="30" opacity="0">
@@ -2841,9 +2827,9 @@
               <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.62;0.64;0.9;0.96;1" dur="7s" repeatCount="indefinite"></animate>
             </path>
           </svg>
-          <figcaption>Hier gilt ein Haken erst, wenn ein Beweis ihn setzt.</figcaption>
+          <figcaption>A checkmark counts here only when evidence sets it.</figcaption>
         </figure>
-        <p class="story-outro-line story-reveal" style="--reveal-delay:.15s">Der Bildschirm oben ist keine Attrappe — er zeigt die raiOS-Oberfläche, originalgetreu im Browser nachgebildet.</p>
+        <p class="story-outro-line story-reveal" style="--reveal-delay:.15s">The screen above is not a mockup — it shows the raiOS interface faithfully reconstructed in the browser.</p>
       </div>
     </footer>
     </div>

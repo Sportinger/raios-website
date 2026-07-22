@@ -4,12 +4,13 @@ import { createOriginalThreeCameraMapper } from "./presentation/index.js";
 const VIEW_HEIGHT = 23;
 const CAMERA_DISTANCE = 44;
 const CAMERA_DIRECTION = new THREE.Vector3(1, 0.8164965809, 1).normalize();
+const COMPOSITION_VERTICAL_OFFSET = 0.9;
 
 export function createFilmCamera() {
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 160);
   camera.up.set(0, 1, 0);
   const mapper = createOriginalThreeCameraMapper(camera, {
-    baseTarget: new THREE.Vector3(0, 1.6, 0),
+    baseTarget: new THREE.Vector3(0, 1.6 + COMPOSITION_VERTICAL_OFFSET, 0),
     cameraDirection: CAMERA_DIRECTION,
     cameraDistance: CAMERA_DISTANCE,
     worldWidth: 31,
