@@ -1,37 +1,38 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#05070a">
-  <title>raiOS · Scroll Layers</title>
+  <meta name="theme-color" content="#02070c">
+  <title>raiOS · The Factory Moves In · Real 3D</title>
   <link rel="stylesheet" href="./styles.css">
   <script type="importmap">
     {
       "imports": {
         "three": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/",
-        "@pmndrs/vanilla/": "https://cdn.jsdelivr.net/npm/@pmndrs/vanilla@1.25.0/"
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"
       }
     }
   </script>
 </head>
 <body>
-  <main class="scroll-stage" aria-label="Abstrakte Layer-Animation">
-    <div class="viewport">
-      <canvas id="layer-canvas" aria-hidden="true"></canvas>
-      <output id="scroll-debug" class="scroll-debug" aria-hidden="true"></output>
-      <div id="view-style-controls" class="view-style-controls"></div>
-      <div id="glass-controls" class="glass-controls"></div>
-      <div id="playback-controls" class="playback-controls"></div>
-      <nav
-        id="chapter-navigation"
-        class="chapter-navigation"
-        aria-label="Kapitel-Navigation"
-      ></nav>
-    </div>
+  <main id="film-stage" class="film-stage">
+    <section class="film-viewport" aria-label="The Factory Moves In as a real 3D film">
+      <canvas id="film-canvas" aria-hidden="true"></canvas>
+      <div class="film-vignette" aria-hidden="true"></div>
+      <header class="film-header">
+        <p class="film-kicker">raiOS architecture film · native Three.js</p>
+        <h1 id="scene-title">The Factory Moves In</h1>
+      </header>
+      <div id="prompt" class="film-prompt" aria-live="polite"></div>
+      <div class="film-transport">
+        <button id="play-toggle" type="button" aria-pressed="false">PLAY</button>
+        <output id="timecode">00:00.00 / 02:00.00</output>
+      </div>
+      <nav id="chapter-navigation" class="chapter-navigation" aria-label="Film chapters"></nav>
+      <div class="film-progress" aria-hidden="true"><i id="progress-fill"></i></div>
+    </section>
   </main>
-
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>

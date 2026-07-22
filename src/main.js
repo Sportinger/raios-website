@@ -1,22 +1,23 @@
-import { createApp } from "./app/create-app.js";
+import { createFilmApp } from "./film/create-film-app.js";
 
-let app = createApp({
-  canvas: document.getElementById("layer-canvas"),
+let app = createFilmApp({
+  canvas: document.getElementById("film-canvas"),
   chapterNavigation: document.getElementById("chapter-navigation"),
-  glassControls: document.getElementById("glass-controls"),
-  playbackControls: document.getElementById("playback-controls"),
-  scrollDebug: document.getElementById("scroll-debug"),
-  stage: document.querySelector(".scroll-stage"),
-  viewStyleControls: document.getElementById("view-style-controls"),
+  playToggle: document.getElementById("play-toggle"),
+  progressFill: document.getElementById("progress-fill"),
+  prompt: document.getElementById("prompt"),
+  sceneTitle: document.getElementById("scene-title"),
+  stage: document.getElementById("film-stage"),
+  timecode: document.getElementById("timecode"),
 });
 
-const disposeApp = () => app.dispose();
-window.addEventListener("pagehide", disposeApp, { once: true });
+const dispose = () => app.dispose();
+window.addEventListener("pagehide", dispose, { once: true });
 
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
-    window.removeEventListener("pagehide", disposeApp);
-    disposeApp();
+    window.removeEventListener("pagehide", dispose);
+    dispose();
   });
   import.meta.hot.accept();
 }

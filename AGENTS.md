@@ -2,26 +2,35 @@
 
 ## Umfang
 
-Dieser Branch enthält ausschließlich das eigenständige experimentelle Three.js-Scroll-Projekt. Die produktive raiOS-Website liegt auf `main`; Betriebssystem, Kernel und Hardware-Code liegen im separaten [`raios`-Repository](https://github.com/Sportinger/raios).
+Dieser Branch enthält ausschließlich den eigenständigen nativen Three.js-
+Nachbau des Films „The Factory Moves In“.
 
-- `main`: produktive Website auf [raios.tech](https://raios.tech)
-- `three.js`: eigenständiges Three.js-Scroll-Experiment
+- `main`: produktive Website und 2,5D-Referenzfilm
+- `three.js`: separates Three.js-Chip-/Boot-Experiment
+- `three-film-3d`: echter räumlicher Filmnachbau
 
 ## Arbeiten
 
-- Vor Änderungen `README.md`, `git status --short --branch` und die betroffenen Dateien prüfen.
-- Die bestehende statische Architektur mit `index.html`, `styles.css` und den Modulen unter `src/` verwenden; keine Frameworks oder ungenutzten Assets hinzufügen.
-- Scroll-Animation, responsive Darstellung und reduzierte Bewegung funktionsfähig halten.
-- Keine Bestandteile der produktiven Website, des UI Labs oder des Betriebssystems in diesen Branch kopieren.
+- Vor Änderungen `README.md`, `git status --short --branch` und betroffene
+  Dateien prüfen.
+- Die statische Architektur mit `index.html`, `styles.css` und ES-Modulen unter
+  `src/` beibehalten; keine Frameworks oder ungenutzten Assets ergänzen.
+- Der Referenzfilm auf `main` darf analysiert, aber UI-Lab-SVG, CSS und
+  Produktionskomponenten dürfen nicht kopiert werden.
+- Alle Filmzustände müssen ausschließlich von `setTime(time)` abhängen, damit
+  Scrollen, Rückwärtslauf und direkte Kapitelansprünge deterministisch bleiben.
+- Responsive Darstellung und `prefers-reduced-motion` funktionsfähig halten.
 - Keine Secrets und keine generierten Dateien aus `pages-dist/` committen.
 - Fremde Änderungen niemals verwerfen oder überschreiben.
 
 ## Prüfen und veröffentlichen
 
-Alle JavaScript-Dateien des Experiments mit `node --check` prüfen und immer den Produktions-Build ausführen:
+Alle JavaScript-Dateien mit `node --check` prüfen und den Produktions-Build
+ausführen:
 
 ```powershell
-pwsh ./scripts/build-pages-site.ps1
+npm run check
 ```
 
-Jeden abgeschlossenen Auftrag vollständig committen und auf den aktiven Branch pushen. Dabei nur die eigenen Änderungen stagen.
+Jeden abgeschlossenen Auftrag vollständig committen und auf den aktiven Branch
+pushen. Dabei nur eigene Änderungen stagen.

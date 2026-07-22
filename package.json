@@ -1,5 +1,5 @@
 {
-  "name": "raios-threejs-scroll-experiment",
+  "name": "raios-threejs-factory-film",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,8 +10,5 @@
   "devDependencies": {
     "three": "0.184.0",
     "vite": "8.1.5"
-  },
-  "dependencies": {
-    "@pmndrs/vanilla": "1.25.0"
   }
 }
