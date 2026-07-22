@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { FILM_ACTION_TIMINGS } from "../../film-data.js";
 import { createCanvasSprite, roundedRect } from "./canvas-primitives.js";
 import { FACTORY_LAYOUT, FACTORY_PALETTE } from "./config.js";
 import {
@@ -15,14 +16,17 @@ import {
   VECTOR_CABLE_DIRECTIONS,
 } from "../shared/vector-cable.js";
 import { createVectorCallout, setVectorCallout } from "../shared/vector-callout.js";
-import { createVectorLayer, setVectorLayerBuild } from "../shared/vector-layer.js";
+import {
+  createVectorLayer,
+  setVectorLayerBuild,
+  setVectorLayerFootprint,
+} from "../shared/vector-layer.js";
 
 const DOMAIN_CENTER = new THREE.Vector3(
   FACTORY_LAYOUT.shadow.position.x,
   FACTORY_LAYOUT.shadow.position.y + FACTORY_LAYOUT.shadow.thickness,
   FACTORY_LAYOUT.shadow.position.z,
 );
-const COMPACT_DOMAIN_CENTER = new THREE.Vector3(-0.25, 1.5, 14.09);
 const AGENT_PORT = new THREE.Vector3(-11.695, 0.18, 13.45);
 const DOMAIN_DOOR_X = Object.freeze([-4.48, -1.48, 1.52]);
 const LIVE_KERNEL_SURFACE = Object.freeze({ id: "live-kernel", top: AGENT_PORT.y - 0.04 });
@@ -333,17 +337,16 @@ export function createLiveSequence(tracker) {
     const time = THREE.MathUtils.clamp(Number(rawTime) || 0, 0, 148);
     const domainAlpha = windowAlpha(time, 116.8, 148, 0.45);
     const domainRise = smootherstep(interval(time, 117.2, 118.42));
-    const contraction = smootherstep(interval(time, 134, 137));
-    const finaleDrift = smootherstep(interval(time, 137, 145));
-    const compactX = COMPACT_DOMAIN_CENTER.x + 4.1 * finaleDrift;
-    const compactZ = COMPACT_DOMAIN_CENTER.z + 4.1 * finaleDrift;
+    const contraction = smootherstep(interval(
+      time,
+      FILM_ACTION_TIMINGS.archipelago.domainContraction.start,
+      FILM_ACTION_TIMINGS.archipelago.domainContraction.end,
+    ));
     setOpacity(domain.group, domainAlpha);
-    domain.group.position.set(
-      THREE.MathUtils.lerp(DOMAIN_CENTER.x, compactX, contraction),
-      DOMAIN_CENTER.y,
-      THREE.MathUtils.lerp(DOMAIN_CENTER.z, compactZ, contraction),
-    );
-    domain.group.scale.setScalar(THREE.MathUtils.lerp(1, 0.25, contraction));
+    domain.group.position.copy(DOMAIN_CENTER);
+    domain.group.scale.setScalar(1);
+    const compactFootprint = THREE.MathUtils.lerp(1, 0.25, contraction);
+    setVectorLayerFootprint(domain.layer, compactFootprint, compactFootprint);
     const domainOutline = smootherstep(interval(time, 116.8, 117.2));
     setVectorLayerBuild(domain.layer, {
       outlineAmount: domainOutline,
@@ -370,7 +373,7 @@ export function createLiveSequence(tracker) {
       const outline = smootherstep(interval(time, 120.35 + delay, 120.72 + delay));
       const labelWrite = smootherstep(interval(time, 120.64 + delay, 121.04 + delay));
       const rise = smootherstep(interval(time, 120.92 + delay, 121.55 + delay));
-      door.group.visible = outline > 0.001 && time < 134.55;
+      door.group.visible = outline > 0.001 && time < 134;
       setFactoryDoorEmergence(door, {
         porchAmount: outline,
         labelAmount: labelWrite,
@@ -381,7 +384,7 @@ export function createLiveSequence(tracker) {
     });
     const routeProgress = smootherstep(interval(time, 120.35, 123.35));
     routes.forEach((route, index) => {
-      route.visible = routeProgress > index * 0.08 && time < 134.6;
+      route.visible = routeProgress > index * 0.08 && time < 134;
       setOpacity(route, route.visible ? Math.min(1, (routeProgress - index * 0.08) / 0.32) : 0);
     });
 

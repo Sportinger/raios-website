@@ -20,7 +20,7 @@ betrachten, ohne die deterministische Filmfassung zu verändern.
 - Kamera-Keyframes: `23`
 - Scrollstrecke: `1600svh` plus ein sichtbarer Viewport
 - Autoplay: eine Filmsekunde pro realer Sekunde
-- Finale: `21` echte, instanzierte App-Inseln
+- Finale: `1` kompakte Player-Insel plus `60` echte App-Layer
 - Reduced Motion: deterministisches Poster bei Sekunde `146`
 
 Die Zeitachse liegt in `src/film/film-data.js`. Jede Objektwelt besitzt nur eine
@@ -49,7 +49,8 @@ src/
 
 Die Foundation-Welt deckt die Sekunden `0–41` ab. Die Factory-Welt modelliert
 die Sekunden `41–148`. Wiederholte Produktionspfade und das Insel-Finale nutzen
-Konfiguration beziehungsweise `THREE.InstancedMesh` statt duplizierter Szenen.
+gemeinsame Konfiguration und wiederverwendbare Objektverträge statt duplizierter
+Szenenlogik.
 
 ### Layer- und Callout-Vertrag
 
@@ -61,6 +62,13 @@ unveränderter Position bis zu seiner vollen Höhe. Eigene Szenen dürfen Layer
 nicht mehr durch Verschieben oder Skalieren der gesamten Gruppe einblenden.
 Beim Outro läuft derselbe Vertrag rückwärts: Der Körper sinkt zuerst in seine
 Trägerfläche zurück, anschließend wird der verbleibende Grundriss gelöscht.
+
+Ab Kapitel 13 bleibt die Player-Domain an ihrer bestehenden Weltposition. Nur
+ihr X/Z-Footprint schrumpft zentriert über `setVectorLayerFootprint`; Höhe und
+Gruppenposition verändern sich nicht. Danach entstehen `60` App-Inseln in
+unterschiedlichen Breiten, Tiefen und Höhen nacheinander über denselben
+`vector-layer`-Lifecycle aus Grundriss und aufwachsendem Körper. Bereits
+entstandene Inseln driften anschließend nicht weiter.
 
 Die zugehörigen Erklärtafeln verwenden `objects/shared/vector-callout.js`.
 Dieses Modul öffnet das Panel vor der Kamera, schreibt Titel und Text, bewegt
