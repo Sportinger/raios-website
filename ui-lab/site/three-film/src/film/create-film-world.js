@@ -1,11 +1,13 @@
 import * as THREE from "three";
 import { disposeObject3D } from "../shared/dispose-object-3d.js";
-import {
-  FOUNDATION_PRESENTATION_SCALE,
-  RUST_KERNEL_ASSEMBLY_PIVOT,
-} from "./layout-constants.js";
+import { FOUNDATION_PRESENTATION_SCALE } from "./layout-constants.js";
 import { createFoundationWorld } from "./objects/foundation/index.js";
 import { createFactoryWorld } from "./objects/factory/index.js";
+
+// Center of the canonical 17 x 17 Rust-kernel footprint after the Foundation
+// presentation transform has reached its expanded state. Keep this local so a
+// live module reload cannot mix a new world module with stale layout exports.
+const RUST_KERNEL_ASSEMBLY_PIVOT = new THREE.Vector3(-0.1, 0, -1.875);
 
 export function createFilmWorld({
   showGrid = true,
@@ -18,11 +20,11 @@ export function createFilmWorld({
   root.name = "factory-film-world";
   const kernelAssembly = new THREE.Group();
   kernelAssembly.name = "rust-kernel-assembly";
-  kernelAssembly.position.fromArray(RUST_KERNEL_ASSEMBLY_PIVOT);
+  kernelAssembly.position.copy(RUST_KERNEL_ASSEMBLY_PIVOT);
   const kernelAttachedContent = new THREE.Group();
   kernelAttachedContent.name = "rust-kernel-attached-content";
   kernelAttachedContent.position
-    .fromArray(RUST_KERNEL_ASSEMBLY_PIVOT)
+    .copy(RUST_KERNEL_ASSEMBLY_PIVOT)
     .multiplyScalar(-1);
   kernelAssembly.add(kernelAttachedContent);
   root.add(kernelAssembly);
