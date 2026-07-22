@@ -34,6 +34,10 @@ Layer-Rotationen den vollständigen Objektverbund geschlossen mitnehmen. Zwische
 Playback `00:28.29` und `00:40.72` dreht sich dieser Verbund weich um `90°` im
 Uhrzeigersinn. Zwischen `00:58.00` und `01:06.00` folgen weitere `90°` in
 derselben Richtung; danach bleibt der Verbund bei insgesamt `180°` stehen.
+Bis Playback `00:13.00` zeigt die Kamera den Rust-Kernel aus einer horizontalen,
+um `45°` gegen den Uhrzeigersinn versetzten 2D-Seitenansicht auf dessen
+Mittelhöhe. Von `00:13.00` bis `00:15.30` fährt sie weich in die kanonische
+isometrische Filmansicht zurück.
 
 ## Lokal starten
 
