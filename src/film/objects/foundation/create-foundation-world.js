@@ -36,6 +36,7 @@ import {
 import {
   cableDoorLandingDrop,
   cableSurfacePoint,
+  createVectorCableJourney,
   createVectorCable,
   setVectorCableState,
   VECTOR_CABLE_DIRECTIONS,
@@ -70,9 +71,9 @@ const smootherProgress = (time, start, end) => smootherstep((time - start) / (en
 const timedProgress = (time, timing) => progress(time, timing.start, timing.end);
 const place = (object, coordinates) => object.position.set(...coordinates);
 const FILM_CAMERA_DIRECTION = new THREE.Vector3(1, 0.8164965809, 1).normalize();
-const DECK_HEIGHT_DELTA = FOUNDATION_LAYER_HEIGHT - 0.34;
-const DECK_ROUTE_Y = FOUNDATION_SURFACES.genesis.top + 0.02;
-const DECK_KEY_TARGET_Y = FOUNDATION_SURFACES.genesis.top + 0.76;
+const LAYER_HEIGHT_DELTA = FOUNDATION_LAYER_HEIGHT - 0.34;
+const LAYER_ROUTE_Y = FOUNDATION_SURFACES.genesis.top + 0.02;
+const LAYER_KEY_TARGET_Y = FOUNDATION_SURFACES.genesis.top + 0.76;
 const KEY_FORGE_SCALE_XZ = 1.12;
 const KEY_FORGE_SCALE_Y = 0.24;
 
@@ -346,7 +347,7 @@ function createWideLabel(text, color = PALETTE.ink, width = 6, fontSize = 44) {
   return sprite;
 }
 
-function createDeckLabel(text, color, width, sideHeight) {
+function createLayerLabel(text, color, width, sideHeight) {
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
   canvas.height = 192;
@@ -457,11 +458,11 @@ function createSlabFacets(width, depth, height) {
   return group;
 }
 
-function createDeck({ width, depth, height, color, edgeColor, label, labelColor = edgeColor }) {
+function createLayer({ width, depth, height, color, edgeColor, label, labelColor = edgeColor }) {
   const title = new THREE.Group();
   if (label) {
     const titleWidth = Math.min(2.25, Math.max(1.65, width * 0.34));
-    const titleDecal = createDeckLabel(label, labelColor, titleWidth, height);
+    const titleDecal = createLayerLabel(label, labelColor, titleWidth, height);
     title.add(titleDecal);
   }
   const underglow = createGlow(edgeColor, width * 0.96, depth * 0.34);
@@ -787,7 +788,7 @@ function setMovingFile(file, route, time, timing, delay = 0, sizeScale = 1) {
   const absorb = 1 - progress(time, end - 0.34, end);
   file.visible = intro * absorb > 0.001;
   file.position.copy(route.getPointAt(amount));
-  file.position.y += 0.12 + Math.sin(amount * Math.PI) * 0.28;
+  file.position.y += 0.08;
   file.scale.setScalar(Math.max(0.001, (0.55 + absorb * 0.45) * intro * sizeScale));
   setFade(file, intro * absorb);
 }
@@ -796,7 +797,7 @@ export function createFoundationWorld() {
   const group = new THREE.Group();
   group.name = "film-foundation-world";
 
-  const kernel = createDeck({
+  const kernel = createLayer({
     width: KERNEL_FOOTPRINT.compact.width,
     depth: KERNEL_FOOTPRINT.compact.depth,
     height: FOUNDATION_LAYER_HEIGHT,
@@ -820,15 +821,15 @@ export function createFoundationWorld() {
     0,
     KERNEL_FOOTPRINT.compact.depth * 0.5 + 0.04,
   );
-  const genesis = createDeck({
+  const genesis = createLayer({
     width: GENESIS_FOOTPRINT.width,
     depth: GENESIS_FOOTPRINT.depth,
     height: FOUNDATION_LAYER_HEIGHT,
-    color: PALETTE.panel, edgeColor: 0x587b9e, label: "GENESIS DECK", labelColor: PALETTE.ink,
+    color: PALETTE.panel, edgeColor: 0x587b9e, label: "GENESIS LAYER", labelColor: PALETTE.ink,
   });
   place(genesis.group, FOUNDATION_LAYOUT.genesisCompact);
   const genesisCallout = createVectorCallout({
-    title: "GENESIS DECK",
+    title: "GENESIS LAYER",
     copy: "BUILDS ABOVE KERNEL · GRANTS DOORS",
     color: PALETTE.green,
     width: 5.55,
@@ -849,7 +850,7 @@ export function createFoundationWorld() {
   });
   place(agent.group, FOUNDATION_LAYOUT.agentCompact);
   // Compensates for the authored Foundation-set scale so the Agent retains
-  // the original block-to-deck ratio while the two decks fill the frame.
+  // the original block-to-layer ratio while the two layers fill the frame.
   const agentScale = 1.24;
   agent.group.scale.setScalar(agentScale);
   const keyForge = createKeyForge();
@@ -865,7 +866,7 @@ export function createFoundationWorld() {
   place(netTower.group, FOUNDATION_LAYOUT.netTower);
   netTower.group.scale.setScalar(1.18);
   const agentToDoor = createSignalRoute([
-    new THREE.Vector3(-1.9, 1.74 + DECK_HEIGHT_DELTA, 1.18),
+    new THREE.Vector3(-1.9, 1.74 + LAYER_HEIGHT_DELTA, 1.18),
     cableSurfacePoint(FOUNDATION_SURFACES.genesis, -1.9, 1.18),
     cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.2, 2.05),
     cableSurfacePoint(FOUNDATION_SURFACES.genesis, internetPosition.x, internetPosition.z),
@@ -879,18 +880,18 @@ export function createFoundationWorld() {
     cableSurfacePoint(FOUNDATION_SURFACES.kernel, 6.6, 2.1),
     cableSurfacePoint(FOUNDATION_SURFACES.kernel, 8.65, 2.3),
   ], PALETTE.blue, 30, 1, VECTOR_CABLE_DIRECTIONS.bidirectional);
-  const builder = createDeck({
+  const builder = createLayer({
     width: BUILDER_FOOTPRINT.width,
     depth: BUILDER_FOOTPRINT.depth,
     height: FOUNDATION_LAYER_HEIGHT,
-    color: 0x111c2b, edgeColor: PALETTE.blueHigh, label: "BUILDER DECK", labelColor: PALETTE.ink,
+    color: 0x111c2b, edgeColor: PALETTE.blueHigh, label: "BUILDER LAYER", labelColor: PALETTE.ink,
   });
   place(builder.group, FOUNDATION_LAYOUT.builder);
   const builderHatch = createBuilderHatch(BUILDER_FOOTPRINT.width, BUILDER_FOOTPRINT.depth);
   builderHatch.position.y = builder.height + 0.025;
   builder.group.add(builderHatch);
   const builderCallout = createVectorCallout({
-    title: "BUILDER DECK",
+    title: "BUILDER LAYER",
     copy: "OFFLINE TOOLS \u00b7 SEALED EGRESS",
     color: PALETTE.blueHigh,
     width: 5.65,
@@ -912,7 +913,7 @@ export function createFoundationWorld() {
     FOUNDATION_LAYOUT.production[2] + 0.2,
   );
   const genesisFailureDecal = createFloorDecal("FAILED!", PALETTE.red, 2.2, 0.72);
-  genesisFailureDecal.position.set(0.473, 1.085 + DECK_HEIGHT_DELTA, -1.651);
+  genesisFailureDecal.position.set(0.473, 1.085 + LAYER_HEIGHT_DELTA, -1.651);
   group.add(failureDecal, genesisFailureDecal);
   const buildDoor = createDoorAndKey("build.request", { keyTagText: "REQUEST" });
   anchorFoundationDoor(buildDoor, FOUNDATION_LAYOUT.buildDoor);
@@ -979,31 +980,26 @@ export function createFoundationWorld() {
       FOUNDATION_LAYOUT.production[2],
     ),
   ], PALETTE.blueHigh);
-  const materialPath = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.537, DECK_ROUTE_Y + 0.1, 1.862),
-    new THREE.Vector3(buildDoorPosition.x, DECK_ROUTE_Y + 0.1, buildDoorPosition.z),
-    new THREE.Vector3(sysrootDoorPosition.x, DECK_ROUTE_Y + 0.1, sysrootDoorPosition.z),
-    new THREE.Vector3(srcDoorPosition.x, DECK_ROUTE_Y + 0.1, srcDoorPosition.z),
-    new THREE.Vector3(
-      FOUNDATION_LAYOUT.production[0],
-      DECK_ROUTE_Y + 0.1,
-      FOUNDATION_LAYOUT.production[2],
-    ),
-  ], false, "centripetal");
+  const materialPath = createVectorCableJourney([
+    buildLine,
+    requestToSysroot,
+    sysrootToSrc,
+    srcToWorkpiece,
+  ]);
   const sourceCaption = createWideLabel(
     "SOURCE FILES \u00b7 AGENT \u2192 /sysroot \u2192 /src",
     PALETTE.muted,
     5.15,
     42,
   );
-  sourceCaption.position.set(2.259, 2.7 + DECK_HEIGHT_DELTA, -7.959);
+  sourceCaption.position.set(2.259, 2.7 + LAYER_HEIGHT_DELTA, -7.959);
   const hashCaption = createWideLabel(
     "HASHED \u00b7 CONTENT-ADDRESSED \u00b7 IMMUTABLE",
     PALETTE.muted,
     4.7,
     38,
   );
-  hashCaption.position.set(2.259, 2.35 + DECK_HEIGHT_DELTA, -7.959);
+  hashCaption.position.set(2.259, 2.35 + LAYER_HEIGHT_DELTA, -7.959);
   group.add(
     kernel.group,
     kernelCallout.group,
@@ -1097,10 +1093,10 @@ export function createFoundationWorld() {
     setVectorLayerFootprint(kernel, kernelScaleX, kernelScaleZ);
     kernel.title.position.x = -KERNEL_FOOTPRINT.compact.width * (kernelScaleX - 1) * 0.5;
     setVectorCallout(kernelCallout, time, {
-      start: 6.24,
-      introEnd: 7.04,
-      titleStart: 7.28,
-      end: 8.28,
+      start: FOUNDATION_TIMELINE.kernelOutline.start,
+      introEnd: FOUNDATION_TIMELINE.kernelOutline.end,
+      titleStart: 4.93,
+      end: 5.93,
       root: group,
       camera,
       targetObject: kernel.body,
@@ -1130,10 +1126,10 @@ export function createFoundationWorld() {
       titleOpacity: progress(time, 12.8, 13.02),
     });
     setVectorCallout(genesisCallout, time, {
-      start: 10.68,
-      introEnd: 11.48,
-      titleStart: 12.02,
-      end: 13.02,
+      start: FOUNDATION_TIMELINE.genesisOutline.start,
+      introEnd: FOUNDATION_TIMELINE.genesisOutline.end,
+      titleStart: 9.62,
+      end: 10.62,
       root: group,
       camera,
       targetObject: genesis.body,
@@ -1141,7 +1137,7 @@ export function createFoundationWorld() {
       angle: -THREE.MathUtils.degToRad(26.565),
     });
 
-    const legacyWorldAlpha = 1 - progress(time, 134, 136.7);
+    const persistentWorldAlpha = 1;
     const agentOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.agentOutline);
     const agentRise = timedProgress(time, FOUNDATION_TIMELINE.agentRise);
     agent.group.position.set(
@@ -1154,8 +1150,8 @@ export function createFoundationWorld() {
     setVectorMachineBuild(agent, {
       outlineAmount: agentOutlineDraw,
       riseAmount: agentRise,
-      opacity: legacyWorldAlpha,
-      outlineOpacity: legacyWorldAlpha
+      opacity: persistentWorldAlpha,
+      outlineOpacity: persistentWorldAlpha
         * (1 - progress(time, FOUNDATION_TIMELINE.agentRise.start, 14.02)),
     });
 
@@ -1163,35 +1159,35 @@ export function createFoundationWorld() {
     const netHatchOpen = timedProgress(time, FOUNDATION_TIMELINE.netHatch);
     const netRise = timedProgress(time, FOUNDATION_TIMELINE.netRise);
     netTower.group.visible = (netOutlineDraw > 0.001 || netHatchOpen > 0.001 || netRise > 0.001)
-      && legacyWorldAlpha > 0.001;
+      && persistentWorldAlpha > 0.001;
     netTower.group.position.y = FOUNDATION_LAYOUT.netTower[1];
     netTower.group.scale.setScalar(1.18);
     setSlidingFloorHatch(
       netTower.hatch,
       netOutlineDraw,
       netHatchOpen,
-      legacyWorldAlpha,
+      persistentWorldAlpha,
     );
     netTower.tower.visible = netRise > 0.001;
     netTower.tower.position.y = THREE.MathUtils.lerp(-1.72, 0, netRise);
     setFade(
       netTower.tower,
       progress(time, FOUNDATION_TIMELINE.netRise.start, FOUNDATION_TIMELINE.netRise.start + 0.16)
-        * legacyWorldAlpha,
+        * persistentWorldAlpha,
     );
     netTower.rings.forEach((ring, index) => {
       const cycle = ((time - FOUNDATION_TIMELINE.netRise.end - index * 1.2) % 3.6 + 3.6) % 3.6 / 3.6;
       ring.scale.setScalar(0.4 + cycle * 2.5);
       ring.material.opacity = time < FOUNDATION_TIMELINE.netRise.end
         ? 0
-        : (1 - cycle) * 0.72 * legacyWorldAlpha;
+        : (1 - cycle) * 0.72 * persistentWorldAlpha;
     });
     netTower.signal.rotation.z = time * 0.26;
     netTower.beacon.scale.setScalar(0.8 + Math.sin(time * 4) * 0.18);
 
     const lineDraw = timedProgress(time, FOUNDATION_TIMELINE.agentRoute);
     setRouteProgress(agentToDoor, lineDraw, time, time >= FOUNDATION_TIMELINE.networkConnectedAt);
-    const networkWindowAlpha = legacyWorldAlpha;
+    const networkWindowAlpha = persistentWorldAlpha;
     setFade(agentToDoor.group, lineDraw * networkWindowAlpha);
 
     setEmergingDoor(
@@ -1228,7 +1224,7 @@ export function createFoundationWorld() {
       keyForge.hatch,
       forgeState.outline,
       forgeState.open,
-      forgeState.opacity * legacyWorldAlpha,
+      forgeState.opacity * persistentWorldAlpha,
     );
     const keyStart = new THREE.Vector3(
       FOUNDATION_LAYOUT.keyForge[0],
@@ -1240,7 +1236,7 @@ export function createFoundationWorld() {
       time,
       FOUNDATION_TIMELINE.netKey,
       keyStart,
-      new THREE.Vector3(internetPosition.x, DECK_KEY_TARGET_Y, internetPosition.z),
+      new THREE.Vector3(internetPosition.x, LAYER_KEY_TARGET_Y, internetPosition.z),
       0.74,
     );
     setRouteProgress(
@@ -1268,10 +1264,10 @@ export function createFoundationWorld() {
     const floorOnline = timedProgress(time, FOUNDATION_TIMELINE.builderFloorOnline);
     setFade(builderHatch, builderRise * (1 - floorOnline));
     setVectorCallout(builderCallout, time, {
-      start: 28.55,
-      introEnd: 29.35,
-      titleStart: 32,
-      end: 32.9,
+      start: FOUNDATION_TIMELINE.builderOutline.start,
+      introEnd: FOUNDATION_TIMELINE.builderOutline.end,
+      titleStart: 30.1,
+      end: 31,
       root: group,
       camera,
       targetObject: builder.body,
@@ -1359,7 +1355,7 @@ export function createFoundationWorld() {
       time,
       FOUNDATION_TIMELINE.buildKey,
       keyStart,
-      new THREE.Vector3(buildDoorPosition.x, DECK_KEY_TARGET_Y, buildDoorPosition.z),
+      new THREE.Vector3(buildDoorPosition.x, LAYER_KEY_TARGET_Y, buildDoorPosition.z),
       0.7,
     );
     setCapabilityKey(
@@ -1367,7 +1363,7 @@ export function createFoundationWorld() {
       time,
       FOUNDATION_TIMELINE.sysrootKey,
       keyStart,
-      new THREE.Vector3(sysrootDoorPosition.x, DECK_KEY_TARGET_Y, sysrootDoorPosition.z),
+      new THREE.Vector3(sysrootDoorPosition.x, LAYER_KEY_TARGET_Y, sysrootDoorPosition.z),
       0.72,
     );
     setCapabilityKey(
@@ -1375,7 +1371,7 @@ export function createFoundationWorld() {
       time,
       FOUNDATION_TIMELINE.srcKey,
       keyStart,
-      new THREE.Vector3(srcDoorPosition.x, DECK_KEY_TARGET_Y, srcDoorPosition.z),
+      new THREE.Vector3(srcDoorPosition.x, LAYER_KEY_TARGET_Y, srcDoorPosition.z),
       0.72,
     );
 
@@ -1513,7 +1509,7 @@ export function createFoundationWorld() {
     genesisFailureDecal.visible = genesisFailureActive;
     genesisFailureDecal.position.set(
       THREE.MathUtils.lerp(0.473, -2.332, genesisConsume),
-      1.085 + DECK_HEIGHT_DELTA + Math.sin(genesisConsume * Math.PI) * 0.3,
+      1.085 + LAYER_HEIGHT_DELTA + Math.sin(genesisConsume * Math.PI) * 0.3,
       THREE.MathUtils.lerp(-1.651, -1.016, genesisConsume),
     );
     genesisFailureDecal.scale.setScalar(

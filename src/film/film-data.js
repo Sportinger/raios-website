@@ -14,7 +14,7 @@ export const FILM_SCENES = deepFreeze([
   { number: 1, id: "sentence", title: "Prompt", start: 0, end: 3.89, act: 1, camera: { scale: 1.15, focusX: 0.5, focusY: 0.49 } },
   { number: 2, id: "world", title: "The world under the glass", start: 3.89, end: 12.59, act: 1, camera: { scale: 1.35, focusX: 0.3, focusY: 0.47 } },
   { number: 3, id: "net", title: "The agent needs the net", start: 12.59, end: 25, act: 1, camera: { scale: 1.35, focusX: 0.3, focusY: 0.47 } },
-  { number: 4, id: "build-site", title: "Unlock the builder deck", start: 25, end: 33, act: 2, camera: { scale: 0.82, focusX: 0.5, focusY: 0.5 } },
+  { number: 4, id: "build-site", title: "Unlock the builder layer", start: 25, end: 33, act: 2, camera: { scale: 0.82, focusX: 0.5, focusY: 0.5 } },
   { number: 5, id: "inert-source", title: "Material becomes one workpiece", start: 33, end: 41, act: 2, camera: { scale: 1.02, focusX: 0.72, focusY: 0.48 } },
   { number: 6, id: "compiler", title: "Compiler round one", start: 41, end: 52, act: 2, camera: { scale: 1.12, focusX: 0.74, focusY: 0.49 } },
   { number: 7, id: "feedback", title: "Red report, precise fix", start: 52, end: 71, act: 2, camera: { scale: 0.98, focusX: 0.58, focusY: 0.49 } },
@@ -134,7 +134,6 @@ export const FILM_ACTION_TIMINGS = deepFreeze({
   },
   archipelago: {
     domainContraction: { start: 134, end: 137 },
-    legacyWorldFade: { start: 134, end: 136.7 },
     firstIslandAt: 137.15,
     islandCount: 60,
     islandStaggerSeconds: 0.145,

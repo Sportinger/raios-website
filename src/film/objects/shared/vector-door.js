@@ -283,7 +283,7 @@ export function createVectorDoor({
     fillColor: panelColor,
     rotationY: hatchRotationY,
   });
-  // The frame marks the deck edge. The hatch/landing sits completely outside
+  // The frame marks the layer edge. The hatch/landing sits completely outside
   // that edge instead of straddling the layer underneath the frame.
   hatch.group.position.set(
     Math.sin(rotationY) * porchOffset * porchSide,

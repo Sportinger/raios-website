@@ -19,10 +19,10 @@ export const FACTORY_PALETTE = Object.freeze({
   white: 0xeaf7ff,
 });
 
-// The visible Builder Deck is owned by Foundation. By the time workshop
+// The visible Builder Layer is owned by Foundation. By the time workshop
 // programs appear, Foundation's one-sided world expansion has translated its
 // root by (-1.9, +1). These coordinates map that settled, scaled top surface
-// into the Factory root instead of the old hidden 16×10 prototype deck.
+// into the Factory root instead of the old hidden 16×10 prototype layer.
 export const FACTORY_BUILDER_SURFACE = Object.freeze({
   id: "canonical-builder-factory-space",
   color: 0x111c2b,
@@ -62,11 +62,11 @@ export const FACTORY_LANES = Object.freeze([
     id: "verifier", title: "TESTER",
     x: FACTORY_BUILDER_SURFACE.centerX + BUILDER_HALF_SIZE - TESTER_CORNER_INSET,
     z: FACTORY_BUILDER_SURFACE.centerZ - BUILDER_HALF_SIZE + TESTER_CORNER_INSET,
-    scale: 1, revealAt: 41.6, lampCount: 1, progressLabel: "Testing",
+    scale: 1, revealAt: 41.6, lampCount: 3, progressLabel: "Testing",
   }),
   Object.freeze({
     id: "guard", title: "GUARD",
-    // Same projected axis as /out, one program-width inside the deck.
+    // Same projected axis as /out, one program-width inside the layer.
     x: FACTORY_BUILDER_SURFACE.centerX - BUILDER_HALF_SIZE + GUARD_DOOR_INSET,
     z: FACTORY_BUILDER_SURFACE.centerZ + OUT_DOOR_ALONG + GUARD_DOOR_INSET,
     scale: 1, revealAt: 41.9, lampCount: 3,
@@ -74,14 +74,14 @@ export const FACTORY_LANES = Object.freeze([
 ]);
 
 export const FACTORY_LAYOUT = Object.freeze({
-  deck: Object.freeze({ width: 16, depth: 10, thickness: 0.72, gridStep: 2 }),
+  layer: Object.freeze({ width: 16, depth: 10, thickness: 0.72, gridStep: 2 }),
   hatch: Object.freeze({ width: 5.2, depth: 3.6 }),
   shadow: Object.freeze({
     width: FILM_QUADRANT_SIZE * FOUNDATION_PRESENTATION_SCALE,
     depth: FILM_QUADRANT_SIZE * FOUNDATION_PRESENTATION_SCALE,
     thickness: FILM_LAYER_HEIGHT * FOUNDATION_PRESENTATION_SCALE,
     gridStep: 2.1,
-    // Aligns this Factory-owned deck with the upper cell of the Foundation
+    // Aligns this Factory-owned layer with the upper cell of the Foundation
     // kernel after both authored root transforms have been applied.
     position: Object.freeze({ x: -14.37, y: -0.51, z: -2.36 }),
   }),

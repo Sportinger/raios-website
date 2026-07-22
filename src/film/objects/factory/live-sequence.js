@@ -374,10 +374,10 @@ export function createLiveSequence(tracker) {
         * (1 - smootherstep(interval(time, 134, 137))),
     });
     setVectorCallout(domainCallout, time, {
-      start: 118.48,
-      introEnd: 118.98,
-      titleStart: 119.42,
-      end: 120.35,
+      start: 116.8,
+      introEnd: 117.3,
+      titleStart: 117.74,
+      end: 118.67,
       root: group,
       camera,
       targetObject: domain.layer.body,

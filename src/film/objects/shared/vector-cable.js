@@ -397,6 +397,20 @@ export function setVectorCablePoints(cable, points) {
   });
 }
 
+export function createVectorCableJourney(cables) {
+  const journey = new THREE.CurvePath();
+  (cables ?? []).forEach((cable) => {
+    if (!cable?.curve) {
+      throw new TypeError("A cable journey requires vector cable instances.");
+    }
+    journey.add(cable.curve);
+  });
+  if (journey.curves.length === 0) {
+    throw new TypeError("A cable journey requires at least one cable.");
+  }
+  return journey;
+}
+
 export function setVectorCableLifecycle(cable, time, {
   introStart,
   introEnd,

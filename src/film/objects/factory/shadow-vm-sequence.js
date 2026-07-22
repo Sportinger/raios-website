@@ -485,10 +485,10 @@ export function createShadowVmSequence(tracker, { getPlayerWorldPosition } = {})
     setShadowOpacity(subject, alpha);
 
     setVectorCallout(callout, time, {
-      start: 59,
-      introEnd: 59.8,
-      titleStart: 60.2,
-      end: 62,
+      start: SHADOW_VM_WINDOWS.rehearsal.start,
+      introEnd: SHADOW_VM_WINDOWS.rehearsal.start + 0.8,
+      titleStart: SHADOW_VM_WINDOWS.rehearsal.start + 1.2,
+      end: SHADOW_VM_WINDOWS.rehearsal.start + 3,
       root,
       camera,
       targetObject: layer.body,

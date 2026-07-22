@@ -8,7 +8,7 @@ werden nicht kopiert.
 ## Ziel
 
 Aus der festgelegten orthografischen Filmkamera soll der native 3D-Nachbau die
-Komposition des Originals möglichst genau erhalten. Alle Decks, Maschinen,
+Komposition des Originals möglichst genau erhalten. Alle Layer, Maschinen,
 Türen, Leitungen, Workpieces und App-Inseln besitzen jedoch echte räumliche
 Tiefe. Über `FREE ORBIT` lässt sich jedes aktuelle Filmbild frei im Raum
 betrachten, ohne die deterministische Filmfassung zu verändern.
@@ -54,7 +54,7 @@ Szenenlogik.
 
 ### Layer- und Callout-Vertrag
 
-Rust-Kernel, Genesis Deck, Builder Deck, Shadow VM und Player Domain verwenden
+Rust-Kernel, Genesis Layer, Builder Layer, Shadow VM und Player Domain verwenden
 `objects/shared/vector-layer.js`. Größe, Höhe, Farbe, Grid und Boden-Pivot sind
 Konfiguration; der deterministische Aufbau ist immer gleich: Zuerst zeichnet
 sich der Grundriss auf dem Trägerboden, danach wächst der massive Layer bei
@@ -65,7 +65,7 @@ Trägerfläche zurück, anschließend wird der verbleibende Grundriss gelöscht.
 
 Ab Kapitel 13 schrumpft die Player-Domain über `setVectorLayerFootprint` auf
 `18 %` und fährt als erste private App-Insel bündig an die freie Kante des
-Genesis Decks. `PLAYER.WASM` bleibt währenddessen auf dieser Insel verankert
+Genesis Layers. `PLAYER.WASM` bleibt währenddessen auf dieser Insel verankert
 und bewegt sich nicht unabhängig von ihr. Danach entstehen `60` App-Inseln von
 diesem Startpunkt aus ausschließlich auf der sichtbaren Rust-Kernel-Fläche,
 ohne Genesis oder die Player-Insel zu überdecken. Ihre Breiten und Tiefen
@@ -74,17 +74,22 @@ Player-Insel. Sie bauen sich nacheinander über denselben `vector-layer`-
 Lifecycle aus Grundriss und aufwachsendem Körper auf.
 Die vorhandenen drei Türen und Capability-Kabel der Player-Domain bleiben beim
 Schrumpfen erhalten, skalieren mit der Insel und führen ihre Endpunkte während
-des Andockens dynamisch nach. Agent und Genesis Deck bleiben dabei unverändert
+des Andockens dynamisch nach. Agent und Genesis Layer bleiben dabei unverändert
 bestehen. Das Finale spawnt keine zusätzliche Tür. Zwischen den danach
 entstehenden App-Inseln gibt es keine verbindenden Kabel oder Signallinien.
 Bereits entstandene Inseln driften oder pulsieren anschließend nicht weiter;
 fertige Layerzustände werden zudem nicht in jedem Frame erneut aufgebaut.
 
 Die zugehörigen Erklärtafeln verwenden `objects/shared/vector-callout.js`.
-Dieses Modul öffnet das Panel vor der Kamera, schreibt Titel und Text, bewegt
+Dieses Modul öffnet das Panel mit festem Viewport-Padding rechts unten vor der
+Kamera, schreibt Titel und Text, bewegt
 es anschließend zum Ziel und aktualisiert die Verbindungslinie bei jeder
 Kamera- oder Objektbewegung. Inhalt, Akzentfarbe, Zielpunkt und Zeitfenster
 bleiben reine Konfiguration.
+Der Callout beginnt gleichzeitig mit dem Zeichnen des zugehörigen
+Layer-Grundrisses. Nach dem vollständigen Ausschreiben bleibt das Panel fünf
+Sekunden rechts unten stehen; erst danach startet seine Dock- und
+Outroanimation.
 
 ### Maschinenvertrag
 
@@ -97,10 +102,13 @@ Schrift, Größe und Position werden ausschließlich im gemeinsamen Modul
 festgelegt. Szenen liefern weder Untertitel noch eigene Textfarben oder
 Labelgrößen. Zustände werden ausschließlich über integrierte Seitenlampen
 dargestellt: Gelb bedeutet ausstehend, Grün bestanden und Rot fehlgeschlagen.
-Compiler und Tester besitzen je eine Lampe, der Guard drei; der Agent besitzt
-keine. Anzahl, Geometrie und Zustandsfarben sind Teil des gemeinsamen Vertrags.
+Der Compiler besitzt eine Lampe, Tester und Guard besitzen je drei; der Agent
+besitzt keine. Beim Tester repräsentiert jede Lampe genau einen der drei
+Testakte und wechselt unabhängig von Gelb auf Grün beziehungsweise beim ersten
+Fehlschlag auf Rot. Anzahl, Geometrie und Zustandsfarben sind Teil des
+gemeinsamen Vertrags.
 Eine Maschine wird über ihre Trägerfläche und X/Z-Koordinaten verankert; ihre
-Höhe darf nicht in einzelnen Szenen frei geschätzt werden. Auf dem Builder Deck
+Höhe darf nicht in einzelnen Szenen frei geschätzt werden. Auf dem Builder Layer
 stehen der Compiler in der unteren Ecke, der Tester in der rechten Ecke und der
 Guard direkt vor `/out`. Erst die Freigabeanimation bewegt den Guard auf
 derselben Ebene eine halbe Position zur Seite. Nach der Bestätigung verschwindet
@@ -117,7 +125,7 @@ abgerundeten Bar und genau einem Tätigkeitswort darunter (`Compiling` oder
 `Testing`). Rundennummern, Prozenttexte, Versionszeilen und Statusmeldungen
 gehören nicht in das Overlay; Ergebnisse werden über die Maschinenlampen
 dargestellt. Die Anzeige rendert als heller, tiefenunabhängiger Vordergrundpass,
-damit Deck, Kabel und Workpiece sie nicht überzeichnen.
+damit Layer, Kabel und Workpiece sie nicht überzeichnen.
 
 `PLAYER.WASM` verwendet feste Dock-Positionen neben Tester, hinter Compiler und
 vor Guard. Es holt ein sichtbares Compiler-Paket am Compiler ab, nimmt beim
@@ -142,18 +150,18 @@ definiert; Szenen liefern nur Text und Farbe. Der Vorbau besitzt eine
 vollständig opake Bodenfläche und übernimmt deren Farbe aus der jeweiligen
 Trägerfläche (zum Beispiel blau oder violett).
 Der deterministische Aufbau ist ebenfalls Teil des Moduls: Der Vorbau wächst
-von der Deckkante nach außen, danach schreibt sich das Label und erst dann
+von der Layerkante nach außen, danach schreibt sich das Label und erst dann
 fährt der Türrahmen aus der Ebene hoch. Die geteilte Bodenklappe wird nur für
 eigenständige Objekte wie den NET-Turm verwendet, nicht für Türen.
 Beim Outro schließt zuerst das Blatt, danach sinkt der Rahmen, der Text wird
-rückwärts gelöscht und zuletzt zieht sich der Vorbau in die Deckkante zurück.
+rückwärts gelöscht und zuletzt zieht sich der Vorbau in die Layerkante zurück.
 Nur tatsächlich freistehende Sonderobjekte dürfen die separat benannte
 `createFreestandingFactoryDoor`-API verwenden.
 
 ### Schlüssel- und Forge-Vertrag
 
 Die Key Forge ist kein Turm und kein Marker, sondern eine bündige, geteilte
-Bodenklappe im Genesis Deck. Für jede Freigabe läuft dieselbe deterministische
+Bodenklappe im Genesis Layer. Für jede Freigabe läuft dieselbe deterministische
 Sequenz: Die Klappe öffnet, der Schlüssel steigt aus der Ebene, dreht sich kurz
 zur Präsentation, fliegt ohne zusätzliche Forge-Signalleitung zum Ziel, wird in
 das Schloss gesteckt und dort gedreht. Erst nach dieser Schlossdrehung öffnet
@@ -169,11 +177,14 @@ Y-Position. Bei einem Layerwechsel erzeugt `cableEdgeDrop` einen sichtbaren
 Weg über die Außenkante und senkrecht an ihrer Seite hinab beziehungsweise
 hinauf; Kabel dürfen deshalb nicht diagonal in einer Ebene verschwinden. Jede
 Leitung besitzt explizit die Richtung `forward`, `reverse`, `bidirectional`
-oder `none`. `none` ist statischen Deckrastern vorbehalten. Türverbindungen
+oder `none`. `none` ist statischen Layerrastern vorbehalten. Türverbindungen
 laufen mit `cableDoorLandingDrop` zunächst über den vollständigen Vorbau und
 erst an dessen Außenkante nach unten. Technische Fillets runden alle möglichen
 Waypoints mit engem Radius ab. Signalpulse starten erst, wenn die Leitung
 vollständig aufgebaut und verbunden ist.
+Bewegte Quelldateien verwenden `createVectorCableJourney` und lesen ihre
+Position direkt aus den Kurven der sichtbaren Kabelabschnitte. Sie besitzen
+keinen separaten, unsichtbaren Flugpfad.
 Bewegt oder skaliert sich ein angeschlossenes Objekt, kann derselbe
 Kabelvertrag seine Wegpunkte aktualisieren und die vorhandenen Segmente neu
 ausrichten; dabei werden weder Kabelobjekt noch Geometrien pro Frame neu

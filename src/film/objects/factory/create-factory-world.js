@@ -67,43 +67,43 @@ function setFactoryOpacity(root, opacity) {
 
 function createBuilderScene(tracker, inert = false) {
   const group = new THREE.Group();
-  const { deck: deckLayout, hatch: hatchLayout } = FACTORY_LAYOUT;
-  const deck = createVectorBox(tracker, {
-    size: [deckLayout.width, deckLayout.thickness, deckLayout.depth], color: FACTORY_PALETTE.panel,
-    edgeColor: FACTORY_PALETTE.edge, position: [0, deckLayout.thickness / 2, 0],
+  const { layer: layerLayout, hatch: hatchLayout } = FACTORY_LAYOUT;
+  const layer = createVectorBox(tracker, {
+    size: [layerLayout.width, layerLayout.thickness, layerLayout.depth], color: FACTORY_PALETTE.panel,
+    edgeColor: FACTORY_PALETTE.edge, position: [0, layerLayout.thickness / 2, 0],
   });
-  group.add(deck);
-  for (let x = -6; x <= 6; x += deckLayout.gridStep) {
-    group.add(createRoute(tracker, [[x, 0.74, -deckLayout.depth / 2], [x, 0.74, deckLayout.depth / 2]], FACTORY_PALETTE.edge, 0.018));
+  group.add(layer);
+  for (let x = -6; x <= 6; x += layerLayout.gridStep) {
+    group.add(createRoute(tracker, [[x, 0.74, -layerLayout.depth / 2], [x, 0.74, layerLayout.depth / 2]], FACTORY_PALETTE.edge, 0.018));
   }
-  for (let z = -4; z <= 4; z += deckLayout.gridStep) {
-    group.add(createRoute(tracker, [[-deckLayout.width / 2, 0.74, z], [deckLayout.width / 2, 0.74, z]], FACTORY_PALETTE.edge, 0.018));
+  for (let z = -4; z <= 4; z += layerLayout.gridStep) {
+    group.add(createRoute(tracker, [[-layerLayout.width / 2, 0.74, z], [layerLayout.width / 2, 0.74, z]], FACTORY_PALETTE.edge, 0.018));
   }
   const hatch = createVectorBox(tracker, {
     size: [hatchLayout.width, 0.12, hatchLayout.depth], color: inert ? FACTORY_PALETTE.panelLight : FACTORY_PALETTE.ink,
     edgeColor: inert ? FACTORY_PALETTE.amber : FACTORY_PALETTE.cyan, position: [0, 0.82, 0],
   });
   const title = createTextLabel(tracker, {
-    text: "BUILDER DECK", width: 5.5, height: 0.58,
+    text: "BUILDER LAYER", width: 5.5, height: 0.58,
     color: FACTORY_PALETTE.edge, background: FACTORY_PALETTE.ink,
     position: [0, 0.38, 5.08], fontSize: 54,
   });
-  const deckSurface = Object.freeze({
-    id: "factory-deck",
+  const layerSurface = Object.freeze({
+    id: "factory-layer",
     color: FACTORY_PALETTE.panel,
     centerX: 0,
     centerZ: 0,
-    width: deckLayout.width,
-    depth: deckLayout.depth,
-    top: deckLayout.thickness,
+    width: layerLayout.width,
+    depth: layerLayout.depth,
+    top: layerLayout.thickness,
   });
   const inputDoor = createFactoryDoorOnSurface(tracker, FACTORY_PALETTE.cyan, {
-    surface: deckSurface,
+    surface: layerSurface,
     edge: FACTORY_LAYOUT.inputDoor.edge,
     along: FACTORY_LAYOUT.inputDoor.along,
   });
   const outputDoor = createFactoryDoorOnSurface(tracker, FACTORY_PALETTE.green, {
-    surface: deckSurface,
+    surface: layerSurface,
     edge: FACTORY_LAYOUT.outputDoor.edge,
     along: FACTORY_LAYOUT.outputDoor.along,
     label: "/out",
@@ -154,16 +154,16 @@ function createBuilderScene(tracker, inert = false) {
   ];
   keyLabels.forEach((label) => { label.visible = false; });
   const route = createRoute(tracker, [
-    cableSurfacePoint(deckSurface, -5.7, 2.9),
-    cableSurfacePoint(deckSurface, -2.8, 2),
-    cableSurfacePoint(deckSurface, 0, 0),
-    cableSurfacePoint(deckSurface, 3.2, -1.2),
-    cableSurfacePoint(deckSurface, 6.1, -2.7),
+    cableSurfacePoint(layerSurface, -5.7, 2.9),
+    cableSurfacePoint(layerSurface, -2.8, 2),
+    cableSurfacePoint(layerSurface, 0, 0),
+    cableSurfacePoint(layerSurface, 3.2, -1.2),
+    cableSurfacePoint(layerSurface, 6.1, -2.7),
   ], inert ? FACTORY_PALETTE.amber : FACTORY_PALETTE.cyan, 0.065);
   group.add(hatch, title, caption, ...keyLabels, inputDoor.group, outputDoor.group, sourceA, sourceB, workpiece, route);
   return {
     group,
-    deck,
+    layer,
     hatch,
     caption,
     keyLabels,
@@ -173,14 +173,14 @@ function createBuilderScene(tracker, inert = false) {
     sourceB,
     workpiece,
     route,
-    supportSurface: deckSurface,
+    supportSurface: layerSurface,
   };
 }
 
 function createCompilerScene(tracker) {
   const group = new THREE.Group();
-  const deck = createBuilderScene(tracker, true);
-  group.add(deck.group);
+  const layer = createBuilderScene(tracker, true);
+  group.add(layer.group);
   const machines = FACTORY_LANES.map((lane) => createWorkshopMachine(tracker, lane));
   machines.forEach(({ group: machine }) => group.add(machine));
   const twinConsole = createTwinVerifierPanel(tracker);
@@ -190,11 +190,11 @@ function createCompilerScene(tracker) {
     verifierVerdict.group,
   );
   const materialRoute = createRoute(tracker, [
-    cableSurfacePoint(deck.supportSurface, -3.2, 2.7),
-    cableSurfacePoint(deck.supportSurface, -1.4, 2.2),
-    cableSurfacePoint(deck.supportSurface, 0, 1.6),
-    cableSurfacePoint(deck.supportSurface, 2.55, -1.2),
-    cableSurfacePoint(deck.supportSurface, -2.2, -1.55),
+    cableSurfacePoint(layer.supportSurface, -3.2, 2.7),
+    cableSurfacePoint(layer.supportSurface, -1.4, 2.2),
+    cableSurfacePoint(layer.supportSurface, 0, 1.6),
+    cableSurfacePoint(layer.supportSurface, 2.55, -1.2),
+    cableSurfacePoint(layer.supportSurface, -2.2, -1.55),
   ], FACTORY_PALETTE.blue, 0.075);
   const sceneCaption = createTextLabel(tracker, {
     text: "ROUND 1/3 · COMPILER GATE", width: 11.5, height: 0.58,
@@ -206,7 +206,7 @@ function createCompilerScene(tracker) {
     color: FACTORY_PALETTE.green, background: FACTORY_PALETTE.ink,
     position: [0, 1.15, 1.02], fontSize: 40,
   });
-  deck.workpiece.add(evidence);
+  layer.workpiece.add(evidence);
   const upgrades = [
     { text: "LOCK CACHE", x: -3, y: -0.35, z: 4.9, width: 2.55, height: 0.56 },
     { text: "BYTE JIG", x: 3.25, y: 2.65, z: -2.4, width: 1.55, height: 0.4 },
@@ -218,7 +218,7 @@ function createCompilerScene(tracker) {
   group.add(materialRoute, sceneCaption, ...upgrades);
   return {
     group,
-    deck,
+    layer,
     machines,
     twinConsole,
     verifierVerdict,
@@ -366,18 +366,18 @@ export function createFactoryWorld({ getPlayerWorldPosition } = {}) {
     const time = Math.min(148, Math.max(0, Number.isFinite(nextTime) ? nextTime : 0));
     Object.entries(scenes).forEach(([id, scene]) => showScene(scene.group, time, FACTORY_SCENES[id]));
 
-    // Foundation owns the canonical Builder Deck, source material and
-    // workpiece. Factory contributes only the tools on that right-hand deck.
+    // Foundation owns the canonical Builder Layer, source material and
+    // workpiece. Factory contributes only the tools on that right-hand layer.
     builder.group.visible = false;
     inert.group.visible = false;
-    compiler.deck.group.visible = false;
+    compiler.layer.group.visible = false;
     // The old feedback scene is not a separate world. It is the same Builder
-    // Deck with a new workpiece pass, a verifier console and a disposable scan.
+    // Layer with a new workpiece pass, a verifier console and a disposable scan.
     feedback.group.visible = false;
     twins.group.visible = false;
-    const deckRise = smootherstep(interval(time, 25.25, 28.45));
-    builder.group.position.y = -2.8 + deckRise * 2.8;
-    builder.hatch.scale.setScalar(0.72 + deckRise * 0.28);
+    const layerRise = smootherstep(interval(time, 25.25, 28.45));
+    builder.group.position.y = -2.8 + layerRise * 2.8;
+    builder.hatch.scale.setScalar(0.72 + layerRise * 0.28);
     setFactoryDoorOpen(builder.inputDoor, smootherstep(interval(time, 27.4, 29.2)));
     setFactoryDoorOpen(builder.outputDoor, 0);
     builder.keyLabels[0].visible = time >= 30.2 && time <= 31.1;
@@ -421,13 +421,17 @@ export function createFactoryWorld({ getPlayerWorldPosition } = {}) {
         : time >= 55.4
           ? "passed"
           : "pending";
-    const testerLampState = time >= 69.8 && time < 80.2
-      ? "failed"
-      : time >= 107.2
+    const testerLampStates = [
+      time >= 91
         ? "passed"
-        : "pending";
+        : time >= 69.8 && time < 80.2
+          ? "failed"
+          : "pending",
+      time >= 98.5 ? "passed" : "pending",
+      time >= 107.2 ? "passed" : "pending",
+    ];
     setVectorMachineLampStates(compiler.machines[0], [compilerLampState]);
-    setVectorMachineLampStates(compiler.machines[1], [testerLampState]);
+    setVectorMachineLampStates(compiler.machines[1], testerLampStates);
     setVectorMachineLampStates(compiler.machines[2], [
       time >= 110.45
         ? "passed"

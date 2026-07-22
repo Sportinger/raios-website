@@ -4,6 +4,8 @@ const UNIT_Y = new THREE.Vector3(0, 1, 0);
 const CAMERA_PANEL_DISTANCE = 0.7;
 const CAMERA_PANEL_SCALE = 1.92;
 const DOCKED_PANEL_SCALE = 0.3;
+const CAMERA_PANEL_PADDING_X = 0.035;
+const CAMERA_PANEL_PADDING_Y = 0.045;
 const trackGeometry = (tracker, geometry) => tracker?.geometry?.(geometry) ?? geometry;
 const trackMaterial = (tracker, material) => tracker?.material?.(material) ?? material;
 const trackTexture = (tracker, texture) => tracker?.texture?.(texture) ?? texture;
@@ -163,25 +165,29 @@ export function setVectorCallout(callout, time, {
   targetObject,
   targetLocalPoint,
   angle,
+  holdSeconds = 5,
 }) {
-  const active = time >= start && time < end;
-  callout.group.visible = active;
-  if (!active || !camera) return;
-
   const introDuration = Math.max(0.001, introEnd - start);
   const openEnd = start + introDuration * 0.48;
   const titleTypeStart = openEnd + 0.04;
   const titleTypeEnd = introEnd + introDuration * 0.18;
   const copyTypeStart = titleTypeEnd - 0.04;
   const copyTypeEnd = introEnd + introDuration * 0.82;
-  const moveEnd = Math.max(titleStart + 0.001, end - 0.38);
-  const stickEnd = Math.max(moveEnd + 0.001, end - 0.22);
+  const authoredMoveDuration = Math.max(0.001, end - 0.38 - titleStart);
+  const moveStart = Math.max(titleStart, copyTypeEnd) + Math.max(0, holdSeconds);
+  const moveEnd = moveStart + authoredMoveDuration;
+  const calloutEnd = moveEnd + 0.38;
+  const stickEnd = Math.max(moveEnd + 0.001, calloutEnd - 0.22);
+  const active = time >= start && time < calloutEnd;
+  callout.group.visible = active;
+  if (!active || !camera) return;
+
   const panelOpen = progress(time, start, openEnd);
   const titleAmount = progress(time, titleTypeStart, titleTypeEnd);
   const copyAmount = progress(time, copyTypeStart, copyTypeEnd);
-  const docking = progress(time, titleStart, moveEnd);
+  const docking = progress(time, moveStart, moveEnd);
   const stuck = progress(time, moveEnd, stickEnd);
-  const fadeOut = progress(time, end - 0.22, end);
+  const fadeOut = progress(time, calloutEnd - 0.22, calloutEnd);
   const alpha = progress(time, start, start + 0.1) * (1 - fadeOut);
   const cursorVisible = (titleAmount < 1 || copyAmount < 1) && Math.floor(time * 8) % 2 === 0;
   drawLayerCallout(callout, titleAmount, copyAmount, cursorVisible);
@@ -197,20 +203,36 @@ export function setVectorCallout(callout, time, {
   const screenRight = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0).normalize();
   const screenUp = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1).normalize();
   const cameraCenter = camera.position.clone().addScaledVector(viewDirection, CAMERA_PANEL_DISTANCE);
-  const targetWorld = targetLocalPoint.clone().applyMatrix4(targetObject.matrixWorld);
-  const curveControl = cameraCenter.clone().lerp(targetWorld, 0.48)
-    .addScaledVector(screenUp, 1.15)
-    .addScaledVector(screenRight, -0.45);
-  const inverseDocking = 1 - docking;
-  const cardCenterWorld = cameraCenter.clone().multiplyScalar(inverseDocking * inverseDocking)
-    .addScaledVector(curveControl, 2 * inverseDocking * docking)
-    .addScaledVector(targetWorld, docking * docking);
-  const scaleFactor = THREE.MathUtils.lerp(CAMERA_PANEL_SCALE, DOCKED_PANEL_SCALE, docking);
   const zoomCompensation = camera.isOrthographicCamera
     ? THREE.MathUtils.lerp(1 / Math.max(0.01, camera.zoom), 1, docking)
     : 1;
+  const scaleFactor = THREE.MathUtils.lerp(CAMERA_PANEL_SCALE, DOCKED_PANEL_SCALE, docking);
   const fullWidth = callout.width * scaleFactor * zoomCompensation;
   const fullHeight = callout.height * scaleFactor * zoomCompensation;
+  const cameraPanelCenter = cameraCenter.clone();
+  if (camera.isOrthographicCamera) {
+    const viewportWidth = (camera.right - camera.left) / Math.max(0.01, camera.zoom);
+    const viewportHeight = (camera.top - camera.bottom) / Math.max(0.01, camera.zoom);
+    const rightInset = Math.max(
+      0,
+      (viewportWidth - fullWidth) * 0.5 - viewportWidth * CAMERA_PANEL_PADDING_X,
+    );
+    const bottomInset = Math.max(
+      0,
+      (viewportHeight - fullHeight) * 0.5 - viewportHeight * CAMERA_PANEL_PADDING_Y,
+    );
+    cameraPanelCenter
+      .addScaledVector(screenRight, rightInset)
+      .addScaledVector(screenUp, -bottomInset);
+  }
+  const targetWorld = targetLocalPoint.clone().applyMatrix4(targetObject.matrixWorld);
+  const curveControl = cameraPanelCenter.clone().lerp(targetWorld, 0.48)
+    .addScaledVector(screenUp, 1.15)
+    .addScaledVector(screenRight, -0.45);
+  const inverseDocking = 1 - docking;
+  const cardCenterWorld = cameraPanelCenter.clone().multiplyScalar(inverseDocking * inverseDocking)
+    .addScaledVector(curveControl, 2 * inverseDocking * docking)
+    .addScaledVector(targetWorld, docking * docking);
   const visibleWidth = fullWidth * Math.max(0.001, panelOpen);
   cardCenterWorld.addScaledVector(
     screenRight,
