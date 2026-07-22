@@ -562,6 +562,64 @@ function setFootprintOutline(outline, drawAmount, opacity = 1) {
   });
 }
 
+function createSlidingFloorHatch({
+  width = 1.08,
+  depth = 1.08,
+  color = PALETTE.blueHigh,
+  rotationY = 0,
+} = {}) {
+  const group = new THREE.Group();
+  group.rotation.y = rotationY;
+  const outline = createFootprintOutline(width, depth, color);
+  const recess = new THREE.Mesh(
+    new THREE.BoxGeometry(width * 0.94, 0.035, depth * 0.94),
+    new THREE.MeshBasicMaterial({ color: 0x03070d }),
+  );
+  recess.position.y = 0.012;
+  const panels = new THREE.Group();
+  const panelWidth = width * 0.48;
+  const panelDepth = depth * 0.94;
+  const leftPanel = createOutlinedBox(
+    new THREE.Vector3(panelWidth, 0.05, panelDepth),
+    0x101d2b,
+    color,
+  );
+  const rightPanel = createOutlinedBox(
+    new THREE.Vector3(panelWidth, 0.05, panelDepth),
+    0x101d2b,
+    color,
+  );
+  leftPanel.position.set(-width * 0.245, 0.05, 0);
+  rightPanel.position.set(width * 0.245, 0.05, 0);
+  panels.add(leftPanel, rightPanel);
+  group.add(recess, outline.group, panels);
+  return {
+    group,
+    outline,
+    recess,
+    panels,
+    leftPanel,
+    rightPanel,
+    panelClosedX: width * 0.245,
+    panelTravel: width * 0.62,
+  };
+}
+
+function setSlidingFloorHatch(hatch, outlineAmount, openAmount, opacity = 1) {
+  const outlineDraw = clamp01(outlineAmount);
+  const open = clamp01(openAmount);
+  const alpha = clamp01(opacity);
+  hatch.group.visible = (outlineDraw > 0.001 || open > 0.001) && alpha > 0.001;
+  setFootprintOutline(hatch.outline, outlineDraw, alpha * (1 - open));
+  setFade(hatch.recess, alpha);
+  hatch.recess.visible = open > 0.001 && alpha > 0.001;
+  setFade(hatch.panels, alpha);
+  hatch.panels.visible = (outlineDraw > 0.999 || open > 0.001) && alpha > 0.001;
+  const panelOffset = hatch.panelClosedX + hatch.panelTravel * open;
+  hatch.leftPanel.position.x = -panelOffset;
+  hatch.rightPanel.position.x = panelOffset;
+}
+
 function createAgent() {
   const group = new THREE.Group();
   const solid = new THREE.Group();
@@ -656,28 +714,7 @@ function createKeyForge() {
 function createNetTower() {
   const group = new THREE.Group();
   const tower = new THREE.Group();
-  const recess = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.48, 0.48, 0.055, 4),
-    new THREE.MeshBasicMaterial({ color: 0x0c1724 }),
-  );
-  recess.position.y = 0.018;
-  const outline = createFootprintOutline(1.08, 1.08, PALETTE.blueHigh);
-  const hatch = new THREE.Group();
-  const createFlap = (side) => {
-    const pivot = new THREE.Group();
-    pivot.position.set(side * 0.52, 0.055, 0);
-    const flap = createOutlinedBox(
-      new THREE.Vector3(0.52, 0.055, 1.04),
-      0x101d2b,
-      PALETTE.blue,
-    );
-    flap.position.x = -side * 0.26;
-    pivot.add(flap);
-    hatch.add(pivot);
-    return pivot;
-  };
-  const leftHatch = createFlap(-1);
-  const rightHatch = createFlap(1);
+  const hatch = createSlidingFloorHatch({ color: PALETTE.blueHigh });
 
   const apex = new THREE.Vector3(0, 1.78, 0);
   const feet = [
@@ -734,15 +771,11 @@ function createNetTower() {
   const label = createLabel("NET", PALETTE.ink, 1.45, 72);
   label.position.set(0, 0.14, 0.62);
   tower.add(mast, signal, beacon, glow, label);
-  group.add(recess, outline.group, hatch, tower);
+  group.add(hatch.group, tower);
   return {
     group,
     tower,
-    outline,
     hatch,
-    leftHatch,
-    rightHatch,
-    recess,
     rings,
     signal,
     beacon,
@@ -755,30 +788,9 @@ function createDoorAndKey(labelText = "net.https", {
   edgeColor = PALETTE.blueHigh,
   labelColor = PALETTE.amber,
   keyTagText = "CAP: NET.HTTPS",
-} = {}) {
+  } = {}) {
   const group = new THREE.Group();
   const frame = new THREE.Group();
-  const socket = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.78, 0.78, 0.08, 4),
-    new THREE.MeshBasicMaterial({ color: PALETTE.panelHigh }),
-  );
-  socket.position.y = 0.04;
-  const socketEdges = new THREE.Group();
-  const socketCorners = [
-    new THREE.Vector3(-0.78, 0.09, 0),
-    new THREE.Vector3(0, 0.09, -0.78),
-    new THREE.Vector3(0.78, 0.09, 0),
-    new THREE.Vector3(0, 0.09, 0.78),
-  ];
-  socketCorners.forEach((corner, index) => {
-    socketEdges.add(createBeamBetween(
-      corner,
-      socketCorners[(index + 1) % socketCorners.length],
-      0.022,
-      edgeColor,
-      6,
-    ));
-  });
   const frameMaterial = new THREE.MeshBasicMaterial({ color: edgeColor });
   const verticalGeometry = new THREE.BoxGeometry(0.12, 1.55, 0.16);
   const lintelGeometry = new THREE.BoxGeometry(1.18, 0.12, 0.16);
@@ -820,12 +832,18 @@ function createDoorAndKey(labelText = "net.https", {
     hinge.position.set(-0.55, height, 0.1);
     hinges.add(hinge);
   });
-  frame.add(socket, socketEdges, doorVoid, left, right, lintel, threshold, leafPivot, hinges);
+  frame.add(doorVoid, left, right, lintel, threshold, leafPivot, hinges);
   const label = createLabel(labelText, labelColor, 1.05, 68);
   label.position.set(0, 0.12, 0.86);
   label.material.depthTest = false;
   frame.add(label);
   frame.rotation.y = positiveSlope ? 0 : Math.PI / 2;
+  const hatch = createSlidingFloorHatch({
+    width: 1.56,
+    depth: 1.56,
+    color: edgeColor,
+    rotationY: frame.rotation.y + Math.PI / 4,
+  });
 
   const key = new THREE.Group();
   const ring = new THREE.Mesh(
@@ -846,8 +864,24 @@ function createDoorAndKey(labelText = "net.https", {
   keyTag.position.set(0.32, 0.38, 0);
   key.add(keyTag);
   key.position.set(-1.85, 0.74, -2.25);
-  group.add(frame, key);
-  return { group, frame, leafPivot, key };
+  group.add(hatch.group, frame, key);
+  return { group, frame, hatch, leafPivot, key };
+}
+
+function setEmergingDoor(door, time, timing, opacity = 1) {
+  const duration = Math.max(0.001, timing.end - timing.start);
+  const outlineEnd = timing.start + duration * 0.3;
+  const hatchEnd = timing.start + duration * 0.55;
+  const outlineDraw = progress(time, timing.start, outlineEnd);
+  const hatchOpen = progress(time, outlineEnd, hatchEnd);
+  const rise = progress(time, hatchEnd, timing.end);
+  setSlidingFloorHatch(door.hatch, outlineDraw, hatchOpen, opacity);
+  door.frame.position.y = THREE.MathUtils.lerp(-1.62, 0, rise);
+  door.frame.scale.y = 1;
+  setFade(
+    door.frame,
+    progress(time, hatchEnd, hatchEnd + duration * 0.16) * clamp01(opacity),
+  );
 }
 
 function createBuilderHatch(width, depth) {
@@ -1424,15 +1458,12 @@ export function createFoundationWorld() {
       && legacyWorldAlpha > 0.001;
     netTower.group.position.y = FOUNDATION_LAYOUT.netTower[1];
     netTower.group.scale.setScalar(1.18);
-    setFootprintOutline(
-      netTower.outline,
+    setSlidingFloorHatch(
+      netTower.hatch,
       netOutlineDraw,
-      legacyWorldAlpha * (1 - netHatchOpen),
+      netHatchOpen,
+      legacyWorldAlpha,
     );
-    netTower.recess.visible = netHatchOpen > 0.001;
-    netTower.hatch.visible = netOutlineDraw > 0.999 || netHatchOpen > 0.001;
-    netTower.leftHatch.rotation.z = Math.PI * 0.5 * netHatchOpen;
-    netTower.rightHatch.rotation.z = -Math.PI * 0.5 * netHatchOpen;
     netTower.tower.visible = netRise > 0.001;
     netTower.tower.position.y = THREE.MathUtils.lerp(-1.72, 0, netRise);
     setFade(
@@ -1455,10 +1486,12 @@ export function createFoundationWorld() {
     const networkWindowAlpha = legacyWorldAlpha;
     setFade(agentToDoor.group, lineDraw * networkWindowAlpha);
 
-    const doorRise = timedProgress(time, FOUNDATION_TIMELINE.netDoorRise);
-    internet.frame.position.y = -(1 - doorRise) * 0.9;
-    internet.frame.scale.y = Math.max(0.001, doorRise);
-    setFade(internet.frame, doorRise * networkWindowAlpha);
+    setEmergingDoor(
+      internet,
+      time,
+      FOUNDATION_TIMELINE.netDoorRise,
+      networkWindowAlpha,
+    );
     internet.leafPivot.rotation.y = Math.PI * 0.62 * progress(
       time,
       FOUNDATION_TIMELINE.netKey.insert,
@@ -1573,27 +1606,36 @@ export function createFoundationWorld() {
     setRouteProgress(buildLine, buildDraw, time, time >= FOUNDATION_TIMELINE.buildKey.insert);
     const buildRequestWindowAlpha = 1 - progress(time, 94.58, 95.01);
     setFade(buildLine.group, buildDraw * buildRequestWindowAlpha);
-    const buildDoorRise = timedProgress(time, FOUNDATION_TIMELINE.buildDoorRise);
-    buildDoor.frame.position.y = -(1 - buildDoorRise) * 0.7;
-    buildDoor.frame.scale.y = Math.max(0.001, buildDoorRise);
-    setFade(buildDoor.frame, buildDoorRise * buildRequestWindowAlpha);
+    setEmergingDoor(
+      buildDoor,
+      time,
+      FOUNDATION_TIMELINE.buildDoorRise,
+      buildRequestWindowAlpha,
+    );
     buildDoor.leafPivot.rotation.y = Math.PI * 0.62 * progress(
       time,
       FOUNDATION_TIMELINE.buildKey.insert,
       FOUNDATION_TIMELINE.buildKey.insert + 0.9,
     );
 
-    const setRisingDoor = (door, amount, teardownStart, teardownEnd) => {
-      door.frame.position.y = -(1 - amount) * 0.7;
-      door.frame.scale.y = Math.max(0.001, amount);
-      setFade(door.frame, amount * (1 - progress(time, teardownStart, teardownEnd)));
-    };
-    const sysrootRise = timedProgress(time, FOUNDATION_TIMELINE.sysrootDoorRise);
-    const srcRise = timedProgress(time, FOUNDATION_TIMELINE.srcDoorRise);
-    const outRise = timedProgress(time, FOUNDATION_TIMELINE.outDoorRise);
-    setRisingDoor(sysrootDoor, sysrootRise, 93.9, 94.24);
-    setRisingDoor(srcDoor, srcRise, 94.09, 94.43);
-    setRisingDoor(outDoor, outRise, 94.29, 94.62);
+    setEmergingDoor(
+      sysrootDoor,
+      time,
+      FOUNDATION_TIMELINE.sysrootDoorRise,
+      1 - progress(time, 93.9, 94.24),
+    );
+    setEmergingDoor(
+      srcDoor,
+      time,
+      FOUNDATION_TIMELINE.srcDoorRise,
+      1 - progress(time, 94.09, 94.43),
+    );
+    setEmergingDoor(
+      outDoor,
+      time,
+      FOUNDATION_TIMELINE.outDoorRise,
+      1 - progress(time, 94.29, 94.62),
+    );
     sysrootDoor.leafPivot.rotation.y = Math.PI * 0.62 * progress(
       time,
       FOUNDATION_TIMELINE.sysrootKey.insert,
