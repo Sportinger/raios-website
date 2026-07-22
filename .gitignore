@@ -1,4 +1,5 @@
 /pages-dist/
+/.visual-comparisons/
 node_modules/
 /.wrangler/
 .DS_Store

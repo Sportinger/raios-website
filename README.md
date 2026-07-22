@@ -63,6 +63,28 @@ nicht Teil der Filmoberfläche.
 Für gezielte Bildvergleiche kann eine Filmsekunde direkt geöffnet werden, zum
 Beispiel `http://127.0.0.1:5174/?time=17`.
 
+## Visueller A/B-Abgleich
+
+Der folgende Befehl baut den aktuellen Stand und erzeugt für die ersten
+Foundation-Schlüsselbilder jeweils einen Screenshot des Originalfilms, des
+Three.js-Films und eine beschriftete Gegenüberstellung. Ein bereits laufender
+Dev-Server ist dafür nicht nötig:
+
+```powershell
+npm run capture:compare
+```
+
+Andere Filmsekunden lassen sich gezielt prüfen:
+
+```powershell
+npm run capture:compare -- --times=21.2,27.2,37
+```
+
+Die Aufnahmen verwenden für beide Filme denselben Viewport und liegen nur lokal
+unter `.visual-comparisons/latest/`. Das Referenz-Worktree wird standardmäßig
+unter `../raios-film-reference` erwartet; mit `--reference-root=...` kann ein
+anderer Pfad angegeben werden.
+
 ## Lokal starten
 
 ```powershell

@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/build-pages-site.ps1",
+    "capture:compare": "node ./scripts/capture-film-comparison.mjs",
     "check": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/check-experiment.ps1",
     "dev": "vite --host 127.0.0.1"
   },
