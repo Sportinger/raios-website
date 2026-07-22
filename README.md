@@ -70,10 +70,11 @@ Die fünfzehn vorhandenen Sprecherpassagen liegen unter
 `presentation/create-film-narration.js` an dieselbe deterministische Filmzeit
 wie ihre Captions gebunden. `film-playback-timeline.js` dehnt oder staucht das
 jeweilige Animationsfenster auf die echte Quelldauer der Aufnahme; bei PLAY
-läuft deshalb jede Stimme unverändert mit `1×`. Nach der ersten
-Nutzerinteraktion folgen die Stimmen auch der Scrollrichtung; bei rückwärts
-laufender Timeline werden die vorhandenen Reverse-Fassungen verwendet. Reduced
-Motion deaktiviert die Wiedergabe. Der vollständige Bestand und alle
+läuft deshalb jede Stimme unverändert mit `1×`. Scrollen scrubbt den Film
+bewusst stumm; die Stimmen laufen nur bei `PLAY`, pro Cue genau einmal und ohne
+Loop. Der sichtbare Audio-Schalter beginnt gemutet und entsperrt die Wiedergabe
+erst nach einem ausdrücklichen Klick. Reduced Motion deaktiviert die Wiedergabe.
+Der vollständige Bestand und alle
 Sprechtexte stehen in `NARRATION.md`; weitere Aufnahmen fehlen nicht.
 
 ### Layer- und Callout-Vertrag
@@ -250,9 +251,10 @@ Die SVG-Kamera des Referenzfilms war ein 2D-Pan/Zoom mit `scale`, `focusX` und
 mit einer räumlichen isometrischen Blickrichtung. Referenzformat, Widescreen-
 Korrektur, vertikaler Bias, die 18 Original-Keyframes, fünf zusätzliche
 Shadow-VM-Keyframes und deren Smoothstep-Interpolation bleiben erhalten.
-`FREE ORBIT` friert die aktuelle Filmzeit ein
-und aktiviert Drehen, Zoomen und Verschieben mit Maus oder Touch. `EXIT ORBIT`,
-PLAY oder ein Kapitelsprung stellt die Filmkamera wieder exakt her.
+`FREE ORBIT` aktiviert Drehen, Zoomen und Verschieben mit Maus oder Touch, ohne
+Playback oder Sprecher zu unterbrechen. Die Welt animiert weiter, während die
+frei gewählte Kamerapose erhalten bleibt. `EXIT ORBIT` oder ein Kapitelsprung
+stellt die Filmkamera wieder exakt her.
 
 Für gezielte Bildvergleiche kann eine kanonische Animationssekunde direkt geöffnet werden, zum
 Beispiel `http://127.0.0.1:5174/?time=17`.

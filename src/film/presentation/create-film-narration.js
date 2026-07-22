@@ -1,8 +1,5 @@
 import { FILM_NARRATION_AUDIO_CUES } from "./film-playback-timeline.js";
 
-const SCROLL_AUDIO_BRIDGE_MS = 820;
-const MIN_PLAYBACK_RATE = 0.25;
-const MAX_PLAYBACK_RATE = 4;
 const clamp = (value, minimum, maximum) => Math.min(maximum, Math.max(minimum, value));
 
 function createTrack(source, cueId, direction) {
@@ -44,14 +41,11 @@ export function createFilmNarration({ host } = {}) {
   }));
   const tracks = cues.flatMap(({ forward, reverse }) => [forward, reverse]);
   let disabled = reducedMotion.matches;
+  let muted = true;
   let unlocked = false;
   let unlockPending = false;
   let playing = false;
   let filmTime = 0;
-  let lastSetAt = performance.now();
-  let direction = 1;
-  let scrollRate = 1;
-  let motionUntil = 0;
   let activeTrackKey = "";
   let frame = 0;
 
@@ -60,7 +54,7 @@ export function createFilmNarration({ host } = {}) {
     host.dataset.filmAudioCue = cue;
   };
 
-  const stopAll = (state = disabled ? "disabled" : unlocked ? "ready" : "locked") => {
+  const stopAll = (state = disabled ? "disabled" : muted ? "muted" : unlocked ? "ready" : "locked") => {
     tracks.forEach(pauseTrack);
     activeTrackKey = "";
     updateState(state);
@@ -72,7 +66,7 @@ export function createFilmNarration({ host } = {}) {
   };
 
   const playTrack = (track) => {
-    if (!track.paused) return;
+    if (!track.paused || track.ended) return;
     const attempt = track.play();
     if (attempt && typeof attempt.catch === "function") {
       attempt.catch(lockAfterPlaybackError);
@@ -81,17 +75,16 @@ export function createFilmNarration({ host } = {}) {
 
   const renderAudio = (now) => {
     const cue = cues.find(({ start, end }) => filmTime >= start && filmTime < end - 0.01);
-    const moving = playing || now < motionUntil;
+    const moving = playing;
 
-    if (disabled || !unlocked || !cue || !moving) {
-      if (activeTrackKey) stopAll(cue ? "idle" : unlocked ? "ready" : "locked");
+    if (disabled || muted || !unlocked || !cue || !moving) {
+      if (activeTrackKey) stopAll(cue ? "idle" : muted ? "muted" : unlocked ? "ready" : "locked");
     } else {
-      const reverse = direction < 0;
-      const track = reverse ? cue.reverse : cue.forward;
-      const inactiveTrack = reverse ? cue.forward : cue.reverse;
-      const trackKey = `${cue.id}:${reverse ? "reverse" : "forward"}`;
+      const track = cue.forward;
+      const inactiveTrack = cue.reverse;
+      const trackKey = `${cue.id}:forward`;
       const cueProgress = clamp((filmTime - cue.start) / (cue.end - cue.start), 0, 1);
-      const expectedPosition = (reverse ? 1 - cueProgress : cueProgress) * cue.duration;
+      const expectedPosition = cueProgress * cue.duration;
 
       if (trackKey !== activeTrackKey) {
         tracks.forEach(pauseTrack);
@@ -99,12 +92,11 @@ export function createFilmNarration({ host } = {}) {
         activeTrackKey = trackKey;
       }
 
-      const playbackRate = playing ? 1 : scrollRate;
-      track.playbackRate = clamp(playbackRate, MIN_PLAYBACK_RATE, MAX_PLAYBACK_RATE);
+      track.playbackRate = 1;
       track.volume = cue.volume;
       pauseTrack(inactiveTrack);
       playTrack(track);
-      updateState(reverse ? "reverse" : "forward", cue.id);
+      updateState("forward", cue.id);
     }
 
     frame = requestAnimationFrame(renderAudio);
@@ -123,6 +115,7 @@ export function createFilmNarration({ host } = {}) {
       tracks.forEach(pauseTrack);
       unlocked = true;
       unlockPending = false;
+      muted = false;
       updateState("ready");
     }).catch(() => {
       unlockPending = false;
@@ -135,51 +128,51 @@ export function createFilmNarration({ host } = {}) {
   };
   const onReducedMotionChange = ({ matches }) => {
     disabled = matches;
+    muted = true;
     unlocked = false;
     unlockPending = false;
     stopAll();
   };
 
-  host.addEventListener("pointerdown", unlock, { passive: true });
-  host.addEventListener("wheel", unlock, { passive: true });
-  host.addEventListener("touchstart", unlock, { passive: true });
-  window.addEventListener("keydown", unlock, { passive: true });
   document.addEventListener("visibilitychange", onVisibilityChange);
   reducedMotion.addEventListener("change", onReducedMotionChange);
-  updateState(disabled ? "disabled" : "locked");
+  updateState(disabled ? "disabled" : "muted");
   frame = requestAnimationFrame(renderAudio);
 
   return {
     setTime(time, { source = "seek" } = {}) {
-      const now = performance.now();
       const nextTime = Number.isFinite(Number(time)) ? Number(time) : 0;
-      const elapsedSeconds = clamp((now - lastSetAt) / 1000, 0.016, 0.25);
-      const delta = nextTime - filmTime;
       filmTime = nextTime;
-      lastSetAt = now;
-
-      if (source === "play") {
-        direction = 1;
-      } else if (source === "scroll" && Math.abs(delta) > 0.001) {
-        direction = delta < 0 ? -1 : 1;
-        scrollRate = clamp(Math.abs(delta / elapsedSeconds), MIN_PLAYBACK_RATE, MAX_PLAYBACK_RATE);
-        motionUntil = now + SCROLL_AUDIO_BRIDGE_MS;
-      } else if (source === "seek") {
-        motionUntil = 0;
+      if (source === "seek") {
         stopAll();
       }
     },
     setPlaying(nextPlaying) {
       playing = Boolean(nextPlaying);
-      direction = 1;
-      if (!playing) motionUntil = 0;
+      if (!playing) stopAll();
+    },
+    isMuted() {
+      return muted;
+    },
+    setMuted(nextMuted) {
+      if (disabled) {
+        muted = true;
+        stopAll("disabled");
+        return;
+      }
+      muted = Boolean(nextMuted);
+      if (muted) {
+        stopAll("muted");
+        return;
+      }
+      if (unlocked) {
+        updateState("ready");
+        return;
+      }
+      unlock();
     },
     dispose() {
       cancelAnimationFrame(frame);
-      host.removeEventListener("pointerdown", unlock);
-      host.removeEventListener("wheel", unlock);
-      host.removeEventListener("touchstart", unlock);
-      window.removeEventListener("keydown", unlock);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       reducedMotion.removeEventListener("change", onReducedMotionChange);
       stopAll("disposed");

@@ -30,6 +30,7 @@ function formatTime(time) {
 }
 
 export function createFilmApp({
+  audioToggle,
   canvas,
   chapterNavigation,
   orbitToggle,
@@ -98,6 +99,10 @@ export function createFilmApp({
     const typed = Math.floor(THREE.MathUtils.clamp((animationTime - 1.15) / (3.72 - 1.15), 0, 1) * FILM_PROMPT.length);
     prompt.textContent = FILM_PROMPT.slice(0, typed);
     prompt.classList.toggle("is-visible", animationTime < 3.89 && animationTime >= 0.8);
+    const enteredFilm = playbackTime > 0.05;
+    const transportVisible = playbackTime >= 0.8;
+    viewport.classList.toggle("has-entered-film", enteredFilm);
+    viewport.classList.toggle("has-transport", transportVisible);
     overlays.setTime(animationTime);
     Array.from(chapterNavigation.children).forEach((button, index) => {
       if (index === FILM_SCENES.indexOf(scene)) button.setAttribute("aria-current", "step");
@@ -130,11 +135,25 @@ export function createFilmApp({
     playToggle.textContent = playing ? "PAUSE" : "PLAY";
   };
 
+  const updateAudioToggle = () => {
+    const muted = narration.isMuted();
+    audioToggle.setAttribute("aria-pressed", String(!muted));
+    audioToggle.setAttribute("aria-label", muted ? "Unmute film narration" : "Mute film narration");
+    audioToggle.title = muted ? "Unmute narration" : "Mute narration";
+    audioToggle.innerHTML = muted
+      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z"></path><path d="m17 9 4 4m0-4-4 4"></path></svg><span>MUTED</span>'
+      : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z"></path><path d="M16 8a5 5 0 0 1 0 8m2.5-10.5a9 9 0 0 1 0 13"></path></svg><span>SOUND ON</span>';
+  };
+
+  const onAudioToggle = () => {
+    narration.setMuted(!narration.isMuted());
+    updateAudioToggle();
+  };
+
   const setOrbitEnabled = (enabled) => {
     const nextEnabled = Boolean(enabled);
     if (nextEnabled === orbitEnabled) return;
     if (nextEnabled) {
-      setPlaying(false);
       filmCamera.setTime(animationTime);
       orbitControls.target.copy(filmCamera.target);
       orbitControls.update();
@@ -202,12 +221,12 @@ export function createFilmApp({
   };
 
   const onPlayToggle = () => {
-    if (orbitEnabled) setOrbitEnabled(false);
     if (!playing && playbackTime >= FILM_PLAYBACK_DURATION - 0.001) setTime(0, true);
     setPlaying(!playing);
   };
   const onOrbitToggle = () => setOrbitEnabled(!orbitEnabled);
   playToggle.addEventListener("click", onPlayToggle);
+  audioToggle.addEventListener("click", onAudioToggle);
   orbitToggle.addEventListener("click", onOrbitToggle);
   window.addEventListener("resize", resize, { passive: true });
   if (!externalPlayback) window.addEventListener("scroll", onScroll, { passive: true });
@@ -237,6 +256,7 @@ export function createFilmApp({
     ? FILM_POSTER_ANIMATION_TIME
     : 0;
   setTime(playbackTimeAtAnimationTime(initialAnimationTime ?? posterAnimationTime));
+  updateAudioToggle();
   frame = requestAnimationFrame(animate);
 
   return {
@@ -267,6 +287,7 @@ export function createFilmApp({
       window.removeEventListener("wheel", stopForUserInput);
       window.removeEventListener("touchstart", stopForUserInput);
       playToggle.removeEventListener("click", onPlayToggle);
+      audioToggle.removeEventListener("click", onAudioToggle);
       orbitToggle.removeEventListener("click", onOrbitToggle);
       chapterNavigation.replaceChildren();
       viewport.classList.remove("is-orbiting");

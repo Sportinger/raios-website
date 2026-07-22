@@ -92,7 +92,8 @@ body { overflow-x: hidden; }
 }
 
 .film-viewport:hover .film-transport,
-.film-transport:focus-within { opacity: 1; }
+.film-transport:focus-within,
+.film-viewport.has-transport .film-transport { opacity: 1; }
 
 .film-transport button {
   min-width: 5.2rem;
@@ -107,6 +108,66 @@ body { overflow-x: hidden; }
 }
 
 .film-transport output { padding-right: .7rem; color: #8fb7cf; font: 700 .63rem/1 ui-monospace, monospace; letter-spacing: .04em; }
+
+.audio-toggle {
+  position: absolute;
+  z-index: 7;
+  left: 50%;
+  bottom: 5.25rem;
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  min-width: 3rem;
+  min-height: 3rem;
+  padding: .72rem .92rem;
+  transform: translate(-50%, .7rem) scale(.92);
+  border: 1px solid rgba(105, 188, 239, .5);
+  border-radius: 999px;
+  color: #dff4ff;
+  background: rgba(3, 12, 19, .9);
+  box-shadow: 0 0 2rem rgba(42, 165, 238, .16);
+  backdrop-filter: blur(12px);
+  font: 800 .62rem/1 ui-monospace, monospace;
+  letter-spacing: .09em;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: left 360ms cubic-bezier(.2, .8, .2, 1), top 360ms cubic-bezier(.2, .8, .2, 1), bottom 360ms cubic-bezier(.2, .8, .2, 1), transform 360ms cubic-bezier(.2, .8, .2, 1), opacity 180ms ease, border-color 150ms, color 150ms;
+}
+
+.audio-toggle svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.film-viewport.has-entered-film .audio-toggle {
+  transform: translate(-50%, 0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.film-viewport.has-transport .audio-toggle {
+  top: 1rem;
+  bottom: auto;
+  left: 1rem;
+  transform: none;
+}
+
+.audio-toggle[aria-pressed="true"] {
+  color: #d8ffe5;
+  border-color: #72e8a2;
+}
+
+.audio-toggle:hover,
+.audio-toggle:focus-visible {
+  color: #fff;
+  border-color: #6bc8ff;
+}
 
 .orbit-toggle {
   position: absolute;
@@ -170,6 +231,7 @@ body { overflow-x: hidden; }
   .chapter-navigation { right: .25rem; }
   .film-transport { bottom: .6rem; }
   .film-transport { opacity: 1; }
+  .film-viewport.has-transport .audio-toggle { top: .65rem; left: .65rem; }
   .orbit-toggle {
     right: auto;
     bottom: 6rem;
