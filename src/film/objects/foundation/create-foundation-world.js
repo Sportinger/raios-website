@@ -610,14 +610,17 @@ function setSlidingFloorHatch(hatch, outlineAmount, openAmount, opacity = 1) {
   const open = clamp01(openAmount);
   const alpha = clamp01(opacity);
   hatch.group.visible = (outlineDraw > 0.001 || open > 0.001) && alpha > 0.001;
-  setFootprintOutline(hatch.outline, outlineDraw, alpha * (1 - open));
+  setFootprintOutline(hatch.outline, outlineDraw, alpha);
   setFade(hatch.recess, alpha);
   hatch.recess.visible = open > 0.001 && alpha > 0.001;
-  setFade(hatch.panels, alpha);
-  hatch.panels.visible = (outlineDraw > 0.999 || open > 0.001) && alpha > 0.001;
+  const panelRetract = smoothstep((open - 0.18) / 0.68);
+  const panelAlpha = alpha * (1 - panelRetract);
+  setFade(hatch.panels, panelAlpha);
+  hatch.panels.visible = (outlineDraw > 0.999 || open > 0.001) && panelAlpha > 0.001;
   const panelOffset = hatch.panelClosedX + hatch.panelTravel * open;
-  hatch.leftPanel.position.x = -panelOffset;
-  hatch.rightPanel.position.x = panelOffset;
+  const panelY = 0.05 - panelRetract * 0.1;
+  hatch.leftPanel.position.set(-panelOffset, panelY, 0);
+  hatch.rightPanel.position.set(panelOffset, panelY, 0);
 }
 
 function createAgent() {
@@ -842,7 +845,7 @@ function createDoorAndKey(labelText = "net.https", {
     width: 1.56,
     depth: 1.56,
     color: edgeColor,
-    rotationY: frame.rotation.y + Math.PI / 4,
+    rotationY: frame.rotation.y,
   });
 
   const key = new THREE.Group();
