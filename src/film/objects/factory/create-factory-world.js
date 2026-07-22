@@ -21,16 +21,14 @@ import {
   createVectorBox,
 } from "./primitives.js";
 import {
-  createWorkshopChecklist,
+  attachWorkshopConsoleToMachine,
   createWorkshopConsole,
   createWorkshopMachine,
   setWorkshopConsole,
 } from "./workshop-primitives.js";
 import {
-  createGuardStatusPanel,
   createTwinVerifierPanel,
   createVerifierVerdict,
-  setGuardStatusPanel,
   setTwinVerifierPanel,
   setVerifierVerdict,
 } from "./feedback-primitives.js";
@@ -49,7 +47,10 @@ import {
 } from "../shared/vector-cable.js";
 import { createVectorCallout, setVectorCallout } from "../shared/vector-callout.js";
 import { createVectorLayer, setVectorLayerBuild } from "../shared/vector-layer.js";
-import { setVectorMachineBuild } from "../shared/vector-machine.js";
+import {
+  setVectorMachineBuild,
+  setVectorMachineLampStates,
+} from "../shared/vector-machine.js";
 
 const setLabelText = (label, text) => label.userData.setText?.(text);
 
@@ -190,24 +191,18 @@ function createCompilerScene(tracker) {
   group.add(deck.group);
   const machines = FACTORY_LANES.map((lane) => createWorkshopMachine(tracker, lane));
   machines.forEach(({ group: machine }) => group.add(machine));
-  const compilerConsole = createWorkshopConsole(tracker, {
-    position: [1.555, 5.5, 3.423],
+  const compilerConsole = attachWorkshopConsoleToMachine(machines[0], createWorkshopConsole(tracker, {
     width: 3.2,
     initialCopy: "READY · ROUND 0/3",
     version: "rustc 1.83.0-dev · NO NET",
-  });
-  const verifierConsole = createWorkshopConsole(tracker, {
-    position: [1.984, 3.2, -2.803],
+  }));
+  const verifierConsole = attachWorkshopConsoleToMachine(machines[1], createWorkshopConsole(tracker, {
     width: 3,
     initialCopy: "READY · NEXT ROUND 2/3",
-  });
-  const checklist = createWorkshopChecklist(tracker);
+  }));
   const twinConsole = createTwinVerifierPanel(tracker);
   const verifierVerdict = createVerifierVerdict(tracker);
   group.add(
-    compilerConsole.group,
-    verifierConsole.group,
-    checklist.group,
     twinConsole.group,
     verifierVerdict.group,
   );
@@ -244,7 +239,6 @@ function createCompilerScene(tracker) {
     machines,
     compilerConsole,
     verifierConsole,
-    checklist,
     twinConsole,
     verifierVerdict,
     materialRoute,
@@ -469,7 +463,6 @@ export function createFactoryWorld() {
   const compiler = createCompilerScene(tracker);
   const approvalSequence = createApprovalSequence(tracker, {
     guardMachine: compiler.machines[2],
-    guardChecklist: compiler.checklist,
   });
   const liveSequence = createLiveSequence(tracker);
   const archipelagoSequence = createArchipelagoSequence(tracker);
@@ -489,14 +482,12 @@ export function createFactoryWorld() {
     color: 0xb77cff,
     width: 5.5,
   });
-  const guardStatus = createGuardStatusPanel(tracker);
   const scenes = { builder, inert, compiler, feedback, twins, proof };
   Object.entries(scenes).forEach(([id, scene]) => {
     scene.group.name = `factory-${id}`;
     group.add(scene.group);
   });
   group.add(
-    guardStatus.group,
     shadowCallout.group,
     approvalSequence.group,
     liveSequence.group,
@@ -550,26 +541,48 @@ export function createFactoryWorld() {
         )),
       });
     });
-    [79.8, 80.7, 81.55, 84.55].forEach((at, index) => {
-      compiler.checklist.badges[index].userData.setPassed?.(time >= at);
-    });
     const firstCompile = smoothstep(interval(time, 42.25, 46));
     const secondCompile = smoothstep(interval(time, 53.25, 55.4));
     const thirdCompile = smoothstep(interval(time, 67.5, 69.35));
     const verifierSecond = smoothstep(interval(time, 57.8, 60.8));
     const verifierThird = smoothstep(interval(time, 71.2, 75.6));
+    const compilerLampState = time >= 46 && time < 53.25
+      ? "failed"
+      : time >= 67.5 && time < 69.35
+        ? "pending"
+        : time >= 55.4
+          ? "passed"
+          : "pending";
+    const testerLampState = time >= 60.8 && time < 71.2
+      ? "failed"
+      : time >= 75.6
+        ? "passed"
+        : "pending";
+    setVectorMachineLampStates(compiler.machines[0], [compilerLampState]);
+    setVectorMachineLampStates(compiler.machines[1], [testerLampState]);
+    setVectorMachineLampStates(compiler.machines[2], [
+      time >= 80.45
+        ? "passed"
+        : time >= 46 && time < 53.25
+          ? "failed"
+          : "pending",
+      time >= 82
+        ? "passed"
+        : time >= 60.8 && time < 71.2
+          ? "failed"
+          : "pending",
+      time >= 84.55 ? "passed" : "pending",
+    ]);
     const machineProgress = [
       time < 52.55 ? firstCompile : time < 66.95 ? secondCompile : thirdCompile,
       time < 66.95 ? verifierSecond : verifierThird,
-      smootherstep(interval(time, 79.8, 86.2)),
     ];
-    const compilerConsoleIntro = smootherstep(interval(time, 40.6, 40.9));
+    const compilerConsoleIntro = smootherstep(interval(time, 39.36, 40));
     compiler.compilerConsole.group.visible = compilerConsoleIntro > 0.001;
     compiler.compilerConsole.group.scale.setScalar(Math.max(0.001, compilerConsoleIntro));
-    const verifierConsoleIntro = smootherstep(interval(time, 42.6, 42.9));
+    const verifierConsoleIntro = smootherstep(interval(time, 41.96, 42.6));
     compiler.verifierConsole.group.visible = verifierConsoleIntro > 0.001;
     compiler.verifierConsole.group.scale.setScalar(Math.max(0.001, verifierConsoleIntro));
-    compiler.checklist.group.visible = time >= 42.9;
     compiler.sceneCaption.visible = false;
     // The canonical source-file route lives in Foundation so direct seeks and
     // reverse scrubbing cannot reveal a second, offset transport line.
@@ -705,20 +718,6 @@ export function createFactoryWorld() {
       opacity: twinPanelIntro,
     });
     setVerifierVerdict(compiler.verifierVerdict, time);
-    const guardStatusAlpha = smootherstep(interval(time, 78, 78.3))
-      * (1 - smoothstep(interval(time, 87.7, 88)));
-    const guardStatusCopy = time < 79.8
-      ? "GUARD · WAITING FOR TEST REPORT"
-      : time < 80.7
-        ? "REPORT OK · MATCHING EXACT HASH"
-        : time < 81.55
-          ? "HASH OK · CHECKING EXACT RIGHTS"
-          : time < 84.55
-            ? "RIGHTS OK · OWNER CONSENT"
-            : time < 85.25
-              ? "ALL BINDINGS MATCH · OPENING"
-              : "GUARD · LIVE DOOR OPEN";
-    setGuardStatusPanel(guardStatus, guardStatusCopy, guardStatusAlpha);
     approvalSequence.setTime(time);
     liveSequence.setTime(time, camera);
     archipelagoSequence.setTime(time);

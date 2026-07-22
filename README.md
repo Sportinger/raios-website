@@ -72,15 +72,29 @@ Agent, Compiler, Tester und Guard verwenden
 `objects/shared/vector-machine.js`. Das Modul definiert die gemeinsame
 Körpergeometrie, Flächen, Outlines, Detailstreifen, Schatten und den Aufbau vom
 gezeichneten Grundriss zum aufwachsenden Programm. Programme besitzen kein
-Dach- oder Statuslicht. Auf der Front steht genau ein weißer Programmname;
+Dachlicht. Auf der Front steht genau ein weißer Programmname;
 Schrift, Größe und Position werden ausschließlich im gemeinsamen Modul
 festgelegt. Szenen liefern weder Untertitel noch eigene Textfarben oder
-Labelgrößen.
+Labelgrößen. Zustände werden ausschließlich über integrierte Seitenlampen
+dargestellt: Gelb bedeutet ausstehend, Grün bestanden und Rot fehlgeschlagen.
+Compiler und Tester besitzen je eine Lampe, der Guard drei; der Agent besitzt
+keine. Anzahl, Geometrie und Zustandsfarben sind Teil des gemeinsamen Vertrags.
 Eine Maschine wird über ihre Trägerfläche und X/Z-Koordinaten verankert; ihre
 Höhe darf nicht in einzelnen Szenen frei geschätzt werden. Auf dem Builder Deck
 stehen der Compiler in der unteren Ecke, der Tester in der rechten Ecke und der
 Guard direkt vor `/out`. Erst die Freigabeanimation bewegt den Guard auf
 derselben Ebene zur Seite.
+
+Nur Compiler und Tester besitzen eine Fortschrittsanzeige. Sie wird an die
+jeweilige Maschine angeheftet und sitzt deshalb bei jeder Kamerapose direkt
+über ihr. Guard und `PLAYER.WASM` erzeugen keine Progress-Bar und kein
+schwebendes Statuspanel.
+
+`PLAYER.WASM` verwendet feste Dock-Positionen neben Tester, hinter Compiler und
+vor Guard. Es holt ein sichtbares Compiler-Paket am Compiler ab, nimmt beim
+Tester nacheinander drei Prüfsiegel auf und transportiert alle vier Objekte zum
+Guard. Erst die sichtbare Übergabe schaltet die zugehörigen Guard-Lampen auf
+Grün; Prozessstatus darf den stabilen Objektnamen `PLAYER.WASM` nicht ersetzen.
 
 ### Türvertrag
 

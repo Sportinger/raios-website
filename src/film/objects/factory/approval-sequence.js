@@ -277,7 +277,7 @@ function setGrantRoute(route, time) {
   });
 }
 
-export function createApprovalSequence(tracker, { guardMachine, guardChecklist }) {
+export function createApprovalSequence(tracker, { guardMachine }) {
   const group = new THREE.Group();
   group.name = "approval-sequence";
   const card = createCanvasSprite(tracker, {
@@ -311,7 +311,6 @@ export function createApprovalSequence(tracker, { guardMachine, guardChecklist }
 
     const guardStep = smootherstep(interval(time, 84.55, 85.25));
     guardMachine.group.position.copy(guardBase).addScaledVector(guardShift, guardStep);
-    guardChecklist.group.visible = guardStep < 0.999;
     setGrantRoute(grantRoute, time);
   }
 

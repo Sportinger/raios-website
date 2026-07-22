@@ -139,51 +139,6 @@ export function createVerifierVerdict(tracker) {
   return { group, sprite: surface.sprite, material: surface.material, draw };
 }
 
-export function createGuardStatusPanel(tracker) {
-  const group = new THREE.Group();
-  group.name = "guard-status-panel";
-  group.position.set(-5.74, 4.2, 2.85);
-  const surface = createCanvasSprite(tracker, {
-    pixelWidth: 1024,
-    pixelHeight: 256,
-    worldWidth: 5.3,
-    worldHeight: 1.33,
-  });
-  group.add(surface.sprite);
-  let renderedCopy = "";
-  const draw = (copy) => {
-    if (copy === renderedCopy) return;
-    renderedCopy = copy;
-    const { context } = surface;
-    context.clearRect(0, 0, 1024, 256);
-    roundedRect(context, 18, 18, 988, 220, 42);
-    context.fillStyle = "rgba(7,17,29,.94)";
-    context.fill();
-    context.strokeStyle = "#9d454e";
-    context.lineWidth = 12;
-    context.stroke();
-    context.beginPath();
-    context.arc(93, 128, 31, 0, Math.PI * 2);
-    context.fillStyle = "rgba(153,53,62,.95)";
-    context.fill();
-    context.strokeStyle = "#ff7772";
-    context.lineWidth = 9;
-    context.stroke();
-    context.font = "900 61px Consolas, monospace";
-    context.textAlign = "left";
-    context.textBaseline = "middle";
-    context.lineJoin = "round";
-    context.lineWidth = 13;
-    context.strokeStyle = "#05080d";
-    context.fillStyle = "#e5edf8";
-    context.strokeText(copy, 151, 132, 820);
-    context.fillText(copy, 151, 132, 820);
-    surface.texture.needsUpdate = true;
-  };
-  draw("GUARD · WAITING FOR TEST REPORT");
-  return { group, material: surface.material, draw };
-}
-
 export function setTwinVerifierPanel(panel, {
   progress,
   hashesVisible,
@@ -219,10 +174,4 @@ export function setVerifierVerdict(verdict, time) {
     THREE.MathUtils.lerp(-92, state.rotation, intro) + state.punch * punch,
   );
   verdict.material.color.setHex(FACTORY_PALETTE.white);
-}
-
-export function setGuardStatusPanel(panel, copy, opacity) {
-  panel.draw(copy);
-  panel.group.visible = opacity > 0.001;
-  panel.material.opacity = THREE.MathUtils.clamp(opacity, 0, 1);
 }

@@ -6,6 +6,7 @@ import {
   FOUNDATION_LAYOUT,
   FOUNDATION_SURFACES,
   FOUNDATION_TIMELINE,
+  FOUNDATION_WORKPIECE_STATIONS,
   GENESIS_FOOTPRINT,
   KERNEL_FOOTPRINT,
 } from "./foundation-config.js";
@@ -263,57 +264,6 @@ function createEvidenceSeal(copy) {
   const sprite = new THREE.Sprite(material);
   sprite.scale.set(0.75, 0.75, 1);
   sprite.renderOrder = 59;
-  return sprite;
-}
-
-function createTestReport() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 320;
-  canvas.height = 384;
-  const context = canvas.getContext("2d");
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  context.beginPath();
-  context.moveTo(40, 24);
-  context.lineTo(220, 24);
-  context.lineTo(280, 84);
-  context.lineTo(280, 356);
-  context.lineTo(40, 356);
-  context.closePath();
-  context.fillStyle = "rgba(9,27,38,.96)";
-  context.fill();
-  context.strokeStyle = "#9dd8b4";
-  context.lineWidth = 16;
-  context.lineJoin = "round";
-  context.stroke();
-  context.beginPath();
-  context.moveTo(220, 24);
-  context.lineTo(220, 84);
-  context.lineTo(280, 84);
-  context.stroke();
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.font = "900 64px Consolas, monospace";
-  context.lineWidth = 14;
-  context.strokeStyle = "#05080d";
-  context.fillStyle = "#dce8f4";
-  context.strokeText("TEST", 160, 184);
-  context.fillText("TEST", 160, 184);
-  context.fillStyle = "#82f0ac";
-  context.strokeText("PASS", 160, 262);
-  context.fillText("PASS", 160, 262);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.minFilter = THREE.LinearFilter;
-  const material = new THREE.SpriteMaterial({
-    map: texture,
-    transparent: true,
-    depthWrite: false,
-    depthTest: false,
-  });
-  material.userData.preserveTransparency = true;
-  const sprite = new THREE.Sprite(material);
-  sprite.scale.set(0.48, 0.58, 1);
-  sprite.renderOrder = 60;
   return sprite;
 }
 
@@ -712,9 +662,6 @@ function createProduction() {
   status.position.set(0, 0.96, 0);
   const label = createLabel("PLAYER.RS", PALETTE.ink, 1.28, 60);
   label.position.set(0, 0.48, 0.49);
-  const failureLabel = createLabel("FAILED!", PALETTE.red, 1.24, 58);
-  failureLabel.position.set(0, 0.5, 0.53);
-  failureLabel.renderOrder = 53;
   const compilerSuccess = createCompilerProofToken();
   compilerSuccess.position.set(0.58, 1.96, 0.24);
   const evidenceSeals = ["#", "C", "R"].map((copy, index) => {
@@ -723,16 +670,12 @@ function createProduction() {
     seal.position.set(screenOffset, 0.16, 0.54 - screenOffset);
     return seal;
   });
-  const testReport = createTestReport();
-  testReport.position.set(0.26, 1.31, 0.42);
   workpiece.add(
     body,
     status,
     label,
-    failureLabel,
     compilerSuccess,
     ...evidenceSeals,
-    testReport,
   );
 
   const main = createFileCard("main.rs");
@@ -747,10 +690,8 @@ function createProduction() {
     edits,
     status,
     label,
-    failureLabel,
     compilerSuccess,
     evidenceSeals,
-    testReport,
   };
 }
 
@@ -901,7 +842,7 @@ export function createFoundationWorld() {
     panelColor: PALETTE.panelHigh,
     panelTopColor: 0x263a52,
     edgeColor: PALETTE.blueHigh,
-    detailColor: PALETTE.blueHigh,
+    lampCount: 0,
   });
   place(agent.group, FOUNDATION_LAYOUT.agentCompact);
   // Compensates for the authored Foundation-set scale so the Agent retains
@@ -1441,25 +1382,30 @@ export function createFoundationWorld() {
         * THREE.MathUtils.lerp(1, 0.93, residentRise)
         * THREE.MathUtils.lerp(1, 0.25, compactPlayer),
     ));
+    const workpieceHome = FOUNDATION_WORKPIECE_STATIONS.home;
+    const compilerDock = FOUNDATION_WORKPIECE_STATIONS.compiler;
+    const testerDock = FOUNDATION_WORKPIECE_STATIONS.tester;
+    const guardDock = FOUNDATION_WORKPIECE_STATIONS.guard;
     const workpieceFrames = [
       { at: 34, x: 0, z: 0 },
-      { at: 41, x: 0, z: 0 },
-      { at: 41.85, x: -0.217, z: -0.217 },
-      { at: 46.2, x: -0.217, z: -0.217 },
-      { at: 49.4, x: 0, z: 0 },
-      { at: 52.55, x: 0, z: 0 },
-      { at: 53.05, x: -0.217, z: -0.217 },
-      { at: 56.05, x: -0.217, z: -0.217 },
-      { at: 57.8, x: 0.29, z: -0.145 },
-      { at: 60.8, x: 0.29, z: -0.145 },
-      { at: 63.85, x: 0, z: 0 },
-      { at: 66.95, x: 0, z: 0 },
-      { at: 67.3, x: -0.217, z: -0.217 },
-      { at: 70, x: -0.217, z: -0.217 },
-      { at: 71.2, x: 0.29, z: -0.145 },
-      { at: 77.7, x: 0.29, z: -0.145 },
-      { at: 79.8, x: 0.072, z: 0.362 },
-      { at: 88, x: 0.072, z: 0.362 },
+      { at: 39, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 41, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 42.25, x: compilerDock[0], z: compilerDock[2] },
+      { at: 46.2, x: compilerDock[0], z: compilerDock[2] },
+      { at: 49.4, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 52.55, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 53.25, x: compilerDock[0], z: compilerDock[2] },
+      { at: 55.4, x: compilerDock[0], z: compilerDock[2] },
+      { at: 57.8, x: testerDock[0], z: testerDock[2] },
+      { at: 60.8, x: testerDock[0], z: testerDock[2] },
+      { at: 63.85, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 66.95, x: workpieceHome[0], z: workpieceHome[2] },
+      { at: 67.5, x: compilerDock[0], z: compilerDock[2] },
+      { at: 69.35, x: compilerDock[0], z: compilerDock[2] },
+      { at: 71.2, x: testerDock[0], z: testerDock[2] },
+      { at: 77.7, x: testerDock[0], z: testerDock[2] },
+      { at: 79.8, x: guardDock[0], z: guardDock[2] },
+      { at: 88, x: guardDock[0], z: guardDock[2] },
       { at: 89.6, x: -1.816, z: -0.312 },
       { at: 92, x: -6.108, z: 1.912 },
       { at: 106, x: -6.108, z: 1.912 },
@@ -1474,71 +1420,60 @@ export function createFoundationWorld() {
     const workpieceMove = beforeFrame === afterFrame ? 1 : progress(time, beforeFrame.at, afterFrame.at);
     production.workpiece.position.x = THREE.MathUtils.lerp(beforeFrame.x, afterFrame.x, workpieceMove);
     production.workpiece.position.z = THREE.MathUtils.lerp(beforeFrame.z, afterFrame.z, workpieceMove);
-    const workpieceCopy = time >= 92
-      ? "PLAYER.WASM"
-      : time >= 84.55
-      ? "PLAYER.WASM · AUTHORIZED"
-      : time >= 77.7
-        ? "PLAYER.WASM · 3 PROOFS"
-        : time >= 71.2
-          ? "PLAYER.WASM"
-      : time >= 66.95
-        ? "FIX 02"
-        : time >= 63.85
-          ? "APPLYING EDIT 02"
-      : time >= 60.8
-        ? "FAILED · HARNESS"
-        : time >= 55.4
-          ? "PLAYER.WASM"
-          : time >= 52.55
-            ? "FIX 01"
-            : time >= 49.4
-              ? "APPLYING EDIT 01"
-              : "PLAYER.RS";
-    const wideWorkpieceCopy = workpieceCopy.includes("APPLYING")
-      || workpieceCopy.includes("FAILED")
-      || workpieceCopy.includes("PROOFS")
-      || workpieceCopy.includes("AUTHORIZED");
+    const workpieceCopy = time >= 55.4 ? "PLAYER.WASM" : "PLAYER.RS";
     production.label.userData.setText?.(workpieceCopy);
-    production.label.scale.set(wideWorkpieceCopy ? 2.1 : 1.28, wideWorkpieceCopy ? 0.39 : 0.32, 1);
+    production.label.scale.set(1.28, 0.32, 1);
     production.status.scale.setScalar(0.82 + Math.sin(time * 3.6) * 0.14);
-    const proofDelivery = [
-      { start: 55.4, attach: 55.72, handoff: 57.8, end: 58.55 },
-      { start: 69.35, attach: 69.67, handoff: 71.2, end: 71.95 },
-    ].find((delivery) => time >= delivery.start && time < delivery.end);
-    const successPop = proofDelivery ? progress(time, proofDelivery.start, proofDelivery.attach) : 0;
-    const successHandoff = proofDelivery ? progress(time, proofDelivery.handoff, proofDelivery.end) : 0;
-    const successOpacity = proofDelivery
-      ? successPop * (1 - progress(successHandoff, 0.72, 1))
-      : 0;
-    production.compilerSuccess.position.set(
-      THREE.MathUtils.lerp(0.58, 0.12, successHandoff),
-      1.96 + Math.sin(successHandoff * Math.PI) * 0.28,
-      THREE.MathUtils.lerp(0.24, -1.55, successHandoff),
+    const earlyCompilerCargo = time >= 55.4 && time < 58.55;
+    const finalCompilerCargo = time >= 69.35 && time < 80.45;
+    const successPop = earlyCompilerCargo
+      ? progress(time, 55.4, 55.72)
+      : finalCompilerCargo
+        ? progress(time, 69.35, 69.67)
+        : 0;
+    const successHandoff = earlyCompilerCargo
+      ? progress(time, 57.8, 58.55)
+      : finalCompilerCargo
+        ? progress(time, 79.8, 80.45)
+        : 0;
+    const successOpacity = successPop * (1 - progress(successHandoff, 0.72, 1));
+    const compilerCargoTarget = earlyCompilerCargo
+      ? new THREE.Vector3(0.12, 1.22, -1.25)
+      : new THREE.Vector3(-0.9, 1.18, 0.4);
+    production.compilerSuccess.position.lerpVectors(
+      new THREE.Vector3(0.58, 1.32, 0.24),
+      compilerCargoTarget,
+      successHandoff,
     );
+    production.compilerSuccess.position.y += Math.sin(successHandoff * Math.PI) * 0.28;
     production.compilerSuccess.scale.setScalar(
       Math.max(0.001, 0.76 * successPop * THREE.MathUtils.lerp(1, 0.12, successHandoff)),
     );
     setFade(production.compilerSuccess, successOpacity);
-    const evidenceAlpha = [
-      time >= 74 ? progress(time, 74, 74.5) : 0,
-      time >= 75.6 ? progress(time, 75.6, 76.1) : 0,
-      time >= 77.7 ? progress(time, 78, 78.5) : 0,
-    ];
+    const evidencePickupTimes = [72.8, 74.2, 75.6];
+    const evidenceDeliveryTimes = [80.7, 81.15, 81.6];
     production.evidenceSeals.forEach((seal, index) => {
-      const alpha = evidenceAlpha[index];
-      seal.scale.setScalar(Math.max(0.001, 0.75 * alpha));
+      const pickup = progress(
+        time,
+        evidencePickupTimes[index],
+        evidencePickupTimes[index] + 0.36,
+      );
+      const delivery = progress(
+        time,
+        evidenceDeliveryTimes[index],
+        evidenceDeliveryTimes[index] + 0.4,
+      );
+      const screenOffset = (index - 1) * 0.58;
+      seal.position.lerpVectors(
+        new THREE.Vector3(screenOffset, 1.12, 0.54 - screenOffset),
+        new THREE.Vector3(-0.82, 1.02 + index * 0.16, 0.38),
+        delivery,
+      );
+      seal.position.y += Math.sin(delivery * Math.PI) * 0.24;
+      const alpha = pickup * (1 - progress(delivery, 0.72, 1));
+      seal.scale.setScalar(Math.max(0.001, 0.75 * pickup * THREE.MathUtils.lerp(1, 0.12, delivery)));
       setFade(seal, alpha);
     });
-    const reportAlpha = time >= 77.7
-      ? progress(time, 77.55, 77.85) * (1 - progress(time, 84.85, 85.15))
-      : 0;
-    production.testReport.scale.set(
-      Math.max(0.001, 0.48 * reportAlpha),
-      Math.max(0.001, 0.58 * reportAlpha),
-      1,
-    );
-    setFade(production.testReport, reportAlpha);
     setMovingFile(production.main, materialPath, time, FOUNDATION_TIMELINE.materialMain);
     setMovingFile(production.cargo, materialPath, time, FOUNDATION_TIMELINE.materialCargo);
     const activeEditTiming = time < 60 ? FOUNDATION_TIMELINE.editOne : FOUNDATION_TIMELINE.editTwo;
@@ -1546,7 +1481,6 @@ export function createFoundationWorld() {
       setMovingFile(edit, materialPath, time, activeEditTiming[index], 0, time < 60 ? 1.25 : 0.88);
     });
     const failureActive = time >= 46 && time < 52.55;
-    production.failureLabel.visible = failureActive;
     failureDecal.visible = failureActive;
     const failurePunch = progress(time, 46, 46.15);
     failureDecal.scale.setScalar(failureActive ? THREE.MathUtils.lerp(1.15, 1, failurePunch) : 0.001);

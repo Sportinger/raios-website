@@ -9,6 +9,11 @@ const VECTOR_MACHINE_LABEL_COLOR = 0xf1f7ff;
 const VECTOR_MACHINE_LABEL_FONT = "Consolas, monospace";
 const VECTOR_MACHINE_LABEL_FONT_SIZE = 170;
 const VECTOR_MACHINE_LABEL_WIDTH = 1.45;
+const VECTOR_MACHINE_LAMP_COLORS = Object.freeze({
+  pending: 0xf6c769,
+  passed: 0x64c991,
+  failed: 0xf05b57,
+});
 
 function createMaterial(tracker, color, opacity = 1, options = {}) {
   const material = trackMaterial(tracker, new THREE.MeshBasicMaterial({
@@ -177,7 +182,7 @@ export function createVectorMachine({
   panelColor = 0x1c2a3d,
   panelTopColor = 0x263a52,
   edgeColor = 0x8bc5ff,
-  detailColor = 0xf6c769,
+  lampCount = 0,
 } = {}) {
   const [width, height, depth] = size;
   const group = new THREE.Group();
@@ -205,18 +210,24 @@ export function createVectorMachine({
     createMaterial(tracker, panelTopColor),
   );
   topInset.position.y = height + 0.065;
-  const bars = new THREE.Group();
-  [0.34, 0.56, 0.78].forEach((heightRatio, index) => {
-    const bar = new THREE.Mesh(
-      trackGeometry(tracker, new THREE.BoxGeometry(0.035, 0.055, depth * (0.3 - index * 0.04))),
-      createMaterial(tracker, detailColor),
+  const lamps = new THREE.Group();
+  const lampHeightRatios = lampCount === 1
+    ? [0.56]
+    : Array.from({ length: lampCount }, (_, index) => (
+      THREE.MathUtils.lerp(0.34, 0.78, index / Math.max(1, lampCount - 1))
+    ));
+  const lampMeshes = lampHeightRatios.map((heightRatio) => {
+    const lamp = new THREE.Mesh(
+      trackGeometry(tracker, new THREE.BoxGeometry(0.035, 0.065, depth * 0.25)),
+      createMaterial(tracker, VECTOR_MACHINE_LAMP_COLORS.pending),
     );
-    bar.position.set(width / 2 + 0.018, height * heightRatio, depth * 0.23);
-    bars.add(bar);
+    lamp.position.set(width / 2 + 0.018, height * heightRatio, depth * 0.23);
+    lamps.add(lamp);
+    return lamp;
   });
   const titleLabel = createMachineLabel(tracker, title);
   titleLabel.position.set(0, height * 0.5, depth / 2 + 0.035);
-  body.add(block, topInset, bars, titleLabel);
+  body.add(block, topInset, lamps, titleLabel);
   solid.add(shadow, body);
   const outline = createFootprintOutline(tracker, width, depth, edgeColor);
   group.add(outline.group, solid);
@@ -228,12 +239,23 @@ export function createVectorMachine({
     shadow,
     outline,
     titleLabel,
+    lamps,
+    lampMeshes,
     width,
     height,
     depth,
   };
   setVectorMachineBuild(machine, { outlineAmount: 0, riseAmount: 0 });
   return machine;
+}
+
+export function setVectorMachineLampStates(machine, states = []) {
+  machine.lampMeshes.forEach((lamp, index) => {
+    const state = states[index] ?? "pending";
+    lamp.material.color.setHex(
+      VECTOR_MACHINE_LAMP_COLORS[state] ?? VECTOR_MACHINE_LAMP_COLORS.pending,
+    );
+  });
 }
 
 export function setVectorMachineBuild(machine, {

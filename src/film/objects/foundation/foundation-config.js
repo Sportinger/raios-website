@@ -54,6 +54,16 @@ export const FOUNDATION_LAYOUT = Object.freeze({
   production: point(6.72, FOUNDATION_LAYER_HEIGHT * 2, -9.17),
 });
 
+// Local coordinates inside the canonical Builder quadrant. The workpiece
+// docks one body-width away from each program instead of hovering near the
+// quadrant center.
+export const FOUNDATION_WORKPIECE_STATIONS = Object.freeze({
+  home: point(1.2, 0, -1.15),
+  compiler: point(2.05, 0, 1.85),
+  tester: point(1.35, 0, -1.7),
+  guard: point(-1.7, 0, 1.15),
+});
+
 export const KERNEL_FOOTPRINT = Object.freeze({
   compact: Object.freeze({ width: 8.5, depth: 8.5 }),
   expanded: Object.freeze({ width: 17, depth: 8.5 }),
