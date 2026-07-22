@@ -42,6 +42,11 @@ Scroll-Choreografie. Ziehen auf der Szene orbitet frei um den aktuellen
 Blickpunkt, das Mausrad zoomt hinein und heraus. Autoplay pausiert dabei; beim
 Ausschalten übernimmt wieder exakt die aktuelle Story-Kamerapose.
 
+Der obere Ansichtsumschalter wechselt zwischen der normalen PBR-Darstellung und
+`2D STYLE`. Der Vektormodus behält Geometrie, Labels, Effekte und die vollständige
+Scroll-Choreografie bei, entfernt aber die Oberflächentexturen und HDR-Reflexion,
+reduziert die Materialien auf flache Farben und ergänzt klare Mesh-Konturen.
+
 Der Hintergrund besitzt einen eigenen globalen Reveal und ist nicht an ein
 Kapitel-Keyframe gekoppelt. Bis `SCROLL 0.0281` bleiben CSS-Hintergrund und
 Sternfeld vollständig schwarz beziehungsweise unsichtbar. Zwischen `0.0281`

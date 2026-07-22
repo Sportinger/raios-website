@@ -70,6 +70,8 @@ export function createInfoCard({
     side: THREE.FrontSide,
     transparent: true,
   });
+  material.userData.vectorStyleColor = 0xc6a24f;
+  material.userData.vectorStyleEdgeColor = 0xf0cf77;
   const body = new THREE.Mesh(geometry, material);
   body.renderOrder = renderOrder;
   contentGroup.add(body);

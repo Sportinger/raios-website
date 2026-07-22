@@ -5,6 +5,7 @@ import { createCamera } from "../runtime/create-camera.js";
 import { createCameraRig } from "../runtime/create-camera-rig.js";
 import { createMotionPreference } from "../runtime/create-motion-preference.js";
 import { createRenderer } from "../runtime/create-renderer.js";
+import { createSceneStyle } from "../runtime/create-scene-style.js";
 import { createScrollDriver } from "../runtime/create-scroll-driver.js";
 import { createViewport } from "../runtime/create-viewport.js";
 import { createWorld } from "../runtime/create-world.js";
@@ -12,6 +13,7 @@ import { createChapterNavigation } from "../ui/chapter-navigation/create-chapter
 import { createGlassControls } from "../ui/glass-controls/index.js";
 import { createPlaybackControls } from "../ui/playback-controls/index.js";
 import { createScrollDebug } from "../ui/scroll-debug/index.js";
+import { createViewStyleControls } from "../ui/view-style-controls/index.js";
 import { createCameraDirector } from "../dev/camera-director/index.js";
 import { intervalProgress, smootherstep } from "../animation/progress.js";
 
@@ -29,6 +31,7 @@ export function createApp({
   playbackControls: playbackControlsContainer,
   scrollDebug: scrollDebugContainer,
   stage,
+  viewStyleControls: viewStyleControlsContainer,
 }) {
   if (
     !canvas
@@ -37,6 +40,7 @@ export function createApp({
     || !playbackControlsContainer
     || !scrollDebugContainer
     || !stage
+    || !viewStyleControlsContainer
   ) {
     throw new Error("The scroll canvas, stage, controls, navigation, and debug output are required");
   }
@@ -53,6 +57,11 @@ export function createApp({
   orbitControls.minDistance = 1.5;
   orbitControls.maxDistance = 80;
   const world = createWorld(renderer);
+  const sceneStyle = createSceneStyle({
+    renderer,
+    scene: world.scene,
+    viewportElement,
+  });
   const story = createStory({
     scene: world.scene,
     context: { cameraRig, lightRig: world.lightRig },
@@ -69,6 +78,7 @@ export function createApp({
   let currentProgress = 0;
   let playbackControls = null;
   let cameraDirector = null;
+  let viewStyleControls = null;
   const scrollDebug = createScrollDebug({
     container: scrollDebugContainer,
     items: story.navigationItems,
@@ -102,6 +112,7 @@ export function createApp({
     },
   });
   const renderScene = () => {
+    sceneStyle.update();
     story.prepareRender(renderer, world.scene, camera);
     renderer.render(world.scene, camera);
   };
@@ -152,6 +163,15 @@ export function createApp({
   };
 
   const scrollDriver = createScrollDriver({ stage, onProgress: renderAt });
+  viewStyleControls = createViewStyleControls({
+    container: viewStyleControlsContainer,
+    onChange: (style) => {
+      const vectorEnabled = style === "vector";
+      sceneStyle.setEnabled(vectorEnabled);
+      world.setVectorStyle(vectorEnabled);
+      renderAt(scrollDriver.getProgress());
+    },
+  });
   const setAutoplayPlaying = (playing) => {
     if (motionPreference.matches || orbitEnabled) {
       autoplayPlaying = false;
@@ -291,11 +311,13 @@ export function createApp({
       chapterNavigation.dispose();
       cameraDirector?.dispose();
       glassControls.dispose();
+      viewStyleControls.dispose();
       playbackControls.dispose();
       orbitControls.dispose();
       scrollDebug.dispose();
       viewport.dispose();
       scrollDriver.dispose();
+      sceneStyle.dispose();
       story.dispose();
       world.dispose();
       renderer.dispose();

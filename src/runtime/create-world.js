@@ -19,6 +19,8 @@ export function createWorld(renderer) {
   const pmremGenerator = new THREE.PMREMGenerator(renderer);
   const roomEnvironment = new RoomEnvironment();
   let environmentMap = pmremGenerator.fromScene(roomEnvironment, 0.04).texture;
+  let environmentProgress = 0;
+  let vectorStyle = false;
   let disposed = false;
   roomEnvironment.dispose();
   scene.environment = environmentMap;
@@ -66,11 +68,19 @@ export function createWorld(renderer) {
       starField.setOpacity(progress);
     },
     setEnvironmentProgress(progress) {
-      scene.environmentIntensity = STUDIO_ENVIRONMENT_INTENSITY
-        * THREE.MathUtils.clamp(progress, 0, 1);
+      environmentProgress = THREE.MathUtils.clamp(progress, 0, 1);
+      scene.environmentIntensity = vectorStyle
+        ? 0
+        : STUDIO_ENVIRONMENT_INTENSITY * environmentProgress;
     },
     setEnvironmentRotation(degrees) {
       scene.environmentRotation.y = THREE.MathUtils.degToRad(degrees);
+    },
+    setVectorStyle(enabled) {
+      vectorStyle = Boolean(enabled);
+      scene.environmentIntensity = vectorStyle
+        ? 0
+        : STUDIO_ENVIRONMENT_INTENSITY * environmentProgress;
     },
     dispose() {
       disposed = true;

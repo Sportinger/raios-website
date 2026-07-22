@@ -7,6 +7,7 @@ let app = createApp({
   playbackControls: document.getElementById("playback-controls"),
   scrollDebug: document.getElementById("scroll-debug"),
   stage: document.querySelector(".scroll-stage"),
+  viewStyleControls: document.getElementById("view-style-controls"),
 });
 
 const disposeApp = () => app.dispose();
