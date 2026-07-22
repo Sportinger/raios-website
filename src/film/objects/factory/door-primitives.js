@@ -40,7 +40,11 @@ export function setFactoryDoorEmergence(door, state) {
 export function orientFactoryDoor(door, {
   yaw = Math.PI / 4,
   porchWorldAngle = yaw,
+  porchWorldRotation = 0,
 } = {}) {
   door.group.rotation.y = yaw;
   setVectorDoorPorchAngle(door.mechanism, porchWorldAngle - yaw);
+  // Keep the landing in the deck's world grid even though the frame itself
+  // billboards toward the fixed 2.5D film camera.
+  door.mechanism.hatch.group.rotation.y = porchWorldRotation - yaw;
 }

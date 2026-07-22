@@ -331,8 +331,14 @@ function createProofScene(tracker) {
   }
   const halfWidth = shadowLayout.width * 0.5;
   const halfDepth = shadowLayout.depth * 0.5;
+  const shadowDoorScale = 0.44;
   const entryDoorPosition = new THREE.Vector3(halfWidth, deckTop, -2.2);
-  const entryDoor = createDoor(tracker, 0xd8acff, entryDoorPosition.toArray(), 0.65);
+  const entryDoor = createDoor(
+    tracker,
+    0xd8acff,
+    entryDoorPosition.toArray(),
+    shadowDoorScale,
+  );
   orientFactoryDoor(entryDoor, { porchWorldAngle: Math.PI / 2 });
   group.add(entryDoor.group);
   const shadowTitle = createTextLabel(tracker, {
@@ -346,7 +352,7 @@ function createProofScene(tracker) {
   });
   entryDoor.group.add(entryLabel);
   const mockDoors = [-3.7, -1.35, 1].map((x, index) => {
-    const door = createDoor(tracker, 0xc28bff, [x, deckTop, halfDepth], 0.4);
+    const door = createDoor(tracker, 0xc28bff, [x, deckTop, halfDepth], shadowDoorScale);
     orientFactoryDoor(door, { porchWorldAngle: 0 });
     const label = createTextLabel(tracker, {
       text: ["fb.mock", "input.inject", "file.sandbox"][index],
