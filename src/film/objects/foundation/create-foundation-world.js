@@ -898,13 +898,9 @@ export function createFoundationWorld() {
   const agent = createVectorMachine({
     id: "agent",
     title: "AGENT",
-    subtitle: "GENESIS",
     panelColor: PALETTE.panelHigh,
     panelTopColor: 0x263a52,
     edgeColor: PALETTE.blueHigh,
-    statusColor: PALETTE.blueHigh,
-    titleColor: PALETTE.ink,
-    subtitleColor: PALETTE.greenHigh,
     detailColor: PALETTE.blueHigh,
   });
   place(agent.group, FOUNDATION_LAYOUT.agentCompact);

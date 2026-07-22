@@ -5,6 +5,10 @@ const clamp01 = (value) => Math.min(1, Math.max(0, value));
 const trackGeometry = (tracker, geometry) => tracker?.geometry?.(geometry) ?? geometry;
 const trackMaterial = (tracker, material) => tracker?.material?.(material) ?? material;
 const trackTexture = (tracker, texture) => tracker?.texture?.(texture) ?? texture;
+const VECTOR_MACHINE_LABEL_COLOR = 0xf1f7ff;
+const VECTOR_MACHINE_LABEL_FONT = "Consolas, monospace";
+const VECTOR_MACHINE_LABEL_FONT_SIZE = 170;
+const VECTOR_MACHINE_LABEL_WIDTH = 1.45;
 
 function createMaterial(tracker, color, opacity = 1, options = {}) {
   const material = trackMaterial(tracker, new THREE.MeshBasicMaterial({
@@ -76,24 +80,7 @@ function createOutlinedBox(tracker, size, color, edgeColor) {
   return group;
 }
 
-function createGlowTexture(tracker, color) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 128;
-  canvas.height = 128;
-  const context = canvas.getContext("2d");
-  const hex = `#${new THREE.Color(color).getHexString()}`;
-  const gradient = context.createRadialGradient(64, 64, 4, 64, 64, 62);
-  gradient.addColorStop(0, `${hex}ee`);
-  gradient.addColorStop(0.26, `${hex}88`);
-  gradient.addColorStop(1, `${hex}00`);
-  context.fillStyle = gradient;
-  context.fillRect(0, 0, 128, 128);
-  const texture = trackTexture(tracker, new THREE.CanvasTexture(canvas));
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
-}
-
-function createMachineLabel(tracker, text, color, width, fontSize) {
+function createMachineLabel(tracker, text) {
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
   canvas.height = 256;
@@ -102,13 +89,13 @@ function createMachineLabel(tracker, text, color, width, fontSize) {
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearFilter;
   context.clearRect(0, 0, canvas.width, canvas.height);
-  context.font = `900 ${fontSize}px Consolas, monospace`;
+  context.font = `900 ${VECTOR_MACHINE_LABEL_FONT_SIZE}px ${VECTOR_MACHINE_LABEL_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.lineJoin = "round";
-  context.lineWidth = Math.max(10, fontSize * 0.14);
+  context.lineWidth = Math.max(10, VECTOR_MACHINE_LABEL_FONT_SIZE * 0.14);
   context.strokeStyle = "#05080d";
-  context.fillStyle = `#${new THREE.Color(color).getHexString()}`;
+  context.fillStyle = `#${new THREE.Color(VECTOR_MACHINE_LABEL_COLOR).getHexString()}`;
   context.strokeText(text, canvas.width / 2, canvas.height / 2, 940);
   context.fillText(text, canvas.width / 2, canvas.height / 2, 940);
   texture.needsUpdate = true;
@@ -121,7 +108,11 @@ function createMachineLabel(tracker, text, color, width, fontSize) {
   material.userData.preserveTransparency = true;
   material.userData.vectorMachineBaseOpacity = 1;
   const label = new THREE.Sprite(material);
-  label.scale.set(width, width * canvas.height / canvas.width, 1);
+  label.scale.set(
+    VECTOR_MACHINE_LABEL_WIDTH,
+    VECTOR_MACHINE_LABEL_WIDTH * canvas.height / canvas.width,
+    1,
+  );
   label.renderOrder = 52;
   return label;
 }
@@ -182,14 +173,10 @@ export function createVectorMachine({
   tracker,
   id,
   title,
-  subtitle = "",
   size = [1.34, 1.12, 1.18],
   panelColor = 0x1c2a3d,
   panelTopColor = 0x263a52,
   edgeColor = 0x8bc5ff,
-  statusColor = edgeColor,
-  titleColor = 0xf1f7ff,
-  subtitleColor = 0x9fb2c9,
   detailColor = 0xf6c769,
 } = {}) {
   const [width, height, depth] = size;
@@ -218,21 +205,6 @@ export function createVectorMachine({
     createMaterial(tracker, panelTopColor),
   );
   topInset.position.y = height + 0.065;
-  const status = new THREE.Mesh(
-    trackGeometry(tracker, new THREE.SphereGeometry(0.075, 12, 8)),
-    createMaterial(tracker, statusColor),
-  );
-  status.position.set(0, height + 0.15, 0);
-  const statusGlow = new THREE.Sprite(trackMaterial(tracker, new THREE.SpriteMaterial({
-    map: createGlowTexture(tracker, statusColor),
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-  })));
-  statusGlow.material.userData.preserveTransparency = true;
-  statusGlow.material.userData.vectorMachineBaseOpacity = 0.78;
-  statusGlow.position.copy(status.position);
-  statusGlow.scale.setScalar(Math.max(width, depth) * 0.72);
   const bars = new THREE.Group();
   [0.34, 0.56, 0.78].forEach((heightRatio, index) => {
     const bar = new THREE.Mesh(
@@ -242,14 +214,9 @@ export function createVectorMachine({
     bar.position.set(width / 2 + 0.018, height * heightRatio, depth * 0.23);
     bars.add(bar);
   });
-  const titleLabel = createMachineLabel(tracker, title, titleColor, width * 0.9, 170);
-  titleLabel.position.set(0, height * 0.58, depth / 2 + 0.035);
-  const subtitleLabel = subtitle
-    ? createMachineLabel(tracker, subtitle, subtitleColor, width * 0.88, 102)
-    : null;
-  if (subtitleLabel) subtitleLabel.position.set(0, height * 0.36, depth / 2 + 0.038);
-  body.add(block, topInset, status, statusGlow, bars, titleLabel);
-  if (subtitleLabel) body.add(subtitleLabel);
+  const titleLabel = createMachineLabel(tracker, title);
+  titleLabel.position.set(0, height * 0.5, depth / 2 + 0.035);
+  body.add(block, topInset, bars, titleLabel);
   solid.add(shadow, body);
   const outline = createFootprintOutline(tracker, width, depth, edgeColor);
   group.add(outline.group, solid);
@@ -258,12 +225,9 @@ export function createVectorMachine({
     solid,
     body,
     block,
-    status,
-    statusGlow,
     shadow,
     outline,
     titleLabel,
-    subtitleLabel,
     width,
     height,
     depth,

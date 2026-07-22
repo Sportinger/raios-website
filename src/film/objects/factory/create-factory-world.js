@@ -549,7 +549,6 @@ export function createFactoryWorld() {
           lane.revealAt + 0.72,
         )),
       });
-      machine.status.scale.setScalar(0.88 + Math.sin(time * 3.2 + index) * 0.12);
     });
     [79.8, 80.7, 81.55, 84.55].forEach((at, index) => {
       compiler.checklist.badges[index].userData.setPassed?.(time >= at);

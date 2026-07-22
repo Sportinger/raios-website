@@ -70,8 +70,12 @@ bleiben reine Konfiguration.
 
 Agent, Compiler, Tester und Guard verwenden
 `objects/shared/vector-machine.js`. Das Modul definiert die gemeinsame
-Körpergeometrie, Flächen, Outlines, Statuslicht, Detailstreifen, Beschriftung,
-Schatten und den Aufbau vom gezeichneten Grundriss zum aufwachsenden Programm.
+Körpergeometrie, Flächen, Outlines, Detailstreifen, Schatten und den Aufbau vom
+gezeichneten Grundriss zum aufwachsenden Programm. Programme besitzen kein
+Dach- oder Statuslicht. Auf der Front steht genau ein weißer Programmname;
+Schrift, Größe und Position werden ausschließlich im gemeinsamen Modul
+festgelegt. Szenen liefern weder Untertitel noch eigene Textfarben oder
+Labelgrößen.
 Eine Maschine wird über ihre Trägerfläche und X/Z-Koordinaten verankert; ihre
 Höhe darf nicht in einzelnen Szenen frei geschätzt werden. Auf dem Builder Deck
 stehen der Compiler in der unteren Ecke, der Tester in der rechten Ecke und der

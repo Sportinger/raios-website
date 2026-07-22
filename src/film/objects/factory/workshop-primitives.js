@@ -68,14 +68,10 @@ export function createWorkshopMachine(tracker, lane) {
     tracker,
     id: lane.id,
     title: lane.title,
-    subtitle: lane.subtitle,
     size: [1.68, 1.28, 1.48],
     panelColor: FACTORY_PALETTE.panel,
     panelTopColor: FACTORY_PALETTE.panelLight,
     edgeColor: FACTORY_PALETTE.edge,
-    statusColor: lane.color,
-    titleColor: FACTORY_PALETTE.white,
-    subtitleColor: 0xaab5c5,
     detailColor: FACTORY_PALETTE.amber,
   });
   return anchorVectorMachineToSurface(machine, {

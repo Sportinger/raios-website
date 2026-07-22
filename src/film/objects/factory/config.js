@@ -52,23 +52,23 @@ export const FACTORY_SCENES = Object.freeze({
 
 export const FACTORY_LANES = Object.freeze([
   Object.freeze({
-    id: "compiler", title: "COMPILER", subtitle: "rustc → WASM",
+    id: "compiler", title: "COMPILER",
     x: FACTORY_BUILDER_SURFACE.centerX + BUILDER_HALF_SIZE - COMPILER_CORNER_INSET,
     z: FACTORY_BUILDER_SURFACE.centerZ + BUILDER_HALF_SIZE - COMPILER_CORNER_INSET,
-    scale: 1, revealAt: 39, color: FACTORY_PALETTE.cyan,
+    scale: 1, revealAt: 39,
   }),
   Object.freeze({
-    id: "verifier", title: "TESTER", subtitle: "HARNESS",
+    id: "verifier", title: "TESTER",
     x: FACTORY_BUILDER_SURFACE.centerX + BUILDER_HALF_SIZE - TESTER_CORNER_INSET,
     z: FACTORY_BUILDER_SURFACE.centerZ - BUILDER_HALF_SIZE + TESTER_CORNER_INSET,
-    scale: 1, revealAt: 41.6, color: FACTORY_PALETTE.violet,
+    scale: 1, revealAt: 41.6,
   }),
   Object.freeze({
-    id: "guard", title: "GUARD", subtitle: "LIVE GATE",
+    id: "guard", title: "GUARD",
     // Same projected axis as /out, one program-width inside the deck.
     x: FACTORY_BUILDER_SURFACE.centerX - BUILDER_HALF_SIZE + GUARD_DOOR_INSET,
     z: FACTORY_BUILDER_SURFACE.centerZ + OUT_DOOR_ALONG + GUARD_DOOR_INSET,
-    scale: 1, revealAt: 41.9, color: FACTORY_PALETTE.green,
+    scale: 1, revealAt: 41.9,
   }),
 ]);
 
