@@ -1177,11 +1177,6 @@ export function createFoundationWorld() {
       progress(time, FOUNDATION_TIMELINE.netRise.start, FOUNDATION_TIMELINE.netRise.start + 0.16)
         * persistentWorldAlpha,
     );
-    if (camera) {
-      netTower.signal.quaternion.copy(camera.quaternion);
-      netTower.signal.rotateZ(time * 0.26);
-      netTower.rings.forEach((ring) => ring.quaternion.copy(camera.quaternion));
-    }
     netTower.rings.forEach((ring, index) => {
       const cycle = ((time - FOUNDATION_TIMELINE.netRise.end - index * 1.2) % 3.6 + 3.6) % 3.6 / 3.6;
       ring.scale.setScalar(0.4 + cycle * 2.5);
@@ -1189,6 +1184,7 @@ export function createFoundationWorld() {
         ? 0
         : (1 - cycle) * 0.72 * persistentWorldAlpha;
     });
+    netTower.signal.rotation.z = time * 0.26;
     netTower.beacon.scale.setScalar(0.8 + Math.sin(time * 4) * 0.18);
 
     const lineDraw = timedProgress(time, FOUNDATION_TIMELINE.agentRoute);
