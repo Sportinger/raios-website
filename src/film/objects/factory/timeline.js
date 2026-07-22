@@ -10,6 +10,11 @@ export function smootherstep(value) {
   return t * t * t * (t * (t * 6 - 15) + 10);
 }
 
+export function smoothstep(value) {
+  const t = clamp01(value);
+  return t * t * (3 - 2 * t);
+}
+
 export function pulse(time, start, end) {
   const progress = interval(time, start, end);
   return Math.sin(progress * Math.PI) * Number(time >= start && time <= end);

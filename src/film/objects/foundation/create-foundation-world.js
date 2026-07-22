@@ -1607,6 +1607,10 @@ export function createFoundationWorld() {
       { at: 60.8, x: 0.29, z: -0.145 },
       { at: 63.85, x: 0, z: 0 },
       { at: 66.95, x: 0, z: 0 },
+      { at: 67.3, x: -0.217, z: -0.217 },
+      { at: 70, x: -0.217, z: -0.217 },
+      { at: 71.2, x: 0.29, z: -0.145 },
+      { at: 77.7, x: 0.29, z: -0.145 },
     ];
     const beforeFrame = workpieceFrames.reduce(
       (best, frame) => (frame.at <= time ? frame : best),
@@ -1616,8 +1620,12 @@ export function createFoundationWorld() {
     const workpieceMove = beforeFrame === afterFrame ? 1 : progress(time, beforeFrame.at, afterFrame.at);
     production.workpiece.position.x = THREE.MathUtils.lerp(beforeFrame.x, afterFrame.x, workpieceMove);
     production.workpiece.position.z = THREE.MathUtils.lerp(beforeFrame.z, afterFrame.z, workpieceMove);
-    const workpieceCopy = time >= 63.85
-      ? "APPLYING EDIT 02"
+    const workpieceCopy = time >= 71.2
+      ? "PLAYER.WASM"
+      : time >= 66.95
+        ? "FIX 02"
+        : time >= 63.85
+          ? "APPLYING EDIT 02"
       : time >= 60.8
         ? "FAILED · HARNESS"
         : time >= 55.4
@@ -1631,9 +1639,15 @@ export function createFoundationWorld() {
     production.label.userData.setText?.(workpieceCopy);
     production.label.scale.set(wideWorkpieceCopy ? 2.1 : 1.28, wideWorkpieceCopy ? 0.39 : 0.32, 1);
     production.status.scale.setScalar(0.82 + Math.sin(time * 3.6) * 0.14);
-    const successPop = progress(time, 55.4, 55.72);
-    const successHandoff = progress(time, 57.8, 58.55);
-    const successOpacity = successPop * (1 - progress(successHandoff, 0.72, 1));
+    const proofDelivery = [
+      { start: 55.4, attach: 55.72, handoff: 57.8, end: 58.55 },
+      { start: 69.35, attach: 69.67, handoff: 71.2, end: 71.95 },
+    ].find((delivery) => time >= delivery.start && time < delivery.end);
+    const successPop = proofDelivery ? progress(time, proofDelivery.start, proofDelivery.attach) : 0;
+    const successHandoff = proofDelivery ? progress(time, proofDelivery.handoff, proofDelivery.end) : 0;
+    const successOpacity = proofDelivery
+      ? successPop * (1 - progress(successHandoff, 0.72, 1))
+      : 0;
     production.compilerSuccess.position.set(
       THREE.MathUtils.lerp(0.58, 0.12, successHandoff),
       1.96 + Math.sin(successHandoff * Math.PI) * 0.28,
@@ -1642,11 +1656,12 @@ export function createFoundationWorld() {
     production.compilerSuccess.scale.setScalar(
       Math.max(0.001, 0.76 * successPop * THREE.MathUtils.lerp(1, 0.12, successHandoff)),
     );
-    setFade(production.compilerSuccess, time >= 55.4 && time < 58.55 ? successOpacity : 0);
+    setFade(production.compilerSuccess, successOpacity);
     setMovingFile(production.main, materialPath, time, FOUNDATION_TIMELINE.materialMain);
     setMovingFile(production.cargo, materialPath, time, FOUNDATION_TIMELINE.materialCargo);
+    const activeEditTiming = time < 60 ? FOUNDATION_TIMELINE.editOne : FOUNDATION_TIMELINE.editTwo;
     production.edits.forEach((edit, index) => {
-      setMovingFile(edit, materialPath, time, FOUNDATION_TIMELINE.editOne[index], 0, 1.25);
+      setMovingFile(edit, materialPath, time, activeEditTiming[index], 0, time < 60 ? 1.25 : 0.88);
     });
     const failureActive = time >= 46 && time < 52.55;
     production.failureLabel.visible = failureActive;

@@ -6,7 +6,13 @@ import {
   FACTORY_PALETTE,
   FACTORY_SCENES,
 } from "./config.js";
-import { interval, pulse, showScene, smootherstep } from "./timeline.js";
+import {
+  interval,
+  pulse,
+  showScene,
+  smoothstep,
+  smootherstep,
+} from "./timeline.js";
 import {
   createFlatMaterial,
   createResourceTracker,
@@ -265,9 +271,11 @@ function createCompilerScene(tracker) {
   });
   deck.workpiece.add(evidence);
   const upgrades = [
-    ["LOCK CACHE", -3, -0.35, 4.9], ["BYTE JIG", 4.8, 1.18, -3.8], ["DRILL KIT", 6.5, 1.18, -1.2],
-  ].map(([text, x, y, z]) => createTextLabel(tracker, {
-    text, width: 2.55, height: 0.56, color: 0xa9c8e9,
+    { text: "LOCK CACHE", x: -3, y: -0.35, z: 4.9, width: 2.55, height: 0.56 },
+    { text: "BYTE JIG", x: 3.25, y: 2.65, z: -2.4, width: 1.55, height: 0.4 },
+    { text: "DRILL KIT", x: 4.1, y: 1.8, z: -2.4, width: 1.55, height: 0.4 },
+  ].map(({ text, x, y, z, width, height }) => createTextLabel(tracker, {
+    text, width, height, color: 0xa9c8e9,
     background: FACTORY_PALETTE.panel, position: [x, y, z], fontSize: 46, billboard: true,
   }));
   group.add(materialRoute, sceneCaption, ...upgrades);
@@ -700,11 +708,11 @@ export function createFactoryWorld() {
       machine.group.position.y = lane.baseY - 1.3 * (1 - reveal);
       machine.status.scale.setScalar(0.88 + Math.sin(time * 3.2 + index) * 0.12);
     });
-    const firstCompile = smootherstep(interval(time, 42.25, 46));
-    const secondCompile = smootherstep(interval(time, 53.25, 55.4));
-    const thirdCompile = smootherstep(interval(time, 67.5, 69.35));
-    const verifierSecond = smootherstep(interval(time, 57.8, 60.8));
-    const verifierThird = smootherstep(interval(time, 71.2, 75.6));
+    const firstCompile = smoothstep(interval(time, 42.25, 46));
+    const secondCompile = smoothstep(interval(time, 53.25, 55.4));
+    const thirdCompile = smoothstep(interval(time, 67.5, 69.35));
+    const verifierSecond = smoothstep(interval(time, 57.8, 60.8));
+    const verifierThird = smoothstep(interval(time, 71.2, 75.6));
     const machineProgress = [
       time < 52.55 ? firstCompile : time < 66.95 ? secondCompile : thirdCompile,
       time < 66.95 ? verifierSecond : verifierThird,
@@ -733,7 +741,9 @@ export function createFactoryWorld() {
               ? `COMPILING · ROUND 2/3 · ${Math.round(secondCompile * 100)}%`
               : time < 66.95
                 ? "PASSED · ROUND 2/3"
-                : time < 69.35
+                : time < 67.5
+                  ? "READY · ROUND 3/3"
+                  : time < 69.35
                   ? `COMPILING · ROUND 3/3 · ${Math.round(thirdCompile * 100)}%`
                   : "PASSED · ROUND 3/3";
     const verifierCopy = time < 57.8
@@ -773,7 +783,10 @@ export function createFactoryWorld() {
     compiler.upgrades[0].visible = lockCacheRise > 0.001;
     compiler.upgrades[0].position.y = -0.85 + lockCacheRise * 0.5;
     compiler.upgrades[0].scale.set(2.55, Math.max(0.001, 0.56 * lockCacheRise), 1);
-    compiler.upgrades[1].visible = time >= 70;
+    const byteJigRise = smootherstep(interval(time, 70, 71.2));
+    compiler.upgrades[1].visible = byteJigRise > 0.001;
+    compiler.upgrades[1].position.y = 2.15 + byteJigRise * 0.5;
+    compiler.upgrades[1].scale.set(1.55, Math.max(0.001, 0.4 * byteJigRise), 1);
     compiler.upgrades[2].visible = time >= 77;
     const compilerBody = compiler.machines[0].body;
     compilerBody.position.set(0, 0, 0);
@@ -829,7 +842,13 @@ export function createFactoryWorld() {
     }
 
     const twinPanelIntro = smootherstep(interval(time, 57.6, 57.95));
-    const twinResult = time >= 60.8 && time < 66.95 ? "RED · BYTE DRIFT" : "WAITING";
+    const twinResult = time >= 60.8 && time < 66.95
+      ? "RED · BYTE DRIFT"
+      : time >= 74
+        ? "EQUAL"
+        : time >= 71.2
+          ? "BUILDING A/B"
+          : "WAITING";
     setTwinVerifierPanel(compiler.twinConsole, {
       progress: time < 66.95 ? verifierSecond : verifierThird,
       hashesVisible: time >= 60.3,

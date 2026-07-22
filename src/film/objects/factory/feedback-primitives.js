@@ -74,7 +74,7 @@ export function createTwinVerifierPanel(tracker) {
 
     const resultVisible = result !== "WAITING";
     context.fillStyle = result === "RED · BYTE DRIFT" ? "#ff8a80" : "#8698ad";
-    context.font = "900 39px Consolas, monospace";
+    context.font = "900 54px Consolas, monospace";
     if (resultVisible) context.fillText(result, 384, 374);
 
     ["WALL", "IMPORT", "FUEL"].forEach((copy, index) => {
