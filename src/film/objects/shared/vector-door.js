@@ -240,11 +240,6 @@ export function createVectorDoor({
   right.position.set(0.53, 0.775, 0);
   lintel.position.set(0, 1.49, 0);
   threshold.position.set(0, 0.1, 0);
-  const doorVoid = new THREE.Mesh(
-    trackGeometry(tracker, new THREE.PlaneGeometry(0.94, 1.36)),
-    createMaterial(tracker, 0x04080e, { opacity: 0.7, side: THREE.DoubleSide }),
-  );
-  doorVoid.position.set(0, 0.78, -0.055);
   const leafPivot = new THREE.Group();
   leafPivot.position.set(-0.47, 0.75, 0);
   const leaf = createOutlinedBox(
@@ -277,7 +272,7 @@ export function createVectorDoor({
     hinge.position.set(-0.55, height, 0.1);
     hinges.add(hinge);
   });
-  frame.add(doorVoid, left, right, lintel, threshold, leafPivot, hinges);
+  frame.add(left, right, lintel, threshold, leafPivot, hinges);
   frame.rotation.y = rotationY;
   const hatch = createSlidingFloorHatch({
     tracker,
