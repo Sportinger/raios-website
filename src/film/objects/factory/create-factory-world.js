@@ -21,12 +21,35 @@ import {
   createWorkshopMachine,
   setWorkshopConsole,
 } from "./workshop-primitives.js";
+import {
+  createTwinVerifierPanel,
+  createVerifierVerdict,
+  setTwinVerifierPanel,
+  setVerifierVerdict,
+} from "./feedback-primitives.js";
 
 const setYScale = (object, scale) => {
   object.scale.y = Math.max(0.001, scale);
 };
 
 const setLabelText = (label, text) => label.userData.setText?.(text);
+
+function setFactoryOpacity(root, opacity) {
+  const value = THREE.MathUtils.clamp(opacity, 0, 1);
+  root.visible = value > 0.001;
+  root.traverse((object) => {
+    if (!object.material) return;
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    materials.forEach((material) => {
+      if (material.userData.factoryBaseOpacity === undefined) {
+        material.userData.factoryBaseOpacity = material.opacity;
+      }
+      const baseOpacity = material.userData.factoryBaseOpacity;
+      material.transparent = material.userData.preserveTransparency || baseOpacity < 0.999 || value < 0.999;
+      material.opacity = baseOpacity * value;
+    });
+  });
+}
 
 function createMachine(tracker, lane) {
   const { color, x, z, scale } = lane;
@@ -218,7 +241,15 @@ function createCompilerScene(tracker) {
     initialCopy: "READY · NEXT ROUND 2/3",
   });
   const checklist = createWorkshopChecklist(tracker);
-  group.add(compilerConsole.group, verifierConsole.group, checklist.group);
+  const twinConsole = createTwinVerifierPanel(tracker);
+  const verifierVerdict = createVerifierVerdict(tracker);
+  group.add(
+    compilerConsole.group,
+    verifierConsole.group,
+    checklist.group,
+    twinConsole.group,
+    verifierVerdict.group,
+  );
   const materialRoute = createRoute(tracker, [
     [-3.2, 0.9, 2.7], [-1.4, 0.9, 2.2], [0, 0.9, 1.6], [2.55, 0.9, -1.2], [-2.2, 0.9, -1.55],
   ], FACTORY_PALETTE.blue, 0.075);
@@ -234,10 +265,10 @@ function createCompilerScene(tracker) {
   });
   deck.workpiece.add(evidence);
   const upgrades = [
-    ["LOCK CACHE", -1.8, 1.18, 3.7], ["BYTE JIG", 4.8, 1.18, -3.8], ["DRILL KIT", 6.5, 1.18, -1.2],
+    ["LOCK CACHE", -3, -0.35, 4.9], ["BYTE JIG", 4.8, 1.18, -3.8], ["DRILL KIT", 6.5, 1.18, -1.2],
   ].map(([text, x, y, z]) => createTextLabel(tracker, {
-    text, width: 1.65, height: 0.34, color: 0xa9c8e9,
-    background: FACTORY_PALETTE.panel, position: [x, y, z], fontSize: 46,
+    text, width: 2.55, height: 0.56, color: 0xa9c8e9,
+    background: FACTORY_PALETTE.panel, position: [x, y, z], fontSize: 46, billboard: true,
   }));
   group.add(materialRoute, sceneCaption, ...upgrades);
   return {
@@ -247,6 +278,8 @@ function createCompilerScene(tracker) {
     compilerConsole,
     verifierConsole,
     checklist,
+    twinConsole,
+    verifierVerdict,
     materialRoute,
     sceneCaption,
     upgrades,
@@ -356,12 +389,12 @@ function createProofScene(tracker) {
     position: [0, shadowLayout.thickness / 2, 0], opacity: 0.82,
   });
   const subject = createVectorBox(tracker, {
-    size: [1.5, 1.2, 1.5], color: FACTORY_PALETTE.cyan,
-    edgeColor: 0xe7d6fa, position: [0, 1.35, 0],
+    size: [1.5, 1.2, 1.5], color: 0x171125,
+    edgeColor: 0xc28bff, position: [0, 1.35, 0],
   });
   subject.add(createTextLabel(tracker, {
     text: "PLAYER.WASM · GHOST COPY", width: 2.6, height: 0.38,
-    color: 0xe7d6fa, background: 0x12091e, position: [0, 0.85, 0.78], fontSize: 42,
+    color: 0xe7d6fa, background: 0x12091e, position: [0, 0.85, 0.78], fontSize: 42, billboard: true,
   }));
   group.add(cellar, subject);
   for (let x = -5; x <= 5; x += shadowLayout.gridStep) {
@@ -380,16 +413,16 @@ function createProofScene(tracker) {
   group.add(shadowTitle);
   const entryLabel = createTextLabel(tracker, {
     text: "shadow.in", width: 1.7, height: 0.38,
-    color: 0xdcc3f6, background: 0x130b1c, position: [0, 4.15, 0], fontSize: 52,
+    color: 0xdcc3f6, background: 0x130b1c, position: [0, 4.15, 0], fontSize: 52, billboard: true,
   });
   entryDoor.group.add(entryLabel);
   const mockDoors = [-3.7, -1.8, 0.1].map((x, index) => {
-    const door = createDoor(tracker, 0xc28bff, [x, 0.76, -2.65 + index * 0.15], 0.34);
+    const door = createDoor(tracker, 0xc28bff, [x, 0.76, 2.55 + index * 0.15], 0.4);
     door.group.rotation.y = Math.PI / 7;
     const label = createTextLabel(tracker, {
       text: ["fb.mock", "input.inject", "file.sandbox"][index],
       width: 2.2, height: 0.36, color: 0xdcc3f6, background: 0x130b1c,
-      position: [0, 4.15, 0], fontSize: 44,
+      position: [0, 4.15, 0], fontSize: 44, billboard: true,
     });
     door.group.add(label);
     group.add(door.group);
@@ -404,10 +437,18 @@ function createProofScene(tracker) {
     [[8, 1.2, -2.8], [5.8, 1.2, -1.8]],
     [[8, 1.2, 3.4], [5.8, 1.2, 2.4]],
   ].map((points) => {
-    const route = createRoute(tracker, points, FACTORY_PALETTE.red, 0.075);
-    const impact = createRing(tracker, 0.42, 0xff8b85, 0.055);
+    const route = createRoute(tracker, points, FACTORY_PALETTE.red, 0.035);
+    const impact = new THREE.Group();
     impact.position.set(...points[1]);
-    impact.rotation.x = 0;
+    [0, Math.PI / 4, Math.PI / 2, -Math.PI / 4].forEach((rotation) => {
+      const ray = createVectorBox(tracker, {
+        size: [1.05, 0.055, 0.055],
+        color: 0xff8b85,
+        position: [0, 0, 0],
+      });
+      ray.rotation.y = rotation;
+      impact.add(ray);
+    });
     group.add(route, impact);
     return { route, impact };
   });
@@ -601,6 +642,8 @@ export function createFactoryWorld() {
   const feedback = createFeedbackScene(tracker);
   const twins = createTwinScene(tracker);
   const proof = createProofScene(tracker);
+  proof.group.position.set(-12.32, 0.04, 0);
+  proof.spikes.visible = false;
   const guard = createGuardScene(tracker);
   const approval = createApprovalScene(tracker);
   const running = createPlayer(tracker);
@@ -626,6 +669,10 @@ export function createFactoryWorld() {
     builder.group.visible = false;
     inert.group.visible = false;
     compiler.deck.group.visible = false;
+    // The old feedback scene is not a separate world. It is the same Builder
+    // Deck with a new workpiece pass, a verifier console and a disposable scan.
+    feedback.group.visible = false;
+    twins.group.visible = false;
 
     const deckRise = smootherstep(interval(time, 25.25, 28.45));
     builder.group.position.y = -2.8 + deckRise * 2.8;
@@ -722,17 +769,22 @@ export function createFactoryWorld() {
             ? "EDIT 02 RETURNS · ROUND 3/3 · COMPILER PASSES · PRÜFER RUNS A/B · SAME INPUT · TWIN BUILDS · ONE TRUTH"
             : "HARNESS TEST · SHADOW WORLD COMPLETE · TEST PASSED · SIGNED REPORT EMITTED · REPORT → GUARD · LIVE DOOR STAYS SEALED",
     );
-    compiler.upgrades[0].visible = time >= 52;
+    const lockCacheRise = smootherstep(interval(time, 52, 53.2));
+    compiler.upgrades[0].visible = lockCacheRise > 0.001;
+    compiler.upgrades[0].position.y = -0.85 + lockCacheRise * 0.5;
+    compiler.upgrades[0].scale.set(2.55, Math.max(0.001, 0.56 * lockCacheRise), 1);
     compiler.upgrades[1].visible = time >= 70;
     compiler.upgrades[2].visible = time >= 77;
     const compilerBody = compiler.machines[0].body;
     compilerBody.position.set(0, 0, 0);
     compilerBody.rotation.set(0, 0, 0);
     compilerBody.scale.set(1, 1, 1);
-    const compiling = time >= 42.25 && time < 46;
-    if (compiling) {
-      const rampIn = smootherstep(interval(time, 42.25, 42.41));
-      const rampOut = 1 - smootherstep(interval(time, 45.88, 46));
+    const activeCompileWindow = [[42.25, 46], [53.25, 55.4], [67.5, 69.35]]
+      .find(([start, end]) => time >= start && time < end);
+    if (activeCompileWindow) {
+      const [compileStart, compileEnd] = activeCompileWindow;
+      const rampIn = smootherstep(interval(time, compileStart, compileStart + 0.16));
+      const rampOut = 1 - smootherstep(interval(time, compileEnd - 0.12, compileEnd));
       const strength = Math.min(rampIn, rampOut);
       compilerBody.position.x = (Math.sin(time * Math.PI * 25.4)
         + Math.sin(time * Math.PI * 41.8) * 0.42) * 0.025 * strength;
@@ -764,6 +816,64 @@ export function createFactoryWorld() {
       compilerBody.position.y = THREE.MathUtils.lerp(2.4, 0, returnEase) + rebound * 0.35;
       compilerBody.scale.set(1 - 0.035 * rebound, 1 + 0.05 * rebound, 1);
     }
+
+    const compilerJoyWindow = [[55.4, 56.05], [69.35, 70]]
+      .find(([start, end]) => time >= start && time < end);
+    if (compilerJoyWindow) {
+      const joy = interval(time, compilerJoyWindow[0], compilerJoyWindow[1]);
+      const hop = Math.sin(joy * Math.PI);
+      const wiggle = Math.sin(joy * Math.PI * 4) * (1 - joy);
+      compilerBody.position.y = hop * 0.2;
+      compilerBody.rotation.z = THREE.MathUtils.degToRad(2.2 * wiggle);
+      compilerBody.scale.set(1 - 0.045 * hop, 1 + 0.065 * hop, 1);
+    }
+
+    const twinPanelIntro = smootherstep(interval(time, 57.6, 57.95));
+    const twinResult = time >= 60.8 && time < 66.95 ? "RED · BYTE DRIFT" : "WAITING";
+    setTwinVerifierPanel(compiler.twinConsole, {
+      progress: time < 66.95 ? verifierSecond : verifierThird,
+      hashesVisible: time >= 60.3,
+      result: twinResult,
+      opacity: twinPanelIntro,
+    });
+    setVerifierVerdict(compiler.verifierVerdict, time);
+
+    const scanWindow = time >= 57.8 && time < 60.8
+      ? [57.8, 60.8]
+      : time >= 71.2 && time < 75.6
+        ? [71.2, 75.6]
+        : null;
+    const scanIntro = scanWindow ? smootherstep(interval(time, scanWindow[0], scanWindow[0] + 0.55)) : 0;
+    const scanOutro = scanWindow ? 1 - smootherstep(interval(time, scanWindow[1] - 0.42, scanWindow[1])) : 0;
+    const scanAlpha = scanIntro * scanOutro;
+    const scanProgress = scanWindow ? interval(time, scanWindow[0], scanWindow[1]) : 0;
+    setFactoryOpacity(proof.group, scanAlpha * 0.72);
+    proof.group.position.y = 0.04 - (1 - scanIntro) * 0.42;
+    proof.group.scale.setScalar(0.93 + scanIntro * 0.07);
+    const shadowDoorIntro = scanWindow
+      ? smootherstep(interval(time, scanWindow[0] + 0.22, scanWindow[0] + 0.72))
+      : 0;
+    proof.entryDoor.group.visible = shadowDoorIntro * scanOutro > 0.001;
+    proof.entryDoor.group.scale.setScalar(0.65 * Math.max(0.001, shadowDoorIntro * scanOutro));
+    const shadowEntry = scanWindow
+      ? smootherstep(interval(time, scanWindow[0] + 0.48, Math.min(scanWindow[0] + 1.58, scanWindow[1] - 0.72)))
+      : 0;
+    const shadowPlayerIntro = scanWindow
+      ? smootherstep(interval(time, scanWindow[0] + 0.4, scanWindow[0] + 0.68))
+      : 0;
+    proof.subject.visible = shadowPlayerIntro * scanOutro > 0.001;
+    const shadowPoint = proof.entryRoute.userData.curve.getPointAt(shadowEntry);
+    proof.subject.position.copy(shadowPoint);
+    proof.subject.position.y += 0.2 + (shadowEntry >= 0.999 ? Math.sin(time * Math.PI * 2.1) * 0.05 : 0);
+    proof.subject.scale.setScalar(0.82 - shadowEntry * 0.1);
+    const attackIntro = scanWindow
+      ? smootherstep(interval(time, scanWindow[0] + 1.28, Math.min(scanWindow[0] + 1.72, scanWindow[1] - 0.48)))
+      : 0;
+    proof.attacks.forEach(({ route, impact }, index) => {
+      route.visible = attackIntro * scanOutro > 0.001;
+      impact.visible = route.visible;
+      impact.scale.setScalar(0.78 + Math.max(0, Math.sin((time - (scanWindow?.[0] ?? 0)) * 8.6 - index * 1.75)) * 0.42);
+    });
 
     const fixProgress = smootherstep(interval(time, 54, 60));
     const fixAngle = fixProgress * Math.PI * 2;

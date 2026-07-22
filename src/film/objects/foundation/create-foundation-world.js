@@ -151,6 +151,44 @@ function createLabel(text, color = PALETTE.ink, width = 3, fontSize = 52) {
   return sprite;
 }
 
+function createCompilerProofToken() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 256;
+  const context = canvas.getContext("2d");
+  context.clearRect(0, 0, 256, 256);
+  context.beginPath();
+  context.arc(128, 128, 84, 0, Math.PI * 2);
+  context.fillStyle = "rgba(33,116,70,.92)";
+  context.fill();
+  context.lineWidth = 14;
+  context.strokeStyle = "#a3f3c0";
+  context.stroke();
+  context.beginPath();
+  context.moveTo(82, 132);
+  context.lineTo(113, 162);
+  context.lineTo(176, 91);
+  context.lineWidth = 18;
+  context.lineCap = "round";
+  context.lineJoin = "round";
+  context.strokeStyle = "#e2ffed";
+  context.stroke();
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  const material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+  });
+  material.userData.preserveTransparency = true;
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.set(0.76, 0.76, 1);
+  sprite.renderOrder = 58;
+  return sprite;
+}
+
 function createFloorDecal(text, color, width = 3.4, depth = 1.05) {
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
@@ -847,13 +885,15 @@ function createProduction() {
   const failureLabel = createLabel("FAILED!", PALETTE.red, 1.24, 58);
   failureLabel.position.set(0, 0.5, 0.53);
   failureLabel.renderOrder = 53;
-  workpiece.add(body, status, label, failureLabel);
+  const compilerSuccess = createCompilerProofToken();
+  compilerSuccess.position.set(0.58, 1.96, 0.24);
+  workpiece.add(body, status, label, failureLabel, compilerSuccess);
 
   const main = createFileCard("main.rs");
   const cargo = createFileCard("Cargo.toml");
   const edits = Array.from({ length: 3 }, () => createFileCard("EDIT"));
   group.add(workpiece, main, cargo, ...edits);
-  return { group, workpiece, main, cargo, edits, status, label, failureLabel };
+  return { group, workpiece, main, cargo, edits, status, label, failureLabel, compilerSuccess };
 }
 
 function createSignalRoute(curve, color = PALETTE.blue, samples = 30, thickness = 1) {
@@ -1554,13 +1594,55 @@ export function createFoundationWorld() {
     production.workpiece.visible = workpieceRise > 0.001;
     production.workpiece.position.y = -(1 - workpieceRise) * 0.35;
     production.workpiece.scale.setScalar(Math.max(0.001, THREE.MathUtils.lerp(0.54, 1, workpieceRise)));
-    const compilerLift = progress(time, 41, 41.85) * (1 - progress(time, 46.2, 49.4));
-    production.workpiece.position.x = -0.217 * compilerLift;
-    production.workpiece.position.z = -0.217 * compilerLift;
-    const applyingEdit = time >= 49.4 && time < 52.55;
-    production.label.userData.setText?.(applyingEdit ? "APPLYING EDIT 01" : "PLAYER.RS");
-    production.label.scale.set(applyingEdit ? 2.1 : 1.28, applyingEdit ? 0.39 : 0.32, 1);
+    const workpieceFrames = [
+      { at: 34, x: 0, z: 0 },
+      { at: 41, x: 0, z: 0 },
+      { at: 41.85, x: -0.217, z: -0.217 },
+      { at: 46.2, x: -0.217, z: -0.217 },
+      { at: 49.4, x: 0, z: 0 },
+      { at: 52.55, x: 0, z: 0 },
+      { at: 53.05, x: -0.217, z: -0.217 },
+      { at: 56.05, x: -0.217, z: -0.217 },
+      { at: 57.8, x: 0.29, z: -0.145 },
+      { at: 60.8, x: 0.29, z: -0.145 },
+      { at: 63.85, x: 0, z: 0 },
+      { at: 66.95, x: 0, z: 0 },
+    ];
+    const beforeFrame = workpieceFrames.reduce(
+      (best, frame) => (frame.at <= time ? frame : best),
+      workpieceFrames[0],
+    );
+    const afterFrame = workpieceFrames.find((frame) => frame.at > time) ?? workpieceFrames.at(-1);
+    const workpieceMove = beforeFrame === afterFrame ? 1 : progress(time, beforeFrame.at, afterFrame.at);
+    production.workpiece.position.x = THREE.MathUtils.lerp(beforeFrame.x, afterFrame.x, workpieceMove);
+    production.workpiece.position.z = THREE.MathUtils.lerp(beforeFrame.z, afterFrame.z, workpieceMove);
+    const workpieceCopy = time >= 63.85
+      ? "APPLYING EDIT 02"
+      : time >= 60.8
+        ? "FAILED · HARNESS"
+        : time >= 55.4
+          ? "PLAYER.WASM"
+          : time >= 52.55
+            ? "FIX 01"
+            : time >= 49.4
+              ? "APPLYING EDIT 01"
+              : "PLAYER.RS";
+    const wideWorkpieceCopy = workpieceCopy.includes("APPLYING") || workpieceCopy.includes("FAILED");
+    production.label.userData.setText?.(workpieceCopy);
+    production.label.scale.set(wideWorkpieceCopy ? 2.1 : 1.28, wideWorkpieceCopy ? 0.39 : 0.32, 1);
     production.status.scale.setScalar(0.82 + Math.sin(time * 3.6) * 0.14);
+    const successPop = progress(time, 55.4, 55.72);
+    const successHandoff = progress(time, 57.8, 58.55);
+    const successOpacity = successPop * (1 - progress(successHandoff, 0.72, 1));
+    production.compilerSuccess.position.set(
+      THREE.MathUtils.lerp(0.58, 0.12, successHandoff),
+      1.96 + Math.sin(successHandoff * Math.PI) * 0.28,
+      THREE.MathUtils.lerp(0.24, -1.55, successHandoff),
+    );
+    production.compilerSuccess.scale.setScalar(
+      Math.max(0.001, 0.76 * successPop * THREE.MathUtils.lerp(1, 0.12, successHandoff)),
+    );
+    setFade(production.compilerSuccess, time >= 55.4 && time < 58.55 ? successOpacity : 0);
     setMovingFile(production.main, materialPath, time, FOUNDATION_TIMELINE.materialMain);
     setMovingFile(production.cargo, materialPath, time, FOUNDATION_TIMELINE.materialCargo);
     production.edits.forEach((edit, index) => {

@@ -80,6 +80,7 @@ export function createRoute(tracker, points, color, width = 0.08) {
   const curve = new THREE.CatmullRomCurve3(points.map((point) => new THREE.Vector3(...point)));
   const group = new THREE.Group();
   group.name = "factory-signal-route";
+  group.userData.curve = curve;
   const baseGeometry = tracker.geometry(new THREE.TubeGeometry(curve, 48, width, 6, false));
   const baseColor = new THREE.Color(color).multiplyScalar(0.2);
   const baseMaterial = createFlatMaterial(tracker, baseColor);

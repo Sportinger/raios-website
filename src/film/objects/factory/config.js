@@ -35,7 +35,7 @@ export const FACTORY_LANES = Object.freeze([
 export const FACTORY_LAYOUT = Object.freeze({
   deck: Object.freeze({ width: 16, depth: 10, thickness: 0.72, gridStep: 2 }),
   hatch: Object.freeze({ width: 5.2, depth: 3.6 }),
-  shadow: Object.freeze({ width: 12, depth: 8, thickness: 0.72, gridStep: 2 }),
+  shadow: Object.freeze({ width: 13, depth: 8.4, thickness: 0.72, gridStep: 2 }),
   inputDoor: Object.freeze({ x: -6.1, z: -2.7, yaw: Math.PI / 5 }),
   outputDoor: Object.freeze({ x: 6.1, z: -2.7, yaw: -Math.PI / 5 }),
   recommendedWorldOffset: Object.freeze({ x: 7.895, y: 1.59, z: -5.895 }),
