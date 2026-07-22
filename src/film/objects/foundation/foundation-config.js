@@ -1,14 +1,15 @@
 const point = (x, y, z) => Object.freeze([x, y, z]);
 const window = (start, end) => Object.freeze({ start, end });
 
+export const FOUNDATION_LAYER_HEIGHT = 0.72;
+
 export const FOUNDATION_LAYOUT = Object.freeze({
   kernel: point(-3.05, 0, 0),
-  kernelExpanded: point(1.525, 0, 0),
-  genesisCompact: point(-3.05, 0.72, 0),
-  genesis: point(-0.4, 0.72, 0),
-  agentCompact: point(-2.0, 1.06, 0.87),
-  agent: point(0, 1.06, 1.37),
-  keyForge: point(0.52, 1.06, -1.12),
+  genesisCompact: point(-3.05, FOUNDATION_LAYER_HEIGHT, 0),
+  genesis: point(-0.4, FOUNDATION_LAYER_HEIGHT, 0),
+  agentCompact: point(-2.0, FOUNDATION_LAYER_HEIGHT * 2, 0.87),
+  agent: point(0, FOUNDATION_LAYER_HEIGHT * 2, 1.37),
+  keyForge: point(0.52, FOUNDATION_LAYER_HEIGHT * 2, -1.12),
   netDoor: point(2.75, 0.76, 2.45),
   netTower: point(8.65, 0.27, 2.3),
   builder: point(7.025, 0.72, -7.389),
@@ -36,7 +37,8 @@ export const BUILDER_FOOTPRINT = Object.freeze({
 
 export const FOUNDATION_TIMELINE = Object.freeze({
   kernelRise: window(3.89, 6.14),
-  genesisRise: window(8.28, 10.58),
+  genesisOutline: window(8.28, 9.08),
+  genesisRise: window(9.08, 10.58),
   agentRise: window(13.02, 14.82),
   netRise: window(13.2, 14.6),
   agentRoute: window(15.02, 17.82),

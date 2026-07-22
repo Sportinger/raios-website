@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import {
   BUILDER_FOOTPRINT,
+  FOUNDATION_LAYER_HEIGHT,
   FOUNDATION_LAYOUT,
   FOUNDATION_TIMELINE,
   GENESIS_FOOTPRINT,
@@ -32,6 +33,7 @@ const progress = (time, start, end) => smoothstep((time - start) / (end - start)
 const timedProgress = (time, timing) => progress(time, timing.start, timing.end);
 const place = (object, coordinates) => object.position.set(...coordinates);
 const FILM_CAMERA_DIRECTION = new THREE.Vector3(1, 0.8164965809, 1).normalize();
+const GENESIS_HEIGHT_DELTA = FOUNDATION_LAYER_HEIGHT - 0.34;
 
 function createBeamBetween(start, end, radius, color, radialSegments = 8) {
   const direction = new THREE.Vector3().subVectors(end, start);
@@ -526,6 +528,40 @@ function setDeckFootprint(deck, scaleX, scaleZ) {
   deck.title.position.z = deck.depth * 0.5 * scaleZ + 0.04;
 }
 
+function createFootprintOutline(width, depth, color) {
+  const halfWidth = width * 0.5;
+  const halfDepth = depth * 0.5;
+  const points = [
+    new THREE.Vector3(-halfWidth, 0.025, halfDepth),
+    new THREE.Vector3(halfWidth, 0.025, halfDepth),
+    new THREE.Vector3(halfWidth, 0.025, -halfDepth),
+    new THREE.Vector3(-halfWidth, 0.025, -halfDepth),
+  ];
+  const group = new THREE.Group();
+  const segments = points.map((start, index) => {
+    const end = points[(index + 1) % points.length];
+    const beam = createBeamBetween(start, end, 0.026, color);
+    beam.material.transparent = true;
+    beam.material.opacity = 0;
+    group.add(beam);
+    return { beam, start, end };
+  });
+  return { group, segments };
+}
+
+function setFootprintOutline(outline, drawAmount, opacity = 1) {
+  const draw = clamp01(drawAmount);
+  const alpha = clamp01(opacity);
+  outline.group.visible = draw * alpha > 0.001;
+  outline.segments.forEach(({ beam, start, end }, index) => {
+    const segmentProgress = clamp01(draw * outline.segments.length - index);
+    beam.visible = segmentProgress * alpha > 0.001;
+    beam.position.lerpVectors(start, end, segmentProgress * 0.5);
+    beam.scale.y = Math.max(0.001, segmentProgress);
+    beam.material.opacity = alpha;
+  });
+}
+
 function createAgent() {
   const group = new THREE.Group();
   const shadow = new THREE.Mesh(
@@ -977,13 +1013,13 @@ export function createFoundationWorld() {
   const kernel = createDeck({
     width: KERNEL_FOOTPRINT.compact.width,
     depth: KERNEL_FOOTPRINT.compact.depth,
-    height: 0.72,
+    height: FOUNDATION_LAYER_HEIGHT,
     color: 0x05080d, edgeColor: 0x343b45, label: "RUST-KERNEL", labelColor: 0xeaf4ff,
   });
   const kernelFacets = createSlabFacets(
     KERNEL_FOOTPRINT.compact.width,
     KERNEL_FOOTPRINT.compact.depth,
-    0.72,
+    FOUNDATION_LAYER_HEIGHT,
   );
   kernel.body.add(kernelFacets);
   place(kernel.group, FOUNDATION_LAYOUT.kernel);
@@ -999,10 +1035,18 @@ export function createFoundationWorld() {
     KERNEL_FOOTPRINT.compact.depth * 0.5 + 0.04,
   );
   const genesis = createDeck({
-    width: GENESIS_FOOTPRINT.width, depth: GENESIS_FOOTPRINT.depth, height: 0.34,
+    width: GENESIS_FOOTPRINT.width,
+    depth: GENESIS_FOOTPRINT.depth,
+    height: FOUNDATION_LAYER_HEIGHT,
     color: PALETTE.panel, edgeColor: 0x587b9e, label: "GENESIS DECK", labelColor: PALETTE.ink,
   });
   place(genesis.group, FOUNDATION_LAYOUT.genesis);
+  const genesisOutline = createFootprintOutline(
+    GENESIS_FOOTPRINT.width,
+    GENESIS_FOOTPRINT.depth,
+    PALETTE.greenHigh,
+  );
+  genesis.group.add(genesisOutline.group);
   const genesisCallout = createLayerCallout({
     title: "GENESIS DECK",
     copy: "BUILDS ABOVE KERNEL · GRANTS DOORS",
@@ -1031,7 +1075,7 @@ export function createFoundationWorld() {
   place(netTower.group, FOUNDATION_LAYOUT.netTower);
   netTower.group.scale.setScalar(1.18);
   const agentToDoor = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-0.55, 1.74, 1.18),
+    new THREE.Vector3(-0.55, 1.74 + GENESIS_HEIGHT_DELTA, 1.18),
     new THREE.Vector3(0.38, 1.2, 1.42),
     new THREE.Vector3(2.05, 1.13, 1.58),
     new THREE.Vector3(2.58, 1.0, 2.4),
@@ -1043,7 +1087,7 @@ export function createFoundationWorld() {
     new THREE.Vector3(8.65, 0.58, 2.3),
   ], false, "centripetal"));
   const forgeToDoor = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.52, 2.17, -1.12),
+    new THREE.Vector3(0.52, 2.17 + GENESIS_HEIGHT_DELTA, -1.12),
     new THREE.Vector3(1.12, 1.86, 0.02),
     new THREE.Vector3(2.18, 1.34, 1.4),
     new THREE.Vector3(2.75, 1.9, 2.45),
@@ -1139,17 +1183,17 @@ export function createFoundationWorld() {
     new THREE.Vector3(7.05, 1.18, -7.364),
   ], false, "centripetal");
   const forgeToBuild = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.52, 2.17, -1.12),
+    new THREE.Vector3(0.52, 2.17 + GENESIS_HEIGHT_DELTA, -1.12),
     new THREE.Vector3(1.38, 2.25, -0.82),
     new THREE.Vector3(2.833, 1.85, -1.08),
   ], false, "centripetal"), PALETTE.green, 22, 0.45);
   const forgeToSysroot = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.52, 2.17, -1.12),
+    new THREE.Vector3(0.52, 2.17 + GENESIS_HEIGHT_DELTA, -1.12),
     new THREE.Vector3(1.45, 2.42, -3.28),
     new THREE.Vector3(4.258, 1.85, -3.915),
   ], false, "centripetal"), PALETTE.green, 28, 0.45);
   const forgeToSrc = createSignalRoute(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.52, 2.17, -1.12),
+    new THREE.Vector3(0.52, 2.17 + GENESIS_HEIGHT_DELTA, -1.12),
     new THREE.Vector3(2.35, 2.38, -3.25),
     new THREE.Vector3(6.008, 1.85, -3.929),
   ], false, "centripetal"), PALETTE.green, 32, 0.45);
@@ -1251,15 +1295,12 @@ export function createFoundationWorld() {
       foundationExpansion,
     );
     kernel.group.position.set(
-      THREE.MathUtils.lerp(
-        FOUNDATION_LAYOUT.kernel[0],
-        FOUNDATION_LAYOUT.kernelExpanded[0],
-        foundationExpansion,
-      ),
+      FOUNDATION_LAYOUT.kernel[0]
+        + KERNEL_FOOTPRINT.compact.width * (kernelScaleX - 1) * 0.5,
       FOUNDATION_LAYOUT.kernel[1] - (1 - kernelRise) * 2.15,
-      FOUNDATION_LAYOUT.kernel[2] - 2.3 * kernelFinalExpansion,
+      FOUNDATION_LAYOUT.kernel[2]
+        + KERNEL_FOOTPRINT.compact.depth * (kernelScaleZ - 1) * 0.5,
     );
-    kernel.group.position.x += 2.3 * kernelFinalExpansion;
     setDeckFootprint(kernel, kernelScaleX, kernelScaleZ);
     kernel.title.position.x = 2.3 * foundationExpansion;
     setLayerCallout(kernelCallout, time, {
@@ -1280,24 +1321,35 @@ export function createFoundationWorld() {
       THREE.MathUtils.lerp(compactGenesisWidth / GENESIS_FOOTPRINT.width, 1, foundationExpansion),
       THREE.MathUtils.lerp(compactGenesisDepth / GENESIS_FOOTPRINT.depth, 1, foundationExpansion),
     );
+    const genesisOutlineDraw = timedProgress(time, FOUNDATION_TIMELINE.genesisOutline);
     const genesisRise = timedProgress(time, FOUNDATION_TIMELINE.genesisRise);
-    const genesisScreenDrop = (1 - genesisRise) * 3.3;
     genesis.group.position.set(
       THREE.MathUtils.lerp(
         FOUNDATION_LAYOUT.genesisCompact[0],
         FOUNDATION_LAYOUT.genesis[0],
         foundationExpansion,
-      ) + genesisScreenDrop,
+      ),
       FOUNDATION_LAYOUT.genesis[1],
-      FOUNDATION_LAYOUT.genesis[2] + genesisScreenDrop,
+      FOUNDATION_LAYOUT.genesis[2],
     );
     setDeckRise(genesis, genesisRise);
-    setOpacity(genesis.title, progress(time, 12.37, 12.59));
+    const genesisSolidVisible = genesisRise > 0.001;
+    genesis.body.visible = genesisSolidVisible;
+    genesis.top.visible = genesisSolidVisible;
+    genesis.grid.visible = genesisSolidVisible;
+    genesis.underglow.visible = genesisSolidVisible;
+    genesis.group.visible = genesisOutlineDraw > 0.001 || genesisSolidVisible;
+    setFootprintOutline(
+      genesisOutline,
+      genesisOutlineDraw,
+      1 - progress(time, FOUNDATION_TIMELINE.genesisRise.start, 9.52),
+    );
+    setOpacity(genesis.title, progress(time, 12.8, 13.02));
     setLayerCallout(genesisCallout, time, {
-      start: 8.38,
-      introEnd: 9.18,
-      titleStart: 11.59,
-      end: 12.59,
+      start: 10.68,
+      introEnd: 11.48,
+      titleStart: 12.02,
+      end: 13.02,
       root: group,
       camera,
       targetObject: genesis.body,
@@ -1514,7 +1566,7 @@ export function createFoundationWorld() {
     );
     setFade(srcToWorkpiece.group, workpieceRouteProgress * (1 - progress(time, 94.24, 94.58)));
 
-    const keyStart = new THREE.Vector3(0.52, 2.17, -1.12);
+    const keyStart = new THREE.Vector3(0.52, 2.17 + GENESIS_HEIGHT_DELTA, -1.12);
     setCapabilityKey(
       buildKey,
       time,
