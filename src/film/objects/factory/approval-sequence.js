@@ -273,7 +273,7 @@ function setGrantRoute(route, time) {
     progress: amount,
     time,
     persistent: amount >= 0.999,
-    active: time >= 84.55 && time < 85.25,
+    active: amount >= 0.999 && time < 92.15,
   });
 }
 

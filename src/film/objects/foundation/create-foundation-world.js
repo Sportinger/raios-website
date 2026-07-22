@@ -21,7 +21,7 @@ import {
   setVectorDoorOpen,
 } from "../shared/vector-door.js";
 import {
-  cableEdgeDrop,
+  cableDoorLandingDrop,
   cableSurfacePoint,
   createVectorCable,
   setVectorCableState,
@@ -1048,11 +1048,9 @@ export function createFoundationWorld() {
     cableSurfacePoint(FOUNDATION_SURFACES.genesis, internetPosition.x, internetPosition.z),
   ]);
   const doorToNet = createSignalRoute([
-    ...cableEdgeDrop(
-      FOUNDATION_SURFACES.genesis,
+    ...cableDoorLandingDrop(
+      internet,
       FOUNDATION_SURFACES.kernel,
-      FOUNDATION_LAYOUT.netDoor.edge,
-      FOUNDATION_LAYOUT.netDoor.along,
     ),
     cableSurfacePoint(FOUNDATION_SURFACES.kernel, 3.2, 2.84),
     cableSurfacePoint(FOUNDATION_SURFACES.kernel, 6.6, 2.1),
@@ -1135,19 +1133,15 @@ export function createFoundationWorld() {
     cableSurfacePoint(FOUNDATION_SURFACES.genesis, buildDoorPosition.x, buildDoorPosition.z),
   ], PALETTE.blueHigh);
   const requestToSysroot = createSignalRoute([
-    ...cableEdgeDrop(
-      FOUNDATION_SURFACES.genesis,
+    ...cableDoorLandingDrop(
+      buildDoor,
       FOUNDATION_SURFACES.kernel,
-      FOUNDATION_LAYOUT.buildDoor.edge,
-      FOUNDATION_LAYOUT.buildDoor.along,
     ),
     cableSurfacePoint(FOUNDATION_SURFACES.kernel, 3.1, -1.8),
     cableSurfacePoint(FOUNDATION_SURFACES.kernel, 4.1, -4.6),
-    ...cableEdgeDrop(
-      FOUNDATION_SURFACES.builder,
+    ...cableDoorLandingDrop(
+      sysrootDoor,
       FOUNDATION_SURFACES.kernel,
-      FOUNDATION_LAYOUT.sysrootDoor.edge,
-      FOUNDATION_LAYOUT.sysrootDoor.along,
     ).reverse(),
   ], PALETTE.blueHigh);
   const sysrootToSrc = createSignalRoute([
@@ -1184,34 +1178,26 @@ export function createFoundationWorld() {
   ], PALETTE.green, 22, 0.45);
   const forgeToSysroot = createSignalRoute([
     cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.52, -1.12),
-    ...cableEdgeDrop(
-      FOUNDATION_SURFACES.genesis,
+    ...cableDoorLandingDrop(
+      buildDoor,
       FOUNDATION_SURFACES.kernel,
-      FOUNDATION_LAYOUT.buildDoor.edge,
-      FOUNDATION_LAYOUT.buildDoor.along,
     ),
     cableSurfacePoint(FOUNDATION_SURFACES.kernel, 3.5, -3.4),
-    ...cableEdgeDrop(
-      FOUNDATION_SURFACES.builder,
+    ...cableDoorLandingDrop(
+      sysrootDoor,
       FOUNDATION_SURFACES.kernel,
-      FOUNDATION_LAYOUT.sysrootDoor.edge,
-      FOUNDATION_LAYOUT.sysrootDoor.along,
     ).reverse(),
   ], PALETTE.green, 28, 0.45);
   const forgeToSrc = createSignalRoute([
     cableSurfacePoint(FOUNDATION_SURFACES.genesis, 0.52, -1.12),
-    ...cableEdgeDrop(
-      FOUNDATION_SURFACES.genesis,
+    ...cableDoorLandingDrop(
+      buildDoor,
       FOUNDATION_SURFACES.kernel,
-      FOUNDATION_LAYOUT.buildDoor.edge,
-      FOUNDATION_LAYOUT.buildDoor.along,
     ),
     cableSurfacePoint(FOUNDATION_SURFACES.kernel, 4.9, -3.7),
-    ...cableEdgeDrop(
-      FOUNDATION_SURFACES.builder,
+    ...cableDoorLandingDrop(
+      srcDoor,
       FOUNDATION_SURFACES.kernel,
-      FOUNDATION_LAYOUT.srcDoor.edge,
-      FOUNDATION_LAYOUT.srcDoor.along,
     ).reverse(),
   ], PALETTE.green, 32, 0.45);
 

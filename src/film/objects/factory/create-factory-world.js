@@ -44,6 +44,7 @@ import {
 } from "./door-primitives.js";
 import { createLiveSequence } from "./live-sequence.js";
 import {
+  cableDoorLandingDrop,
   cableSurfacePoint,
   VECTOR_CABLE_DIRECTIONS,
 } from "../shared/vector-cable.js";
@@ -382,6 +383,7 @@ function createProofScene(tracker) {
     depth: shadowLayout.depth,
     top: deckTop,
   });
+  const shadowUnderlaySurface = Object.freeze({ id: "shadow-underlay", top: 0 });
   const entryDoor = createFactoryDoorOnSurface(tracker, 0xd8acff, {
     surface: shadowSurface,
     edge: "right",
@@ -405,14 +407,8 @@ function createProofScene(tracker) {
     return door;
   });
   const entryRoute = createRoute(tracker, [
-    cableSurfacePoint(shadowSurface, halfWidth + 2, -3.5, 0.08),
-    cableSurfacePoint(shadowSurface, halfWidth + 0.8, -2.8, 0.08),
-    cableSurfacePoint(
-      shadowSurface,
-      entryDoor.group.position.x,
-      entryDoor.group.position.z,
-      0.08,
-    ),
+    cableSurfacePoint(shadowUnderlaySurface, halfWidth + 2, -3.5, 0.08),
+    ...cableDoorLandingDrop(entryDoor, shadowUnderlaySurface, { clearance: 0.08 }).reverse(),
     cableSurfacePoint(shadowSurface, 2.5, -1.2, 0.08),
     cableSurfacePoint(shadowSurface, 0, 0, 0.08),
   ], 0xc48eff, 0.055);

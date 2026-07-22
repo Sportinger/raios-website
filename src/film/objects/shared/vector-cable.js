@@ -64,7 +64,7 @@ export function cableEdgeDrop(
   lowerSurface,
   edge,
   along,
-  { clearance = 0.04, edgeOffset = 0.055 } = {},
+  { clearance = 0.04, edgeOffset = 0.16 } = {},
 ) {
   const anchor = getSurfaceEdge(upperSurface, edge, along);
   const upperY = resolveSurfaceTop(upperSurface) + clearance;
@@ -78,10 +78,81 @@ export function cableEdgeDrop(
   ];
 }
 
-function createPolylineCurve(points) {
+export function cableDoorLandingDrop(
+  door,
+  lowerSurface,
+  {
+    clearance = 0.04,
+    edgeOffset = 0.18,
+    parentOffset = new THREE.Vector3(),
+  } = {},
+) {
+  const mechanism = door?.mechanism ?? door;
+  if (!door?.group || !mechanism?.hatch || !Number.isFinite(door.group.position?.y)) {
+    throw new TypeError("A door landing cable transition requires a vector door instance.");
+  }
+  const mechanismScale = mechanism.group === door.group ? 1 : mechanism.group.scale.x;
+  const scale = door.group.scale.x * mechanismScale;
+  const normalX = Math.sin(mechanism.rotationY) * mechanism.porchSide;
+  const normalZ = Math.cos(mechanism.rotationY) * mechanism.porchSide;
+  const frameX = parentOffset.x + door.group.position.x;
+  const frameZ = parentOffset.z + door.group.position.z;
+  const upperY = parentOffset.y + door.group.position.y + clearance;
+  const lowerY = resolveSurfaceTop(lowerSurface) + clearance;
+  const centerOffset = mechanism.porchOffset * scale;
+  const outerOffset = (mechanism.porchOffset + mechanism.hatch.depth * 0.5) * scale;
+  const outsideOffset = outerOffset + edgeOffset;
+  return [
+    new THREE.Vector3(frameX, upperY, frameZ),
+    new THREE.Vector3(
+      frameX + normalX * centerOffset,
+      upperY,
+      frameZ + normalZ * centerOffset,
+    ),
+    new THREE.Vector3(
+      frameX + normalX * outerOffset,
+      upperY,
+      frameZ + normalZ * outerOffset,
+    ),
+    new THREE.Vector3(
+      frameX + normalX * outsideOffset,
+      upperY,
+      frameZ + normalZ * outsideOffset,
+    ),
+    new THREE.Vector3(
+      frameX + normalX * outsideOffset,
+      lowerY,
+      frameZ + normalZ * outsideOffset,
+    ),
+  ];
+}
+
+function createRoundedPolylineCurve(points, cornerRadius) {
   const curve = new THREE.CurvePath();
-  for (let index = 1; index < points.length; index += 1) {
-    curve.add(new THREE.LineCurve3(points[index - 1], points[index]));
+  let cursor = points[0].clone();
+  for (let index = 1; index < points.length - 1; index += 1) {
+    const previous = points[index - 1];
+    const corner = points[index];
+    const next = points[index + 1];
+    const incomingLength = previous.distanceTo(corner);
+    const outgoingLength = corner.distanceTo(next);
+    if (incomingLength <= 0.000001 || outgoingLength <= 0.000001) continue;
+    const trim = Math.min(cornerRadius, incomingLength * 0.34, outgoingLength * 0.34);
+    const before = corner.clone().add(
+      previous.clone().sub(corner).normalize().multiplyScalar(trim),
+    );
+    const after = corner.clone().add(
+      next.clone().sub(corner).normalize().multiplyScalar(trim),
+    );
+    if (cursor.distanceTo(before) > 0.000001) {
+      curve.add(new THREE.LineCurve3(cursor, before));
+    }
+    curve.add(new THREE.QuadraticBezierCurve3(before, corner, after));
+    cursor = after;
+  }
+  const last = points.at(-1);
+  if (cursor.distanceTo(last) > 0.000001) {
+    curve.add(new THREE.LineCurve3(cursor, last));
   }
   return curve;
 }
@@ -165,6 +236,7 @@ export function createVectorCable({
   direction = VECTOR_CABLE_DIRECTIONS.forward,
   pulseRadius = radius * 1.85,
   speed = 0.42,
+  cornerRadius = Math.max(0.16, radius * 4.5),
   name = "vector-cable",
 } = {}) {
   if (!Object.values(VECTOR_CABLE_DIRECTIONS).includes(direction)) {
@@ -174,16 +246,16 @@ export function createVectorCable({
   if (resolvedPoints.length < 2) {
     throw new TypeError("A vector cable requires at least two waypoints.");
   }
-  const lengths = [];
-  let totalLength = 0;
-  for (let index = 1; index < resolvedPoints.length; index += 1) {
-    const length = resolvedPoints[index - 1].distanceTo(resolvedPoints[index]);
-    lengths.push(length);
-    totalLength += length;
+  const curve = createRoundedPolylineCurve(resolvedPoints, cornerRadius);
+  const totalLength = curve.getLength();
+  if (totalLength <= 0.000001) {
+    throw new TypeError("A vector cable requires waypoints with measurable distance.");
   }
+  const renderDivisions = Math.max(8, Math.ceil(totalLength / Math.max(0.08, radius * 1.8)));
+  const renderPoints = curve.getSpacedPoints(renderDivisions);
+  const lengths = renderPoints.slice(1).map((point, index) => point.distanceTo(renderPoints[index]));
   const group = new THREE.Group();
   group.name = name;
-  const curve = createPolylineCurve(resolvedPoints);
   const underlayMaterial = createMaterial(tracker, underlayColor);
   const cableMaterial = createMaterial(tracker, color);
   const underlayRecords = [];
@@ -191,8 +263,8 @@ export function createVectorCable({
   let traversed = 0;
   lengths.forEach((length, segmentIndex) => {
     if (length <= 0.000001) return;
-    const start = resolvedPoints[segmentIndex];
-    const end = resolvedPoints[segmentIndex + 1];
+    const start = renderPoints[segmentIndex];
+    const end = renderPoints[segmentIndex + 1];
     const rangeStart = traversed / totalLength;
     const rangeEnd = (traversed + length) / totalLength;
     const underlay = createBeamRecord(tracker, {
@@ -208,27 +280,25 @@ export function createVectorCable({
       });
       cableRecords.push(cable);
       group.add(cable.mesh);
-    } else {
-      const directionVector = new THREE.Vector3().subVectors(end, start).normalize();
-      for (let offset = 0; offset < length; offset += dashLength + dashGap) {
-        const dashEnd = Math.min(length, offset + dashLength);
-        const dashStartPoint = start.clone().addScaledVector(directionVector, offset);
-        const dashEndPoint = start.clone().addScaledVector(directionVector, dashEnd);
-        const dash = createBeamRecord(tracker, {
-          start: dashStartPoint,
-          end: dashEndPoint,
-          radius,
-          material: cableMaterial,
-          radialSegments: 7,
-          rangeStart: (traversed + offset) / totalLength,
-          rangeEnd: (traversed + dashEnd) / totalLength,
-        });
-        cableRecords.push(dash);
-        group.add(dash.mesh);
-      }
     }
     traversed += length;
   });
+  if (dashed) {
+    for (let offset = 0; offset < totalLength; offset += dashLength + dashGap) {
+      const dashEnd = Math.min(totalLength, offset + dashLength);
+      const dash = createBeamRecord(tracker, {
+        start: curve.getPointAt(offset / totalLength),
+        end: curve.getPointAt(dashEnd / totalLength),
+        radius,
+        material: cableMaterial,
+        radialSegments: 7,
+        rangeStart: offset / totalLength,
+        rangeEnd: dashEnd / totalLength,
+      });
+      cableRecords.push(dash);
+      group.add(dash.mesh);
+    }
+  }
   const pulseCount = direction === VECTOR_CABLE_DIRECTIONS.bidirectional ? 2 : direction === VECTOR_CABLE_DIRECTIONS.none ? 0 : 1;
   const pulseEntries = Array.from({ length: pulseCount }, () => createPulse(tracker, color, pulseRadius));
   pulseEntries.forEach(({ pulse, glow }) => group.add(glow, pulse));
@@ -286,7 +356,7 @@ export function setVectorCableTime(cable, time, {
     if (cable.direction === VECTOR_CABLE_DIRECTIONS.bidirectional && index === 1) phase = 1 - movingPhase;
     cable.curve.getPointAt(clamp01(phase), entry.pulse.position);
     entry.glow.position.copy(entry.pulse.position);
-    const visible = active && reveal > 0.02;
+    const visible = active && reveal >= 0.999;
     entry.pulse.visible = visible;
     entry.glow.visible = visible;
   });

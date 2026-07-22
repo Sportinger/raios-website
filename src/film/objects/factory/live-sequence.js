@@ -10,7 +10,7 @@ import {
 import { createRoute, createTextLabel, createVectorBox } from "./primitives.js";
 import { interval, smoothstep, smootherstep } from "./timeline.js";
 import {
-  cableEdgeDrop,
+  cableDoorLandingDrop,
   cableSurfacePoint,
   VECTOR_CABLE_DIRECTIONS,
 } from "../shared/vector-cable.js";
@@ -130,11 +130,10 @@ function createDomainRoutes(tracker, domain) {
       AGENT_PORT.toArray(),
       cableSurfacePoint(LIVE_KERNEL_SURFACE, AGENT_PORT.x, AGENT_PORT.z),
       cableSurfacePoint(LIVE_KERNEL_SURFACE, -11.0 + index * 0.34, 9.4 - index * 0.42),
-      ...cableEdgeDrop(
-        domain.routeSurface,
+      ...cableDoorLandingDrop(
+        door,
         LIVE_KERNEL_SURFACE,
-        "front",
-        door.group.position.x,
+        { parentOffset: DOMAIN_CENTER },
       ).reverse(),
       cableSurfacePoint(domain.routeSurface, end.x, end.z),
     ], FACTORY_PALETTE.green, 0.035, {

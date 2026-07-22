@@ -76,7 +76,11 @@ Y-Position. Bei einem Layerwechsel erzeugt `cableEdgeDrop` einen sichtbaren
 Weg über die Außenkante und senkrecht an ihrer Seite hinab beziehungsweise
 hinauf; Kabel dürfen deshalb nicht diagonal in einer Ebene verschwinden. Jede
 Leitung besitzt explizit die Richtung `forward`, `reverse`, `bidirectional`
-oder `none`. `none` ist statischen Deckrastern vorbehalten.
+oder `none`. `none` ist statischen Deckrastern vorbehalten. Türverbindungen
+laufen mit `cableDoorLandingDrop` zunächst über den vollständigen Vorbau und
+erst an dessen Außenkante nach unten. Technische Fillets runden alle möglichen
+Waypoints mit engem Radius ab. Signalpulse starten erst, wenn die Leitung
+vollständig aufgebaut und verbunden ist.
 
 ## Kamera
 
