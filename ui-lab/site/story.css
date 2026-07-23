@@ -1939,7 +1939,7 @@ body[data-shell-mode="website"] #surface-composite > .film-scroll-cue {
   top: 41.5%;
   right: auto;
   bottom: auto;
-  left: 50%;
+  left: calc(50% - var(--surface-offset-x, 0px));
   z-index: 5;
 }
 
